@@ -1,0 +1,1246 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo, pageKey, promo }) %>
+  
+  
+  <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_subnav', { section: 'Procurement', page: 'RCC — Milk Entry', user }) %>
+      <main class="flex-1 bg-white dark:bg-gray-900">
+        <section class="max-w-6xl mx-auto px-4 py-10">
+          <header class="mb-6">
+            <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">RCC — Daily Milk Entry</h1>
+            <p class="text-slate-600 dark:text-slate-300 mt-2">Review and accept aggregated CPP data for the selected date and time.</p>
+          </header>
+
+          <!-- Filters -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+              <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">RCC</label>
+                <select id="rccFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  <% rccList.forEach(rcc => { %>
+                    <option value="<%= rcc.id %>" <%= (selectedRccId == rcc.id) ? 'selected' : '' %>><%= rcc.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Date</label>
+                <input type="date" id="dateFilter" name="date" value="<%= selectedDate %>" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">   
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Time</label>
+                <select id="timeFilter" name="time" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  <option value="day" <%= selectedTime === 'day' ? 'selected' : '' %>>Day (Total)</option>
+                  <option value="morning" <%= selectedTime === 'morning' ? 'selected' : '' %>>Morning</option>
+                  <option value="evening" <%= selectedTime === 'evening' ? 'selected' : '' %>>Evening</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3 mb-6" id="summaryCards">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 md:p-3 text-center">
+              <div class="text-sm md:text-lg lg:text-xl font-bold text-blue-600 dark:text-blue-400" id="totalVolume"><%= (cppSummaryData || []).reduce((sum, cpp) => sum + parseFloat(cpp.totalQty || 0), 0).toFixed(1) %></div>
+              <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">Total Volume (L)</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 md:p-3 text-center">
+              <div class="text-sm md:text-lg lg:text-xl font-bold text-green-600 dark:text-green-400" id="avgFat"><%= (() => { const totalQty = (cppSummaryData || []).reduce((sum, cpp) => sum + parseFloat(cpp.totalQty || 0), 0); const totalWeightedFat = (cppSummaryData || []).reduce((sum, cpp) => sum + (parseFloat(cpp.fat || 0) * parseFloat(cpp.totalQty || 0)), 0); return totalQty > 0 ? (totalWeightedFat / totalQty).toFixed(1) : '0.0'; })() %></div>
+              <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">Avg FAT %</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 md:p-3 text-center">
+              <div class="text-sm md:text-lg lg:text-xl font-bold text-purple-600 dark:text-purple-400" id="avgSnf"><%= (() => { const totalQty = (cppSummaryData || []).reduce((sum, cpp) => sum + parseFloat(cpp.totalQty || 0), 0); const totalWeightedSnf = (cppSummaryData || []).reduce((sum, cpp) => sum + (parseFloat(cpp.snf || 0) * parseFloat(cpp.totalQty || 0)), 0); return totalQty > 0 ? (totalWeightedSnf / totalQty).toFixed(1) : '0.0'; })() %></div>
+              <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">Avg SNF %</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 md:p-3 text-center">
+              <div class="text-sm md:text-lg lg:text-xl font-bold text-orange-600 dark:text-orange-400" id="avgClr"><%= (() => { const totalQty = (cppSummaryData || []).reduce((sum, cpp) => sum + parseFloat(cpp.totalQty || 0), 0); const totalWeightedClr = (cppSummaryData || []).reduce((sum, cpp) => sum + (parseFloat(cpp.clr || 0) * parseFloat(cpp.totalQty || 0)), 0); return totalQty > 0 ? (totalWeightedClr / totalQty).toFixed(1) : '0.0'; })() %></div>
+              <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">Avg CLR</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 md:p-3 text-center">
+              <div class="text-sm md:text-lg lg:text-xl font-bold text-red-600 dark:text-red-400" id="avgWater"><%= (() => { const totalQty = (cppSummaryData || []).reduce((sum, cpp) => sum + parseFloat(cpp.totalQty || 0), 0); const totalWeightedWater = (cppSummaryData || []).reduce((sum, cpp) => sum + (parseFloat(cpp.water || 0) * parseFloat(cpp.totalQty || 0)), 0); return totalQty > 0 ? (totalWeightedWater / totalQty).toFixed(1) : '0.0'; })() %></div>
+              <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">Avg Water %</div>
+            </div>
+          </div>
+
+          <!-- CPP Data Display -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">CPP Data Summary</h3>
+              <button type="button" id="acceptAllBtn" class="btn btn-primary">
+                <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                Accept All as RCC Data
+              </button>
+            </div>
+            
+            <% if ((cppSummaryData||[]).length > 0) { %>
+              <!-- Desktop: Table layout -->
+              <div class="desktop-only overflow-x-auto">
+                <table class="w-full text-sm text-gray-900 dark:text-gray-100">
+                  <thead>
+                    <tr class="text-left bg-slate-50 dark:bg-gray-800">
+                      <th class="py-3 px-4 text-gray-900 dark:text-gray-100 font-semibold">CPP</th>
+                      <th class="py-3 px-4 text-gray-900 dark:text-gray-100 font-semibold">Milk Type</th>
+                      <th class="py-3 px-4 text-right text-gray-900 dark:text-gray-100 font-semibold">Qty (L)</th>
+                      <th class="py-3 px-4 text-right text-gray-900 dark:text-gray-100 font-semibold">FAT %</th>
+                      <th class="py-3 px-4 text-right text-gray-900 dark:text-gray-100 font-semibold">SNF %</th>
+                      <th class="py-3 px-4 text-right text-gray-900 dark:text-gray-100 font-semibold">Water %</th>
+                      <th class="py-3 px-4 text-right text-gray-900 dark:text-gray-100 font-semibold">CLR</th>
+                      <th class="py-3 px-4 text-center text-gray-900 dark:text-gray-100 font-semibold">Status</th>
+                      <th class="py-3 px-4 text-center text-gray-900 dark:text-gray-100 font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cppDataTable" class="bg-white dark:bg-gray-900">
+                    <% cppSummaryData.forEach((cpp, index) => { %>
+                      <% 
+                        const existingEntries = (existingRccEntries || []).filter(e => e.cpp_id == cpp.cppId);
+                        const hasExistingEntries = existingEntries.length > 0;
+                        
+                        // For day view, show individual morning/evening entries
+                        if (selectedTime === 'day' && hasExistingEntries) {
+                          // Sort entries by time (morning first, then evening)
+                          const sortedEntries = existingEntries.sort((a, b) => {
+                            if (a.time === 'morning' && b.time === 'evening') return -1;
+                            if (a.time === 'evening' && b.time === 'morning') return 1;
+                            return 0;
+                          });
+                          
+                          sortedEntries.forEach((entry, entryIndex) => {
+                            const displayMilkType = entry.milkType;
+                            const displayQty = entry.qty;
+                            const displayFat = entry.fat;
+                            const displaySnf = entry.snf;
+                            const displayClr = entry.clr;
+                            const displayWater = entry.water;
+                            const status = ((entry.status || '').toString().trim().toLowerCase() === 'accepted') ? 'Accepted' : 'Pending';
+                            const statusClass = ((entry.status || '').toString().trim().toLowerCase() === 'accepted') ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600';
+                            const timeLabel = entry.time === 'morning' ? 'Morning' : 'Evening';
+                            const timeClass = entry.time === 'morning' ? 'bg-blue-50' : 'bg-orange-50';
+                            
+                            // Add separator row before each CPP group (except first)
+                            if (entryIndex === 0 && index > 0) {
+                      %>
+                      <tr class="border-t-2 border-gray-300 dark:border-gray-700">
+                        <td colspan="9" class="py-2"></td>
+                      </tr>
+                      <% } %>
+                      <tr data-cpp-id="<%= cpp.cppId %>" data-entry-id="<%= entry.id %>" data-time="<%= entry.time %>" class="border-b border-gray-200 dark:border-gray-700 <%= timeClass === 'bg-blue-50' ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20' %>">
+                        <td class="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                          <%= cpp.cppName %>
+                          <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">(<%= timeLabel %>)</span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <select class="border border-gray-300 dark:border-gray-600 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" style="width:80px; height:32px; padding:4px 8px;" <%= status === 'Accepted' ? 'disabled' : '' %>>
+                            <option value="A1" <%= displayMilkType==='A1'?'selected':'' %> >A1</option>
+                            <option value="A2" <%= displayMilkType==='A2'?'selected':'' %> >A2</option>
+                            <option value="Buffalo" <%= displayMilkType==='Buffalo'?'selected':'' %> >Buffalo</option>
+                          </select>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:80px" value="<%= displayQty || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displayFat || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displaySnf || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displayWater || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displayClr || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                          <span class="status-badge px-2 py-1 rounded text-xs font-medium <%= (((entry.status || '').toString().trim().toLowerCase()) === 'accepted') ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' %>"><%= status %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            <button class="edit-btn text-blue-600 dark:text-blue-400 hover:underline" data-cpp-id="<%= cpp.cppId %>" data-entry-id="<%= entry.id %>" title="Edit">Edit</button>
+                            <button class="accept-btn text-green-600 dark:text-green-400 hover:underline" data-cpp-id="<%= cpp.cppId %>" data-entry-id="<%= entry.id %>" title="Accept">Accept</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <% }) %>
+                      <% } else { %>
+                        <% 
+                          // For morning/evening view or when no existing entries, show aggregated data
+                          // Prefer matching the currently selected time if available
+                          const existingEntry = hasExistingEntries ? ((existingEntries.find(e => (e.time || '').toLowerCase() === (selectedTime || '').toLowerCase())) || existingEntries[0]) : null;
+                        const displayMilkType = existingEntry ? existingEntry.milkType : cpp.milkType;
+                        const displayQty = existingEntry ? existingEntry.qty : cpp.totalQty;
+                        const displayFat = existingEntry ? existingEntry.fat : cpp.fat;
+                        const displaySnf = existingEntry ? existingEntry.snf : cpp.snf;
+                        const displayClr = existingEntry ? existingEntry.clr : cpp.clr;
+                        const displayWater = existingEntry ? existingEntry.water : cpp.water;
+                        const status = existingEntry ? ((((existingEntry.status || '').toString().trim().toLowerCase()) === 'accepted') ? 'Accepted' : 'Pending') : 'Pending';
+                        const statusClass = existingEntry && (((existingEntry.status || '').toString().trim().toLowerCase()) === 'accepted') ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600';
+                      %>
+                      
+                      <% if (selectedTime === 'day') { %>
+                        <!-- Day view: show separate morning and evening rows -->
+                        <% 
+                          // Get morning and evening data for this CPP
+                          const morningData = cpp.morning;
+                          const eveningData = cpp.evening;
+                          // Match existing RCC entries per time for accurate status after refresh
+                          const existingMorning = (existingEntries || []).find(e => (e.time || '').toLowerCase() === 'morning');
+                          const existingEvening = (existingEntries || []).find(e => (e.time || '').toLowerCase() === 'evening');
+                          const morningStatus = existingMorning ? ((((existingMorning.status || '').toString().trim().toLowerCase()) === 'accepted') ? 'Accepted' : 'Pending') : 'Pending';
+                          const eveningStatus = existingEvening ? ((((existingEvening.status || '').toString().trim().toLowerCase()) === 'accepted') ? 'Accepted' : 'Pending') : 'Pending';
+                        %>
+                        
+                        <!-- Morning row -->
+                        <tr data-cpp-id="<%= cpp.cppId %>" data-time="morning" class="border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
+                          <td class="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                            <%= cpp.cppName %>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">(Morning)</span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <select class="border border-gray-300 dark:border-gray-600 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" style="width:80px; height:32px; padding:4px 8px;">
+                              <option value="A1" <%= morningData && morningData.milkType==='A1'?'selected':'' %> >A1</option>
+                              <option value="A2" <%= morningData && morningData.milkType==='A2'?'selected':'' %> >A2</option>
+                              <option value="Buffalo" <%= morningData && morningData.milkType==='Buffalo'?'selected':'' %> >Buffalo</option>
+                            </select>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:80px" value="<%= morningData ? morningData.totalQty : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= morningData ? morningData.fat : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= morningData ? morningData.snf : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= morningData ? morningData.water : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= morningData ? morningData.clr : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <span class="status-badge px-2 py-1 rounded text-xs font-medium <%= (morningStatus === 'Accepted') ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' %>"><%= morningStatus %></span>
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                              <button class="edit-btn text-blue-600 dark:text-blue-400 hover:underline" data-cpp-id="<%= cpp.cppId %>" title="Edit">Edit</button>
+                              <button class="accept-btn text-green-600 dark:text-green-400 hover:underline" data-cpp-id="<%= cpp.cppId %>" title="Accept">Accept</button>
+                            </div>
+                          </td>
+                        </tr>
+                        
+                        <!-- Evening row -->
+                        <tr data-cpp-id="<%= cpp.cppId %>" data-time="evening" class="border-b border-gray-200 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/20">
+                          <td class="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                            <%= cpp.cppName %>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">(Evening)</span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <select class="border border-gray-300 dark:border-gray-600 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" style="width:80px; height:32px; padding:4px 8px;">
+                              <option value="A1" <%= eveningData && eveningData.milkType==='A1'?'selected':'' %> >A1</option>
+                              <option value="A2" <%= eveningData && eveningData.milkType==='A2'?'selected':'' %> >A2</option>
+                              <option value="Buffalo" <%= eveningData && eveningData.milkType==='Buffalo'?'selected':'' %> >Buffalo</option>
+                            </select>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:80px" value="<%= eveningData ? eveningData.totalQty : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= eveningData ? eveningData.fat : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= eveningData ? eveningData.snf : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= eveningData ? eveningData.water : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= eveningData ? eveningData.clr : 0 %>" />
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <span class="status-badge px-2 py-1 rounded text-xs font-medium <%= (eveningStatus === 'Accepted') ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' %>"><%= eveningStatus %></span>
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                              <button class="edit-btn text-blue-600 dark:text-blue-400 hover:underline" data-cpp-id="<%= cpp.cppId %>" title="Edit">Edit</button>
+                              <button class="accept-btn text-green-600 dark:text-green-400 hover:underline" data-cpp-id="<%= cpp.cppId %>" title="Accept">Accept</button>
+                            </div>
+                          </td>
+                        </tr>
+                      <% } else { %>
+                        <!-- Single time view -->
+                        <tr data-cpp-id="<%= cpp.cppId %>" data-time="<%= selectedTime %>" class="border-b border-gray-200 dark:border-gray-700">
+                        <td class="py-3 px-4 font-medium text-gray-900 dark:text-gray-100"><%= cpp.cppName %></td>
+                        <td class="py-3 px-4">
+                          <select class="border border-gray-300 dark:border-gray-600 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" style="width:80px; height:32px; padding:4px 8px;" <%= status === 'Accepted' ? 'disabled' : '' %>>
+                            <option value="A1" <%= displayMilkType==='A1'?'selected':'' %> >A1</option>
+                            <option value="A2" <%= displayMilkType==='A2'?'selected':'' %> >A2</option>
+                            <option value="Buffalo" <%= displayMilkType==='Buffalo'?'selected':'' %> >Buffalo</option>
+                          </select>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:80px" value="<%= displayQty || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displayFat || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displaySnf || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displayWater || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                          <input type="number" step="0.1" min="0" class="border border-gray-300 dark:border-gray-600 rounded p-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 text-right" style="width:70px" value="<%= displayClr || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                          <span class="status-badge px-2 py-1 rounded text-xs font-medium <%= statusClass === 'bg-green-100 text-green-600' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' %>"><%= status %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            <button class="edit-btn p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300" data-cpp-id="<%= cpp.cppId %>" title="Edit">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                              </svg>
+                            </button>
+                            <button class="accept-btn p-1 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300" data-cpp-id="<%= cpp.cppId %>" title="Accept">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <% } %>
+                      <% } %>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Mobile: Card layout -->
+              <div class="mobile-only space-y-4">
+                <% cppSummaryData.forEach((cpp, index) => { %>
+                  <% 
+                    const existingEntries = (existingRccEntries || []).filter(e => e.cpp_id == cpp.cppId);
+                    const hasExistingEntries = existingEntries.length > 0;
+                    
+                    // For day view, show individual morning/evening entries
+                    if (selectedTime === 'day' && hasExistingEntries) {
+                      existingEntries.forEach((entry, entryIndex) => {
+                        const displayMilkType = entry.milkType;
+                        const displayQty = entry.qty;
+                        const displayFat = entry.fat;
+                        const displaySnf = entry.snf;
+                        const displayClr = entry.clr;
+                        const displayWater = entry.water;
+                        const status = ((entry.status || '').toString().trim().toLowerCase() === 'accepted') ? 'Accepted' : 'Pending';
+                        const statusClass = ((entry.status || '').toString().trim().toLowerCase() === 'accepted') ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600';
+                        const timeLabel = entry.time === 'morning' ? 'Morning' : 'Evening';
+                        const timeClass = entry.time === 'morning' ? 'bg-blue-50' : 'bg-orange-50';
+                  %>
+                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 <%= timeClass === 'bg-blue-50' ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20' %>" data-cpp-id="<%= cpp.cppId %>" data-entry-id="<%= entry.id %>" data-time="<%= entry.time %>">
+                    <div class="flex justify-between items-center mb-3">
+                      <h3 class="font-semibold text-slate-900 dark:text-slate-100"><%= cpp.cppName %></h3>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">(<%= timeLabel %>)</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="status-badge px-2 py-1 rounded text-xs font-medium <%= statusClass === 'bg-green-100 text-green-600' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' %>"><%= status %></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">Milk Type</label>
+                        <select class="w-full border border-gray-300 dark:border-gray-600 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" style="padding:4px 8px;" <%= status === 'Accepted' ? 'disabled' : '' %>>
+                          <option value="A1" <%= displayMilkType==='A1'?'selected':'' %> >A1</option>
+                          <option value="A2" <%= displayMilkType==='A2'?'selected':'' %> >A2</option>
+                          <option value="Buffalo" <%= displayMilkType==='Buffalo'?'selected':'' %> >Buffalo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">Qty (L)</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayQty || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">FAT %</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayFat || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">SNF %</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displaySnf || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">CLR</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayClr || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">Water %</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayWater || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-2">
+                            <button class="edit-btn text-blue-600 dark:text-blue-400 hover:underline text-sm" data-cpp-id="<%= cpp.cppId %>" data-entry-id="<%= entry.id %>">Edit</button>
+                            <button class="accept-btn text-green-600 dark:text-green-400 hover:underline text-sm" data-cpp-id="<%= cpp.cppId %>" data-entry-id="<%= entry.id %>">Accept</button>
+                    </div>
+                  </div>
+                  <% }) %>
+                  <% } else { %>
+                    <% 
+                      // For morning/evening view or when no existing entries, show aggregated data
+                      const existingEntry = hasExistingEntries ? existingEntries[0] : null;
+                    const displayMilkType = existingEntry ? existingEntry.milkType : cpp.milkType;
+                    const displayQty = existingEntry ? existingEntry.qty : cpp.totalQty;
+                    const displayFat = existingEntry ? existingEntry.fat : cpp.fat;
+                    const displaySnf = existingEntry ? existingEntry.snf : cpp.snf;
+                    const displayClr = existingEntry ? existingEntry.clr : cpp.clr;
+                    const displayWater = existingEntry ? existingEntry.water : cpp.water;
+                    const status = existingEntry ? (((existingEntry.status || '').toString().trim().toLowerCase() === 'accepted') ? 'Accepted' : 'Pending') : 'Pending';
+                    const statusClass = existingEntry && ((existingEntry.status || '').toString().trim().toLowerCase() === 'accepted') ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600';
+                  %>
+                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4" data-cpp-id="<%= cpp.cppId %>">
+                      <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-slate-900 dark:text-slate-100"><%= cpp.cppName %></h3>
+                      <span class="status-badge px-2 py-1 rounded text-xs font-medium <%= statusClass === 'bg-green-100 text-green-600' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' %>"><%= status %></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">Milk Type</label>
+                        <select class="w-full border border-gray-300 dark:border-gray-600 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" style="padding:4px 8px;" <%= status === 'Accepted' ? 'disabled' : '' %>>
+                          <option value="A1" <%= displayMilkType==='A1'?'selected':'' %> >A1</option>
+                          <option value="A2" <%= displayMilkType==='A2'?'selected':'' %> >A2</option>
+                          <option value="Buffalo" <%= displayMilkType==='Buffalo'?'selected':'' %> >Buffalo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">Qty (L)</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayQty || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">FAT %</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayFat || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">SNF %</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displaySnf || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">CLR</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayClr || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-slate-600 dark:text-slate-300 mb-1">Water %</label>
+                        <input type="number" step="0.1" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700" value="<%= displayWater || 0 %>" <%= status === 'Accepted' ? 'disabled' : '' %> />
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="edit-btn text-blue-600 dark:text-blue-400 hover:underline text-sm" data-cpp-id="<%= cpp.cppId %>">Edit</button>
+                      <button class="accept-btn text-green-600 dark:text-green-400 hover:underline text-sm" data-cpp-id="<%= cpp.cppId %>">Accept</button>
+                    </div>
+                  </div>
+                  <% } %>
+                <% }) %>
+            </div>
+            <% } else { %>
+              <div class="text-center py-8 text-slate-600 dark:text-slate-300">
+                <p class="text-gray-900 dark:text-gray-100">No CPP data found for the selected date/time.</p>
+                <p class="text-sm mt-2 text-gray-600 dark:text-gray-400">Make sure CPPs have entered farmer data first.</p>
+              </div>
+            <% } %>
+          </div>
+
+        </section>
+      </main>
+    </div>
+    <script>
+      (function(){
+        
+        const dateFilter = document.getElementById('dateFilter');
+        const timeFilter = document.getElementById('timeFilter');
+        const SCOPE_RCC_ID = <%- JSON.stringify(user?.scope?.rcc_id || 1) %>;
+        window.existingRccEntries = <%- JSON.stringify(existingRccEntries || []) %>;
+        window.cppSummaryData = <%- JSON.stringify(cppSummaryData || []) %>;
+        // Helper: get currently selected RCC ID from dropdown (fallback to scope)
+        function getSelectedRccId() {
+          const el = document.getElementById('rccFilter');
+          const val = el && el.value ? Number(el.value) : null;
+          return Number.isFinite(val) && val > 0 ? val : Number(SCOPE_RCC_ID || 1);
+        }
+
+
+        // Toast notifications are now handled by the standardized system
+        // Available functions: showToast(), showSuccessToast(), showErrorToast(), showWarningToast(), showInfoToast()
+
+        // Calculate and update summary cards
+        function updateSummaryCards() {
+          // Use the window.cppSummaryData if available (more reliable)
+          if (window.cppSummaryData && window.cppSummaryData.length > 0) {
+            let totalQty = 0;
+            let totalWeightedFat = 0;
+            let totalWeightedSnf = 0;
+            let totalWeightedClr = 0;
+            let totalWeightedWater = 0;
+            
+            window.cppSummaryData.forEach(cpp => {
+              const qty = parseFloat(cpp.totalQty || 0);
+              const fat = parseFloat(cpp.fat || 0);
+              const snf = parseFloat(cpp.snf || 0);
+              const clr = parseFloat(cpp.clr || 0);
+              const water = parseFloat(cpp.water || 0);
+              
+              totalQty += qty;
+              totalWeightedFat += fat * qty;
+              totalWeightedSnf += snf * qty;
+              totalWeightedClr += clr * qty;
+              totalWeightedWater += water * qty;
+            });
+            
+            // Calculate averages
+            const avgFat = totalQty > 0 ? totalWeightedFat / totalQty : 0;
+            const avgSnf = totalQty > 0 ? totalWeightedSnf / totalQty : 0;
+            const avgClr = totalQty > 0 ? totalWeightedClr / totalQty : 0;
+            const avgWater = totalQty > 0 ? totalWeightedWater / totalQty : 0;
+            
+            // Update the cards
+            document.getElementById('totalVolume').textContent = totalQty.toFixed(1);
+            document.getElementById('avgFat').textContent = avgFat.toFixed(1);
+            document.getElementById('avgSnf').textContent = avgSnf.toFixed(1);
+            document.getElementById('avgClr').textContent = avgClr.toFixed(1);
+            document.getElementById('avgWater').textContent = avgWater.toFixed(1);
+            
+          } else {
+            // Fallback: Get all CPP data from the table/cards
+            const cppRows = document.querySelectorAll('[data-cpp-id]');
+            let totalQty = 0;
+            let totalWeightedFat = 0;
+            let totalWeightedSnf = 0;
+            let totalWeightedClr = 0;
+            let totalWeightedWater = 0;
+            
+            cppRows.forEach(row => {
+              // Get quantity (first number input)
+              const qtyInput = row.querySelector('input[type="number"]');
+              const qty = parseFloat(qtyInput?.value || 0);
+              
+              // Get other parameters (subsequent number inputs)
+              const numberInputs = row.querySelectorAll('input[type="number"]');
+              const fat = parseFloat(numberInputs[1]?.value || 0);
+              const snf = parseFloat(numberInputs[2]?.value || 0);
+              const clr = parseFloat(numberInputs[3]?.value || 0);
+              const water = parseFloat(numberInputs[4]?.value || 0);
+              
+              totalQty += qty;
+              totalWeightedFat += fat * qty;
+              totalWeightedSnf += snf * qty;
+              totalWeightedClr += clr * qty;
+              totalWeightedWater += water * qty;
+            });
+            
+            // Calculate averages
+            const avgFat = totalQty > 0 ? totalWeightedFat / totalQty : 0;
+            const avgSnf = totalQty > 0 ? totalWeightedSnf / totalQty : 0;
+            const avgClr = totalQty > 0 ? totalWeightedClr / totalQty : 0;
+            const avgWater = totalQty > 0 ? totalWeightedWater / totalQty : 0;
+            
+            // Update the cards
+            document.getElementById('totalVolume').textContent = totalQty.toFixed(1);
+            document.getElementById('avgFat').textContent = avgFat.toFixed(1);
+            document.getElementById('avgSnf').textContent = avgSnf.toFixed(1);
+            document.getElementById('avgClr').textContent = avgClr.toFixed(1);
+            document.getElementById('avgWater').textContent = avgWater.toFixed(1);
+            
+          }
+        }
+
+        // Load data when filters change
+        function loadData() {
+          const rccId = document.getElementById('rccFilter').value;
+          const date = dateFilter.value;
+          const time = timeFilter.value;
+          if (!rccId || !date || !time) return;
+          
+          const url = new URL(window.location);
+          url.searchParams.set('rcc_id', rccId);
+          url.searchParams.set('date', date);
+          url.searchParams.set('time', time);
+          window.location.href = url.toString();
+        }
+
+        // Edit functionality
+        function enableEdit(cppId) {
+          const row = document.querySelector(`[data-cpp-id="${cppId}"]`);
+          if (!row) return;
+          
+          const inputs = row.querySelectorAll('input, select');
+          inputs.forEach(input => {
+            input.disabled = false;
+            input.classList.remove('bg-gray-100');
+            input.classList.remove('bg-white');
+            input.classList.add('bg-white');
+            input.classList.add('dark:bg-gray-800');
+          });
+          
+          // Update status
+          const statusBadge = row.querySelector('.status-badge');
+          if (statusBadge) {
+            statusBadge.textContent = 'Editing';
+            statusBadge.className = 'status-badge px-2 py-1 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-300';
+          }
+        }
+
+        // Save edit functionality
+        async function saveEdit(cppId) {
+          const row = document.querySelector(`[data-cpp-id="${cppId}"]`);
+          if (!row) return;
+          
+          const milkType = row.querySelector('select').value;
+          const qty = row.querySelector('input[type="number"]').value;
+          const fat = row.querySelectorAll('input[type="number"]')[1]?.value || '';
+          const snf = row.querySelectorAll('input[type="number"]')[2]?.value || '';
+          const water = row.querySelectorAll('input[type="number"]')[3]?.value || '';
+          const clr = row.querySelectorAll('input[type="number"]')[4]?.value || '';
+          
+          // Check if there's an existing RCC entry for this CPP
+          const entryId = row.dataset.entryId;
+          const existingEntry = window.existingRccEntries?.find(e => 
+            entryId ? e.id == entryId : e.cpp_id == cppId
+          );
+          
+          if (existingEntry) {
+            // Update existing entry
+            const payload = {
+              milkType,
+              qty: Number(qty),
+              fat: fat ? Number(fat) : null,
+              snf: snf ? Number(snf) : null,
+              clr: clr ? Number(clr) : null,
+              water: water ? Number(water) : null
+            };
+            
+            try {
+              const res = await fetch(`/api/procurement/rcc/entries/${existingEntry.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              const result = await res.json();
+              
+              if (result.ok) {
+                showSuccessToast('Data updated successfully');
+                updateSummaryCards(); // Update summary cards immediately
+                updateRowStatus(cppId, 'accepted'); // Update status immediately
+              } else {
+                showErrorToast(result.error || 'Failed to update');
+              }
+            } catch (error) {
+              showErrorToast('Error updating data');
+            }
+          } else {
+            // Create new entry
+            const payload = {
+              role: 'rcc',
+              cpp_id: cppId,
+              rcc_id: getSelectedRccId(),
+              date: dateFilter.value,
+              time: timeFilter.value,
+              items: [{
+                cppId: cppId,
+                milkType,
+                qty: Number(qty),
+                fat: fat ? Number(fat) : null,
+                snf: snf ? Number(snf) : null,
+                clr: clr ? Number(clr) : null,
+                water: water ? Number(water) : null
+              }]
+            };
+            
+            try {
+              const res = await fetch('/api/procurement/rcc/entries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              const result = await res.json();
+              
+              if (result.ok) {
+                showSuccessToast('Data saved successfully');
+                updateSummaryCards(); // Update summary cards immediately
+                updateRowStatus(cppId, 'accepted'); // Update status immediately
+              } else {
+                showErrorToast(result.error || 'Failed to save');
+              }
+            } catch (error) {
+              showErrorToast('Error saving data');
+            }
+          }
+        }
+
+        // Accept all CPP data as single RCC entry
+        async function acceptAllAsRcc() {
+          if (!window.cppSummaryData || window.cppSummaryData.length === 0) {
+            showErrorToast('No CPP data to accept');
+            return;
+          }
+
+          // Read current values from form fields instead of using window.cppSummaryData
+          const cppRows = document.querySelectorAll('#cppDataTable tr[data-cpp-id]');
+          if (cppRows.length === 0) {
+            showErrorToast('No CPP data rows found');
+            return;
+          }
+
+          // Handle day view differently - group by time
+          if (timeFilter.value === 'day') {
+            // Group rows by time (morning/evening)
+            const morningRows = Array.from(cppRows).filter(row => row.dataset.time === 'morning');
+            const eveningRows = Array.from(cppRows).filter(row => row.dataset.time === 'evening');
+            
+            
+            let totalInserted = 0;
+            
+            // Process morning data if exists
+            if (morningRows.length > 0) {
+              const morningResult = await processTimeGroup(morningRows, 'morning');
+              totalInserted += morningResult;
+            }
+            
+            // Process evening data if exists
+            if (eveningRows.length > 0) {
+              const eveningResult = await processTimeGroup(eveningRows, 'evening');
+              totalInserted += eveningResult;
+            }
+            
+            if (totalInserted > 0) {
+              showSuccessToast(`All CPP data accepted as RCC data (${totalInserted} entries saved)`);
+              updateSummaryCards();
+              // Update all CPP rows to show accepted status
+              cppRows.forEach(row => {
+                const cppId = row.dataset.cppId;
+                const time = row.dataset.time;
+                updateRowStatusForTime(cppId, time, 'accepted');
+              });
+            } else {
+              showErrorToast('No valid data to accept');
+            }
+          } else {
+            // Handle single time (morning/evening) - original logic
+            await processSingleTime(cppRows);
+          }
+        }
+
+        // Helper function to process a group of rows for a specific time
+        async function processTimeGroup(rows, time) {
+          const payload = {
+            role: 'rcc',
+            rcc_id: getSelectedRccId(),
+            date: dateFilter.value,
+            time: time,
+            items: []
+          };
+
+          rows.forEach(row => {
+            const cppId = row.dataset.cppId;
+            const milkTypeSelect = row.querySelector('select');
+            const numberInputs = row.querySelectorAll('input[type="number"]');
+            
+            if (milkTypeSelect && numberInputs.length >= 5) {
+              const milkType = milkTypeSelect.value;
+              
+              const safeParseFloat = (value) => {
+                const parsed = parseFloat(value);
+                return isNaN(parsed) ? 0 : parsed;
+              };
+
+              const qty = safeParseFloat(numberInputs[0]?.value || 0);
+              const fat = safeParseFloat(numberInputs[1]?.value || 0);
+              const snf = safeParseFloat(numberInputs[2]?.value || 0);
+              const water = safeParseFloat(numberInputs[3]?.value || 0);
+              const clr = safeParseFloat(numberInputs[4]?.value || 0);
+
+              if (qty > 0) { // Only add if there's actual quantity
+                payload.items.push({
+                  cppId: Number(cppId),
+                  milkType: milkType,
+                  qty: qty,
+                  fat: fat,
+                  snf: snf,
+                  clr: clr,
+                  water: water
+                });
+              }
+            }
+          });
+
+          if (payload.items.length === 0) {
+            return 0;
+          }
+
+          try {
+            const res = await fetch('/api/procurement/rcc/entries', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            
+            const result = await res.json();
+            return result.ok ? result.saved.count : 0;
+          } catch (error) {
+            console.error('Error processing time group:', error);
+            return 0;
+          }
+        }
+
+        // Helper function to process single time (original logic)
+        async function processSingleTime(cppRows) {
+          let totalQty = 0;
+          let totalWeightedFat = 0;
+          let totalWeightedSnf = 0;
+          let totalWeightedClr = 0;
+          let totalWeightedWater = 0;
+          const milkTypes = [];
+
+          cppRows.forEach(row => {
+            const cppId = row.dataset.cppId;
+            const milkTypeSelect = row.querySelector('select');
+            const numberInputs = row.querySelectorAll('input[type="number"]');
+            
+            if (milkTypeSelect && numberInputs.length >= 5) {
+              const milkType = milkTypeSelect.value;
+              const qty = parseFloat(numberInputs[0]?.value || 0);
+              const fat = parseFloat(numberInputs[1]?.value || 0);
+              const snf = parseFloat(numberInputs[2]?.value || 0);
+              const water = parseFloat(numberInputs[3]?.value || 0);
+              const clr = parseFloat(numberInputs[4]?.value || 0);
+
+              totalQty += qty;
+              totalWeightedFat += fat * qty;
+              totalWeightedSnf += snf * qty;
+              totalWeightedClr += clr * qty;
+              totalWeightedWater += water * qty;
+              milkTypes.push(milkType);
+            }
+          });
+
+          const avgFat = totalQty > 0 ? totalWeightedFat / totalQty : 0;
+          const avgSnf = totalQty > 0 ? totalWeightedSnf / totalQty : 0;
+          const avgClr = totalQty > 0 ? totalWeightedClr / totalQty : 0;
+          const avgWater = totalQty > 0 ? totalWeightedWater / totalQty : 0;
+
+          const uniqueMilkTypes = [...new Set(milkTypes.filter(Boolean))];
+          const aggregatedMilkType = uniqueMilkTypes.length === 1 ? uniqueMilkTypes[0] : 'Mixed';
+
+          const payload = {
+            role: 'rcc',
+            rcc_id: getSelectedRccId(),
+            date: dateFilter.value,
+            time: timeFilter.value,
+            items: []
+          };
+
+          cppRows.forEach(row => {
+            const cppId = row.dataset.cppId;
+            const milkTypeSelect = row.querySelector('select');
+            const numberInputs = row.querySelectorAll('input[type="number"]');
+            
+            if (milkTypeSelect && numberInputs.length >= 5) {
+              const milkType = milkTypeSelect.value;
+              
+              const safeParseFloat = (value) => {
+                const parsed = parseFloat(value);
+                return isNaN(parsed) ? 0 : parsed;
+              };
+
+              const qty = safeParseFloat(numberInputs[0]?.value || 0);
+              const fat = safeParseFloat(numberInputs[1]?.value || 0);
+              const snf = safeParseFloat(numberInputs[2]?.value || 0);
+              const water = safeParseFloat(numberInputs[3]?.value || 0);
+              const clr = safeParseFloat(numberInputs[4]?.value || 0);
+
+              payload.items.push({
+                cppId: Number(cppId),
+                milkType: milkType,
+                qty: qty,
+                fat: fat,
+                snf: snf,
+                clr: clr,
+                water: water
+              });
+            }
+          });
+          
+          try {
+            const res = await fetch('/api/procurement/rcc/entries', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            
+            const result = await res.json();
+            
+            if (result.ok) {
+              showSuccessToast(`All CPP data accepted as RCC data (${result.saved.count} entries saved)`);
+              updateSummaryCards();
+              cppRows.forEach(row => {
+                const cppId = row.dataset.cppId;
+                updateRowStatus(cppId, 'accepted');
+              });
+            } else {
+              showErrorToast(result.error || 'Error accepting data');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            showErrorToast('Error accepting data');
+          }
+        }
+
+        // Accept functionality
+        async function acceptData(cppId, entryId) {
+          const row = document.querySelector(`[data-cpp-id="${cppId}"]${entryId ? `[data-entry-id="${entryId}"]` : ''}`);
+          if (!row) return;
+          
+          const milkType = row.querySelector('select').value;
+          const qty = row.querySelector('input[type="number"]').value;
+          const fat = row.querySelectorAll('input[type="number"]')[1]?.value || '';
+          const snf = row.querySelectorAll('input[type="number"]')[2]?.value || '';
+          const water = row.querySelectorAll('input[type="number"]')[3]?.value || '';
+          const clr = row.querySelectorAll('input[type="number"]')[4]?.value || '';
+          
+          
+          // Check if there's an existing RCC entry for this CPP
+          const rowEntryId = row.dataset.entryId;
+          const existingEntry = window.existingRccEntries?.find(e => 
+            rowEntryId ? e.id == rowEntryId : e.cpp_id == cppId
+          );
+          
+          if (existingEntry) {
+            // Update existing entry
+            const payload = {
+            milkType,
+              qty: Number(qty),
+              fat: fat ? Number(fat) : null,
+              snf: snf ? Number(snf) : null,
+              clr: clr ? Number(clr) : null,
+              water: water ? Number(water) : null
+            };
+            
+            try {
+              const res = await fetch(`/api/procurement/rcc/entries/${existingEntry.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              const result = await res.json();
+              
+              if (result.ok) {
+                showSuccessToast('Data updated successfully');
+                updateSummaryCards(); // Update summary cards immediately
+                updateRowStatus(cppId, 'accepted'); // Update status immediately
+              } else {
+                showErrorToast(result.error || 'Failed to update');
+              }
+            } catch (error) {
+              showErrorToast('Error updating data');
+            }
+          } else {
+            // Create new entry
+            const payload = {
+              role: 'rcc',
+              cpp_id: cppId,
+              rcc_id: getSelectedRccId(),
+              date: dateFilter.value,
+              time: timeFilter.value,
+              items: [{
+                cppId: cppId,
+                milkType,
+                qty: Number(qty),
+                fat: fat ? Number(fat) : null,
+                snf: snf ? Number(snf) : null,
+                clr: clr ? Number(clr) : null,
+                water: water ? Number(water) : null
+              }]
+            };
+            
+            try {
+              const res = await fetch('/api/procurement/rcc/entries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              const result = await res.json();
+              
+              if (result.ok) {
+                showSuccessToast('Data accepted successfully');
+                updateSummaryCards(); // Update summary cards immediately
+                updateRowStatus(cppId, 'accepted'); // Update status immediately
+              } else {
+                showErrorToast(result.error || 'Failed to accept');
+              }
+            } catch (error) {
+              showErrorToast('Error accepting data');
+            }
+          }
+        }
+
+        // Function to update row status immediately
+        function updateRowStatus(cppId, status) {
+          const row = document.querySelector(`[data-cpp-id="${cppId}"]`);
+          if (!row) return;
+          
+          // Update status badge
+          const statusBadge = row.querySelector('.status-badge');
+          if (statusBadge) {
+            if (status === 'accepted') {
+              statusBadge.textContent = 'Accepted';
+              statusBadge.className = 'status-badge px-2 py-1 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300';
+            } else {
+              statusBadge.textContent = 'Pending';
+              statusBadge.className = 'status-badge px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+            }
+          }
+          
+          // Update form fields based on status
+          const inputs = row.querySelectorAll('input, select');
+          inputs.forEach(input => {
+            if (status === 'accepted') {
+              input.disabled = true;
+              input.classList.remove('bg-white');
+              input.classList.add('bg-gray-100');
+              input.classList.add('dark:bg-gray-800');
+            } else {
+              input.disabled = false;
+              input.classList.remove('bg-gray-100');
+              input.classList.remove('bg-white');
+              input.classList.add('bg-white');
+              input.classList.add('dark:bg-gray-800');
+            }
+          });
+          
+          // Update existing entries array
+          if (window.existingRccEntries) {
+            const entry = window.existingRccEntries.find(e => e.cpp_id == cppId);
+            if (entry) {
+              entry.status = status;
+            } else {
+              // If it's a new entry, add it to the array
+              window.existingRccEntries.push({
+                cpp_id: cppId,
+                status: status,
+                qty: row.querySelector('input[type="number"]').value,
+                fat: row.querySelectorAll('input[type="number"]')[1]?.value || null,
+                snf: row.querySelectorAll('input[type="number"]')[2]?.value || null,
+                water: row.querySelectorAll('input[type="number"]')[3]?.value || null,
+                clr: row.querySelectorAll('input[type="number"]')[4]?.value || null
+              });
+            }
+          }
+        }
+
+        // Function to update row status for specific time (morning/evening)
+        function updateRowStatusForTime(cppId, time, status) {
+          const row = document.querySelector(`[data-cpp-id="${cppId}"][data-time="${time}"]`);
+          if (!row) return;
+          
+          // Update status badge
+          const statusBadge = row.querySelector('.status-badge');
+          if (statusBadge) {
+            if (status === 'accepted') {
+              statusBadge.textContent = 'Accepted';
+              statusBadge.className = 'status-badge px-2 py-1 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300';
+            } else {
+              statusBadge.textContent = 'Pending';
+              statusBadge.className = 'status-badge px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+            }
+          }
+          
+          // Update form fields based on status
+          const inputs = row.querySelectorAll('input, select');
+          inputs.forEach(input => {
+            if (status === 'accepted') {
+              input.disabled = true;
+              input.classList.remove('bg-white');
+              input.classList.add('bg-gray-100');
+              input.classList.add('dark:bg-gray-800');
+            } else {
+              input.disabled = false;
+              input.classList.remove('bg-gray-100');
+              input.classList.remove('bg-white');
+              input.classList.add('bg-white');
+              input.classList.add('dark:bg-gray-800');
+            }
+          });
+          
+          // Update buttons
+          const editBtn = row.querySelector('.edit-btn');
+          const acceptBtn = row.querySelector('.accept-btn');
+          
+          if (editBtn && acceptBtn) {
+            if (status === 'accepted') {
+              editBtn.style.display = 'inline-block';
+              acceptBtn.style.display = 'none';
+            } else {
+              editBtn.style.display = 'none';
+              acceptBtn.style.display = 'inline-block';
+            }
+          }
+        }
+
+        // Event listeners
+        document.getElementById('rccFilter')?.addEventListener('change', loadData);
+        dateFilter?.addEventListener('change', loadData);
+        timeFilter?.addEventListener('change', loadData);
+        
+        // Accept All button handler
+        document.getElementById('acceptAllBtn')?.addEventListener('click', function() {
+          acceptAllAsRcc();
+        });
+
+        // More robust button event handlers
+        function setupButtonHandlers() {
+          
+          // Remove any existing listeners first
+          document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+          });
+          document.querySelectorAll('.accept-btn').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+          });
+          
+          // Edit buttons
+          document.querySelectorAll('.edit-btn').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const cppId = this.dataset.cppId;
+              enableEdit(cppId);
+            });
+          });
+          
+          // Accept buttons  
+          document.querySelectorAll('.accept-btn').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const cppId = this.dataset.cppId;
+              const entryId = this.dataset.entryId;
+              acceptData(cppId, entryId);
+            });
+          });
+          
+        }
+
+        // Try multiple times to ensure buttons are loaded
+        setTimeout(setupButtonHandlers, 500);
+        setTimeout(setupButtonHandlers, 1000);
+        setTimeout(setupButtonHandlers, 2000);
+
+        // Add save functionality for edit mode
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && e.target.closest('[data-cpp-id]')) {
+            const row = e.target.closest('[data-cpp-id]');
+            const cppId = row.dataset.cppId;
+            const statusBadge = row.querySelector('.status-badge');
+            if (statusBadge?.textContent === 'Editing') {
+              saveEdit(cppId);
+            }
+          }
+        });
+
+        // Add event listeners to update summary cards when input values change
+        function setupSummaryCardListeners() {
+          document.querySelectorAll('[data-cpp-id] input[type="number"]').forEach(input => {
+            input.addEventListener('input', updateSummaryCards);
+            input.addEventListener('change', updateSummaryCards);
+          });
+        }
+
+        // Initialize summary cards and listeners
+        setTimeout(() => {
+          updateSummaryCards(); // Initial calculation
+          setupSummaryCardListeners(); // Set up live updates
+        }, 1000);
+        
+        // Also try immediately after DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', updateSummaryCards);
+        } else {
+          updateSummaryCards();
+        }
+      })();
+    </script>
+    
+    
+    <%- include('../../../partials/_toast') %>
+    
+    <style>
+      /* Normalize date input and select styling */
+      input[type="date"], select {
+        height: 48px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      /* Improve native date icon visibility in dark mode */
+      .dark input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1) brightness(1.6) saturate(1.2) !important;
+        opacity: 1 !important;
+        background-color: rgba(255,255,255,0.06);
+        border-radius: 6px;
+        padding: 4px;
+      }
+      .dark input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        background-color: rgba(255,255,255,0.12);
+      }
+      /* Also adjust text/icon color hinting for date inputs in dark */
+      .dark input[type="date"] {
+        color-scheme: dark;
+      }
+      
+      /* Dark mode: improve readability of form fields in edit/accepted states */
+      .dark input:not([disabled]),
+      .dark select:not([disabled]) {
+        background-color: #111827; /* gray-900 */
+        color: #f3f4f6;            /* gray-100 */
+        border-color: #374151;     /* gray-700 */
+      }
+      .dark input[disabled],
+      .dark select[disabled],
+      .dark input:disabled,
+      .dark select:disabled {
+        background-color: #1f2937 !important; /* gray-800 */
+        color: #e5e7eb !important;            /* slate-200 */
+        border-color: #374151 !important;     /* gray-700 */
+        opacity: 1 !important;
+        -webkit-text-fill-color: #e5e7eb !important;
+        cursor: not-allowed;
+      }
+      /* Make date input match select background in dark mode */
+      .dark input[type="date"] {
+        background-color: #374151 !important; /* gray-700 */
+        color: #e5e7eb !important;            /* slate-200 */
+        border-color: #4b5563 !important;     /* gray-600 */
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+      }
+      .dark input[type="date"]::placeholder { color: #94a3b8 !important; }
+      .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.9); }
+      /* Force inner edit area for WebKit to dark */
+      .dark input[type="date"]::-webkit-datetime-edit,
+      .dark input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+      .dark input[type="date"]::-webkit-datetime-edit-text,
+      .dark input[type="date"]::-webkit-datetime-edit-month-field,
+      .dark input[type="date"]::-webkit-datetime-edit-day-field,
+      .dark input[type="date"]::-webkit-datetime-edit-year-field {
+        background-color: #374151 !important; /* gray-700 */
+        color: #e5e7eb !important;            /* slate-200 */
+      }
+      /* Firefox calendar icon color alignment */
+      .dark input[type="date"]::-moz-focus-inner { border: 0 !important; }
+      /* Improve visibility a bit even in light mode (subtle) */
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0.9;
+      }
+    </style>
+    
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

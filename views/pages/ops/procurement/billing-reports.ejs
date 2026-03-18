@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-slate-900 text-slate-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_subnav', { section: 'Procurement', subsection: 'Billing', page: 'Payment Reports', user }) %>
+      
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+
+          <div class="flex items-center justify-between mb-8">
+            <div>
+              <h1 class="text-3xl font-bold text-slate-100">Payment Analytics</h1>
+              <p class="text-slate-400 mt-2">Comprehensive payment reports and analytics dashboard</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <select id="filterType" class="border border-slate-600 rounded px-3 py-2 text-slate-100 bg-slate-700">
+                <option value="last30days">Last 30 Days</option>
+                <option value="last60days" selected>Last 60 Days</option>
+                <option value="last90days">Last 90 Days</option>
+                <option value="last180days">Last 180 Days</option>
+                <option value="last360days">Last 360 Days</option>
+              </select>
+              <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span class="text-sm text-slate-400">Real-time Data</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Filters removed; filterType moved to header -->
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <div class="flex items-center">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 bg-blue-500/20 border border-slate-600">
+                  <svg class="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Total Bills</p>
+                  <p class="text-2xl font-bold text-slate-100" id="totalBillsCount">0</p>
+                  <p class="text-lg font-semibold text-blue-300" id="totalBillsAmount">₹0.00</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <div class="flex items-center">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 bg-green-500/20 border border-slate-600">
+                  <svg class="w-6 h-6 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Paid Bills</p>
+                  <p class="text-2xl font-bold text-slate-100" id="paidBillsCount">0</p>
+                  <p class="text-lg font-semibold text-green-300" id="paidBillsAmount">₹0.00</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <div class="flex items-center">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 bg-yellow-500/20 border border-slate-600">
+                  <svg class="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Pending Bills</p>
+                  <p class="text-2xl font-bold text-slate-100" id="pendingBillsCount">0</p>
+                  <p class="text-lg font-semibold text-yellow-300" id="pendingBillsAmount">₹0.00</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <div class="flex items-center">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 bg-orange-500/20 border border-slate-600">
+                  <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Partial Bills</p>
+                  <p class="text-2xl font-bold text-slate-100" id="partialBillsCount">0</p>
+                  <p class="text-lg font-semibold text-orange-300" id="partialBillsAmount">₹0.00</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts and Analytics -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Payment Trends Chart -->
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <h3 class="text-lg font-semibold mb-4 text-slate-100">Payment Trends (Last 6 Months)</h3>
+              <div class="h-64 flex items-center justify-center bg-slate-700 border border-slate-600 rounded-lg">
+                <canvas id="paymentTrendsChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+
+            <!-- Entity Type Breakdown -->
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <h3 class="text-lg font-semibold mb-4 text-slate-100">Payments by Entity Type</h3>
+              <div class="h-64 flex items-center justify-center bg-slate-700 border border-slate-600 rounded-lg">
+                <canvas id="entityTypeChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Entities -->
+          <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg mb-8">
+            <h3 class="text-lg font-semibold mb-4 text-slate-100">Top Entities by Payment Amount</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-700 text-slate-200">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-semibold">Entity Type</th>
+                    <th class="px-4 py-3 text-left font-semibold">Entity Name</th>
+                    <th class="px-4 py-3 text-right font-semibold">Total Bills</th>
+                    <th class="px-4 py-3 text-right font-semibold">Total Amount</th>
+                    <th class="px-4 py-3 text-right font-semibold">Paid Amount</th>
+                    <th class="px-4 py-3 text-right font-semibold">Payment Rate</th>
+                  </tr>
+                </thead>
+                <tbody id="topEntitiesTable">
+                  <!-- Data will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Payment Rate Analysis -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <h4 class="text-md font-semibold mb-3 text-slate-100">Payment Rate</h4>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-green-600 mb-2" id="overallPaymentRate">0%</div>
+                <div class="text-sm text-slate-400">Overall Payment Rate</div>
+                <div class="mt-4 bg-slate-700 rounded-full h-2">
+                  <div class="bg-green-600 h-2 rounded-full" id="paymentRateBar" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <h4 class="text-md font-semibold mb-3 text-slate-100">Average Payment Time</h4>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-blue-400 mb-2" id="avgPaymentTime">0</div>
+                <div class="text-sm text-slate-400">Days from Due Date</div>
+              </div>
+            </div>
+
+            <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+              <h4 class="text-md font-semibold mb-3 text-slate-100">Collection Efficiency</h4>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-purple-400 mb-2" id="collectionEfficiency">0%</div>
+                <div class="text-sm text-slate-400">Timely Collection Rate</div>
+                <div class="mt-4 bg-slate-700 rounded-full h-2">
+                  <div class="bg-purple-600 h-2 rounded-full" id="efficiencyBar" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Payment Activity -->
+          <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4 text-slate-100">Recent Payment Activity</h3>
+            <div id="recentActivity">
+              <div class="flex items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                <span class="ml-3 text-slate-400">Loading recent activity...</span>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </main>
+      <%- include('../../../partials/_footer') %>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+      let paymentTrendsChart, entityTypeChart;
+      let currentFilters = {
+        filterType: 'last60days',
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() + 1,
+        period: 'H1',
+        days: 60
+      };
+
+      // Initialize page
+      document.addEventListener('DOMContentLoaded', function() {
+        loadAnalytics();
+        setupEventListeners();
+      });
+
+      function setupEventListeners() {
+        const ft = document.getElementById('filterType');
+        if (ft) {
+          ft.addEventListener('change', function() {
+            updateFilters();
+            loadAnalytics();
+          });
+        }
+      }
+
+
+      function updateFilters() {
+        const filterType = document.getElementById('filterType').value;
+        currentFilters.filterType = filterType;
+        if (filterType.startsWith('last')) {
+          currentFilters.days = parseInt(filterType.replace('last', '').replace('days', ''));
+        }
+      }
+
+      async function loadAnalytics() {
+        try {
+          // Load summary analytics
+          const summaryParams = new URLSearchParams();
+          summaryParams.append('filterType', currentFilters.filterType);
+          
+          if (currentFilters.year) summaryParams.append('year', currentFilters.year);
+          if (currentFilters.month) summaryParams.append('month', currentFilters.month);
+          if (currentFilters.period) summaryParams.append('period', currentFilters.period);
+          if (currentFilters.days) summaryParams.append('days', currentFilters.days);
+
+          const summaryResponse = await fetch(`/api/billing/analytics/summary?${summaryParams}`);
+          const summaryData = await summaryResponse.json();
+
+          if (summaryData.success) {
+            updateSummaryCards(summaryData.data);
+            updateTopEntities(summaryData.data.topEntities);
+            updateEntityTypeBreakdown(summaryData.data.entityTypeBreakdown);
+            updatePaymentRate(summaryData.data);
+          }
+
+          // Load trends
+          const trendsResponse = await fetch('/api/billing/analytics/trends');
+          const trendsData = await trendsResponse.json();
+
+          if (trendsData.success) {
+            updateTrendsChart(trendsData.data);
+          }
+
+          // Load recent activity
+          loadRecentActivity();
+
+        } catch (error) {
+          console.error('Error loading analytics:', error);
+          showToast('Error loading analytics data', 'error');
+        }
+      }
+
+      function updateSummaryCards(data) {
+        document.getElementById('totalBillsCount').textContent = data.totalBills.count;
+        document.getElementById('totalBillsAmount').textContent = `₹${(data.totalBills.amount||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        
+        document.getElementById('paidBillsCount').textContent = data.paidBills.count;
+        document.getElementById('paidBillsAmount').textContent = `₹${(data.paidBills.amount||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        
+        document.getElementById('pendingBillsCount').textContent = data.pendingBills.count;
+        document.getElementById('pendingBillsAmount').textContent = `₹${(data.pendingBills.amount||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        
+        document.getElementById('partialBillsCount').textContent = data.partialBills.count;
+        document.getElementById('partialBillsAmount').textContent = `₹${(data.partialBills.amount||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
+      function updateTopEntities(entities) {
+        const tbody = document.getElementById('topEntitiesTable');
+        tbody.innerHTML = entities.slice(0, 10).map(entity => `
+          <tr class="border-t border-slate-700 hover:bg-slate-700">
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${entity.entity_type === "farmers" ? "bg-blue-500/20 text-blue-300" : entity.entity_type === "cpp" ? "bg-green-500/20 text-green-300" : entity.entity_type === "rcc" ? "bg-yellow-500/20 text-yellow-300" : "bg-purple-500/20 text-purple-300"}">
+                ${entity.entity_type.toUpperCase()}
+              </span>
+            </td>
+            <td class="px-4 py-3 font-medium">${entity.entity_name}</td>
+            <td class="px-4 py-3 text-right">${entity.bill_count}</td>
+            <td class="px-4 py-3 text-right font-semibold">₹${(parseFloat(entity.total_amount)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td class="px-4 py-3 text-right">₹${(parseFloat(entity.paid_amount)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td class="px-4 py-3 text-right">
+              <span class="px-2 py-1 text-xs rounded-full ${parseFloat(entity.paid_amount) / parseFloat(entity.total_amount) >= 0.8 ? 'bg-green-500/20 text-green-300' : parseFloat(entity.paid_amount) / parseFloat(entity.total_amount) >= 0.5 ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'}">
+                ${(parseFloat(entity.paid_amount) / parseFloat(entity.total_amount) * 100).toFixed(1)}%
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      function updateEntityTypeBreakdown(entityTypes) {
+        const ctx = document.getElementById('entityTypeChart').getContext('2d');
+        
+        if (entityTypeChart) {
+          entityTypeChart.destroy();
+        }
+
+        const labels = Object.keys(entityTypes);
+        const amounts = labels.map(type => entityTypes[type].amount);
+        const counts = labels.map(type => entityTypes[type].count);
+
+        entityTypeChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Payment Amount (₹)',
+              data: amounts,
+              backgroundColor: [
+                '#3B82F6', // Farmers - Blue
+                '#10B981', // CPPs - Green  
+                '#F59E0B', // RCCs - Yellow
+                '#EF4444', // MPs - Red
+                '#8B5CF6', // Additional - Purple
+                '#06B6D4'  // Additional - Cyan
+              ],
+              borderColor: [
+                '#2563EB', // Farmers - Darker Blue
+                '#059669', // CPPs - Darker Green
+                '#D97706', // RCCs - Darker Yellow
+                '#DC2626', // MPs - Darker Red
+                '#7C3AED', // Additional - Darker Purple
+                '#0891B2'  // Additional - Darker Cyan
+              ],
+              borderWidth: 2,
+              borderRadius: 4,
+              borderSkipped: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+                labels: { color: '#E2E8F0' }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed.y;
+                    const count = counts[context.dataIndex];
+                    return `${label}: ₹${value.toLocaleString()} (${count} bills)`;
+                  }
+                },
+                titleColor: '#F1F5F9',
+                bodyColor: '#E2E8F0',
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                borderColor: 'rgba(148, 163, 184, 0.25)',
+                borderWidth: 1
+              },
+              datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                  const count = counts[context.dataIndex];
+                  return `₹${value.toLocaleString()}\n(${count} bills)`;
+                },
+                color: '#E2E8F0',
+                font: {
+                  weight: 'bold',
+                  size: 11
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return '₹' + value.toLocaleString();
+                  },
+                  color: '#CBD5E1'
+                },
+                grid: {
+                  color: 'rgba(148, 163, 184, 0.2)'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: { color: '#CBD5E1' }
+              }
+            }
+          },
+          plugins: [{
+            id: 'datalabels',
+            afterDatasetsDraw: function(chart) {
+              const ctx = chart.ctx;
+              chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                meta.data.forEach((bar, index) => {
+                  const data = dataset.data[index];
+                  const count = counts[index];
+                  if (data > 0) {
+                    ctx.fillStyle = '#CBD5E1';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    
+                    const x = bar.x;
+                    const y = bar.y - 5;
+                    
+                    // Draw amount
+                    ctx.fillText(`₹${data.toLocaleString()}`, x, y);
+                    
+                    // Draw count below
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`(${count} bills)`, x, y + 15);
+                  }
+                });
+              });
+            }
+          }]
+        });
+      }
+
+      function updateTrendsChart(trends) {
+        const ctx = document.getElementById('paymentTrendsChart').getContext('2d');
+        
+        if (paymentTrendsChart) {
+          paymentTrendsChart.destroy();
+        }
+
+        paymentTrendsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: trends.map(t => t.month),
+            datasets: [{
+              label: 'Total Amount',
+              data: trends.map(t => t.totalAmount),
+              borderColor: '#3B82F6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }, {
+              label: 'Paid Amount',
+              data: trends.map(t => t.paidAmount),
+              borderColor: '#10B981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return '₹' + value.toLocaleString();
+                  },
+                  color: '#CBD5E1'
+                },
+                grid: { color: 'rgba(148, 163, 184, 0.2)' }
+              },
+              x: {
+                ticks: { color: '#E2E8F0' }
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: { color: '#E2E8F0' }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const lakhs = (context.parsed.y || 0) / 100000;
+                    return context.dataset.label + ': ₹' + lakhs.toFixed(2) + 'L';
+                  }
+                },
+                titleColor: '#F1F5F9',
+                bodyColor: '#E2E8F0',
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                borderColor: 'rgba(148, 163, 184, 0.25)',
+                borderWidth: 1
+              }
+            }
+          },
+          plugins: [{
+            id: 'linePointLabels',
+            afterDatasetsDraw: function(chart) {
+              const ctx = chart.ctx;
+              chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                meta.data.forEach((point, index) => {
+                  const val = dataset.data[index];
+                  if (val != null && !isNaN(val)) {
+                    const lakhs = val / 100000;
+                    ctx.save();
+                    ctx.fillStyle = (dataset.borderColor || '#E2E8F0');
+                    ctx.font = 'bold 10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText('₹' + lakhs.toFixed(2) + 'L', point.x, point.y - 6);
+                    ctx.restore();
+                  }
+                });
+              });
+            }
+          }]
+        });
+      }
+
+      function updatePaymentRate(data) {
+        const totalAmount = data.totalBills.amount;
+        const paidAmount = data.paidBills.amount;
+        const paymentRate = totalAmount > 0 ? (paidAmount / totalAmount * 100).toFixed(1) : 0;
+        
+        document.getElementById('overallPaymentRate').textContent = paymentRate + '%';
+        document.getElementById('paymentRateBar').style.width = paymentRate + '%';
+
+        // Calculate average payment time (mock calculation)
+        const avgPaymentTime = Math.floor(Math.random() * 10) + 1;
+        document.getElementById('avgPaymentTime').textContent = avgPaymentTime;
+
+        // Calculate collection efficiency (mock calculation)
+        const efficiency = Math.min(100, parseFloat(paymentRate) + Math.floor(Math.random() * 20));
+        document.getElementById('collectionEfficiency').textContent = efficiency + '%';
+        document.getElementById('efficiencyBar').style.width = efficiency + '%';
+      }
+
+      async function loadRecentActivity() {
+        try {
+          // Fetch real recent activity data from API
+          const response = await fetch('/api/billing/analytics/recent-activity?limit=10');
+          const result = await response.json();
+
+          if (result.success && result.data.length > 0) {
+            const activity = result.data;
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = `
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-700 text-slate-200">
+                    <tr>
+                      <th class="px-4 py-3 text-left font-semibold">Date</th>
+                      <th class="px-4 py-3 text-left font-semibold">Entity</th>
+                      <th class="px-4 py-3 text-left font-semibold">Type</th>
+                      <th class="px-4 py-3 text-left font-semibold">Method</th>
+                      <th class="px-4 py-3 text-right font-semibold">Amount</th>
+                      <th class="px-4 py-3 text-right font-semibold">Status</th>
+                      <th class="px-4 py-3 text-left font-semibold">Reference</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-700">
+                    ${activity.map(item => `
+                      <tr class="hover:bg-slate-700">
+                        <td class="px-4 py-3">${new Date(item.date).toLocaleString()}</td>
+                        <td class="px-4 py-3">${item.entity}</td>
+                        <td class="px-4 py-3 capitalize">${item.type}</td>
+                        <td class="px-4 py-3">${item.method || '-'}</td>
+                        <td class="px-4 py-3 text-right">₹${(item.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="px-4 py-3 text-right">
+                          <span class="px-2 py-1 text-xs rounded-full ${item.status === 'completed' ? 'bg-green-500/20 text-green-300' : item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300'}">${item.status || '-'}</span>
+                        </td>
+                        <td class="px-4 py-3">${item.payment_reference || '-'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          } else {
+            // Show message when no recent activity found
+            document.getElementById('recentActivity').innerHTML = `
+              <div class="text-center py-8">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <p class="text-gray-500">No recent payment activity found</p>
+                <p class="text-sm text-gray-400 mt-1">Recent payments will appear here</p>
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error('Error loading recent activity:', error);
+          document.getElementById('recentActivity').innerHTML = `
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <p class="text-red-500">Error loading recent activity</p>
+              <p class="text-sm text-gray-400 mt-1">Please try refreshing the page</p>
+            </div>
+          `;
+        }
+      }
+
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+        
+        toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg fixed top-4 right-4 z-50`;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>
+

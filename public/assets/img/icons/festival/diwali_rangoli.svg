@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Rangoli Icon</title>
+  <defs>
+    <style>
+      .s{stroke:#1F2937;stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+  <!-- center -->
+  <circle class="s" cx="256" cy="256" r="28" fill="#FFD166"/>
+  <!-- petals -->
+  <g>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#EF476F" transform="rotate(0 256 256) translate(0,0)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#06D6A0" transform="rotate(45 256 256)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#118AB2" transform="rotate(90 256 256)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#FF9F1C" transform="rotate(135 256 256)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#9B5DE5" transform="rotate(180 256 256)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#4ECDC4" transform="rotate(225 256 256)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#F4A261" transform="rotate(270 256 256)"/>
+    <path class="s" d="M256 110c40 32 40 72 0 104-40-32-40-72 0-104z" fill="#E76F51" transform="rotate(315 256 256)"/>
+  </g>
+  <!-- outer ring -->
+  <circle class="s" cx="256" cy="256" r="188" fill="none"/>
+  <!-- small dots -->
+  <g fill="#FFE66D">
+    <circle cx="256" cy="60" r="6"/>
+    <circle cx="60" cy="256" r="6"/>
+    <circle cx="452" cy="256" r="6"/>
+    <circle cx="256" cy="452" r="6"/>
+  </g>
+</svg>

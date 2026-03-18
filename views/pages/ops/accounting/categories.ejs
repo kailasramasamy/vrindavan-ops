@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../../../partials/_head', { seo, pageKey }) %>
+    <link rel="stylesheet" href="/assets/css/accounting-dark-mode.css" />
+
+    <!-- Indian Number Formatting -->
+    <script src="/assets/js/indian-number-format.js"></script>
+
+    <!-- Initialize theme immediately to prevent flash -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("accounting_theme") || "dark";
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <%- include('../../../partials/_subnav', { section: 'Accounting', subsection: 'Categories' }) %>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Expense Categories</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage accounting categories for transaction classification</p>
+          </div>
+          <div class="mt-4 md:mt-0 flex items-center gap-4">
+            <button onclick="openCategoryModal()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+              <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Add Category
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total Categories</dt>
+                <dd class="text-lg font-semibold text-gray-900"><%= categories.length %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <% const totalBeneficiaries = categoryStats.reduce((sum, cat) => sum + parseInt(cat.beneficiary_count || 0), 0); const totalTransactions = categoryStats.reduce((sum, cat) => sum + parseInt(cat.transaction_count || 0), 0); const totalExpenses = categoryStats.reduce((sum, cat) => sum + parseFloat(cat.total_debit || 0), 0); %>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Beneficiaries</dt>
+                <dd class="text-lg font-semibold text-gray-900"><%= totalBeneficiaries %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Transactions</dt>
+                <dd class="text-lg font-semibold text-gray-900"><%= totalTransactions %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total Expenses</dt>
+                <dd class="text-lg font-semibold text-gray-900 indian-currency" data-amount="<%= Math.round(totalExpenses) %>">₹<%= Math.round(totalExpenses) %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Categories</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-64">Category</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">Beneficiaries</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">Transactions</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-36">Total Amount</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-24">Status</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (categories.length === 0) { %>
+              <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                  </svg>
+                  <p class="mt-2">No categories found</p>
+                  <button onclick="openCategoryModal()" class="mt-4 text-emerald-600 hover:text-emerald-700 font-medium">Add your first category</button>
+                </td>
+              </tr>
+              <% } else { %> <% categories.forEach(category => { const stats = categoryStats.find(s => s.id === category.id) || {}; %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center" style="background-color: <%= category.color_code %>">
+                      <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                      </svg>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white"><%= category.category_name %></div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"><%= category.category_code %></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 dark:text-gray-300"><%= category.description || '-' %></div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-300"><%= stats.beneficiary_count || 0 %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-300"><%= stats.transaction_count || 0 %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900 dark:text-white indian-currency" data-amount="<%= Math.round(parseFloat(stats.total_debit || 0)) %>">₹<%= Math.round(parseFloat(stats.total_debit || 0)) %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <% if (category.is_active) { %>
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Active</span>
+                  <% } else { %>
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">Inactive</span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex items-center justify-end gap-2">
+                    <!-- Edit Button -->
+                    <button onclick="editCategory(<%= category.id %>)" class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit category">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button onclick="deleteCategory(<%= category.id %>, '<%= category.category_name %>')" class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete category">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <% }); %> <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div id="categoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Add Category</h3>
+          <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="categoryForm" class="space-y-4">
+          <input type="hidden" id="categoryId" name="id" />
+
+          <div>
+            <label for="category_name" class="block text-sm font-medium text-gray-700">
+              Category Name
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="category_name" name="category_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-3 py-2.5" />
+          </div>
+
+          <div>
+            <label for="category_code" class="block text-sm font-medium text-gray-700">
+              Category Code
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="category_code" name="category_code" required placeholder="e.g., VENDOR, SALARY" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm uppercase px-3 py-2.5" />
+          </div>
+
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea id="description" name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-3 py-2.5"></textarea>
+          </div>
+
+          <div>
+            <label for="color_code" class="block text-sm font-medium text-gray-700">Color</label>
+            <div class="mt-1 flex gap-2">
+              <input type="color" id="color_code" name="color_code" value="#3B82F6" class="h-10 w-16 rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" onchange="updateHexInput()" />
+              <input type="text" id="hex_code" value="#3B82F6" placeholder="#3B82F6" maxlength="7" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-3 py-2" oninput="updateColorPicker()" />
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input type="checkbox" id="is_active" name="is_active" checked class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded" />
+            <label for="is_active" class="ml-2 block text-sm text-gray-900">Active</label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4">
+            <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">Cancel</button>
+            <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">Save Category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <%- include('../../../partials/_toast') %>
+
+    <script>
+      // Sync color picker to hex input
+      function updateHexInput() {
+        const colorPicker = document.getElementById("color_code");
+        const hexInput = document.getElementById("hex_code");
+        hexInput.value = colorPicker.value.toUpperCase();
+      }
+
+      // Sync hex input to color picker
+      function updateColorPicker() {
+        const colorPicker = document.getElementById("color_code");
+        const hexInput = document.getElementById("hex_code");
+        let hexValue = hexInput.value.trim().toUpperCase();
+
+        // Add # prefix if missing
+        if (hexValue && !hexValue.startsWith("#")) {
+          hexValue = "#" + hexValue;
+          hexInput.value = hexValue;
+        }
+
+        // Validate hex color format
+        if (/^#[0-9A-F]{6}$/i.test(hexValue)) {
+          colorPicker.value = hexValue;
+        }
+      }
+
+      function openCategoryModal(id = null) {
+        const modal = document.getElementById("categoryModal");
+        const form = document.getElementById("categoryForm");
+        const modalTitle = document.getElementById("modalTitle");
+
+        form.reset();
+
+        // Reset color inputs to default
+        document.getElementById("color_code").value = "#3B82F6";
+        document.getElementById("hex_code").value = "#3B82F6";
+
+        if (id) {
+          modalTitle.textContent = "Edit Category";
+          // Fetch and populate category data
+          fetch(`/accounting/categories/${id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success && data.category) {
+                document.getElementById("categoryId").value = data.category.id;
+                document.getElementById("category_name").value = data.category.category_name;
+                document.getElementById("category_code").value = data.category.category_code;
+                document.getElementById("description").value = data.category.description || "";
+                const colorCode = data.category.color_code || "#3B82F6";
+                document.getElementById("color_code").value = colorCode;
+                document.getElementById("hex_code").value = colorCode.toUpperCase();
+                document.getElementById("is_active").checked = data.category.is_active;
+              }
+            });
+        } else {
+          modalTitle.textContent = "Add Category";
+          document.getElementById("categoryId").value = "";
+        }
+
+        modal.classList.remove("hidden");
+      }
+
+      function closeCategoryModal() {
+        document.getElementById("categoryModal").classList.add("hidden");
+      }
+
+      function editCategory(id) {
+        openCategoryModal(id);
+      }
+
+      async function deleteCategory(id, name) {
+        if (!confirm(`Are you sure you want to delete category "${name}"?`)) return;
+
+        try {
+          const response = await fetch(`/accounting/categories/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showToast(data.message || "Category deleted successfully", "", "success");
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            showToast(data.error || "Failed to delete category", "", "error");
+          }
+        } catch (error) {
+          console.error("Error deleting category:", error);
+          showToast("Error deleting category", "", "error");
+        }
+      }
+
+      document.getElementById("categoryForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const categoryId = document.getElementById("categoryId").value;
+
+        const data = {
+          category_name: formData.get("category_name"),
+          category_code: formData.get("category_code").toUpperCase(),
+          description: formData.get("description"),
+          color_code: formData.get("color_code"),
+          is_active: document.getElementById("is_active").checked ? 1 : 0,
+        };
+
+        try {
+          const url = categoryId ? `/accounting/categories/${categoryId}` : "/accounting/categories";
+
+          const method = categoryId ? "PUT" : "POST";
+
+          const response = await fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            closeCategoryModal();
+            showToast(result.message || "Category saved successfully", "", "success");
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            showToast(result.error || "Failed to save category", "", "error");
+          }
+        } catch (error) {
+          console.error("Error saving category:", error);
+          showToast("Error saving category", "", "error");
+        }
+      });
+
+      // Auto-uppercase category code
+      document.getElementById("category_code").addEventListener("input", (e) => {
+        e.target.value = e.target.value.toUpperCase();
+      });
+    </script>
+
+    <%- include('../../../partials/_toast') %>
+
+    <script>
+      // Format all Indian currency elements on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        const currencyElements = document.querySelectorAll(".indian-currency");
+        currencyElements.forEach((element) => {
+          const amount = element.getAttribute("data-amount");
+          if (amount !== null && amount !== undefined) {
+            element.textContent = formatIndianCurrency(parseFloat(amount));
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

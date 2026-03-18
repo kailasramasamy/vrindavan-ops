@@ -1,0 +1,239 @@
+<%- include('../../../partials/_head') %> <%- include('../../../partials/_subnav', { section: 'Analytics', page: 'Alerts', user: user }) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Analytics Alerts</h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">Real-time alerts and notifications for business anomalies</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Refresh Button -->
+        <button id="refreshBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Refresh
+        </button>
+
+        <!-- Auto-refresh Toggle -->
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="autoRefresh" class="rounded border-gray-300 dark:border-gray-600" />
+          <label for="autoRefresh" class="text-sm text-gray-700 dark:text-gray-300">Auto-refresh (30s)</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Critical Alerts -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Critical Alerts</p>
+            <p class="text-2xl font-bold text-red-600 dark:text-red-400" id="criticalCount"><%= alerts.filter(a => a.level === 'CRITICAL').length %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning Alerts -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Warning Alerts</p>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400" id="warningCount"><%= alerts.filter(a => a.level === 'WARNING').length %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Alerts -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Info Alerts</p>
+            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="infoCount"><%= alerts.filter(a => a.level === 'INFO').length %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Alerts -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Active Alerts</h3>
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="lastUpdated">Last updated: <%= new Date().toLocaleString() %></span>
+      </div>
+
+      <% if (alerts.length === 0) { %>
+      <div class="text-center py-12">
+        <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">All Good!</h3>
+        <p class="text-gray-500 dark:text-gray-400">No active alerts at this time.</p>
+      </div>
+      <% } else { %>
+      <div class="space-y-4">
+        <% alerts.forEach(alert => { %>
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 <%= alert.level === 'CRITICAL' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : alert.level === 'WARNING' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' %>">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <% if (alert.level === 'CRITICAL') { %>
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <% } else if (alert.level === 'WARNING') { %>
+                <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <% } else { %>
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <% } %>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <h4 class="text-lg font-medium <%= alert.level === 'CRITICAL' ? 'text-red-900 dark:text-red-100' : alert.level === 'WARNING' ? 'text-yellow-900 dark:text-yellow-100' : 'text-blue-900 dark:text-blue-100' %>"><%= alert.title %></h4>
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <%= alert.level === 'CRITICAL' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : alert.level === 'WARNING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' %>"><%= alert.level %></span>
+                </div>
+                <p class="text-sm <%= alert.level === 'CRITICAL' ? 'text-red-700 dark:text-red-300' : alert.level === 'WARNING' ? 'text-yellow-700 dark:text-yellow-300' : 'text-blue-700 dark:text-blue-300' %>"><%= alert.message %></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= alert.timestamp.toLocaleString() %></p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Dismiss">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Alert Types Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Orders Alerts -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Orders Alerts</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Order Dip Detection</span>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><%= config.orderDip.enabled ? 'Enabled' : 'Disabled' %></span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Triggers when orders drop below <%= (config.orderDip.threshold * 100).toFixed(0) %>% of 7-day average</div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Order Spike Detection</span>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><%= config.orderDip.enabled ? 'Enabled' : 'Disabled' %></span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Triggers when orders exceed 150% of 7-day average</div>
+        </div>
+      </div>
+
+      <!-- Customer Alerts -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Alerts</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Low Wallet Balance</span>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><%= config.lowBalance.enabled ? 'Enabled' : 'Disabled' %></span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Warning at ₹<%= config.lowBalance.warningThreshold %>, Critical at ₹<%= config.lowBalance.criticalThreshold %></div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">New Customer Dip</span>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><%= config.newCustomerDip.enabled ? 'Enabled' : 'Disabled' %></span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Triggers when new registrations drop below <%= (config.newCustomerDip.threshold * 100).toFixed(0) %>% of 7-day average</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Alerts -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue Alerts</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Revenue Dip Detection</span>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Enabled</span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Triggers when daily revenue drops below 85% of 7-day average</div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Refund Spike Detection</span>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><%= config.refundSpike.enabled ? 'Enabled' : 'Disabled' %></span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Triggers when refunds exceed <%= (config.refundSpike.warningThreshold * 100).toFixed(0) %>% of 30-day average</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Container -->
+</div>
+
+<script>
+  // Auto-refresh functionality
+  let autoRefreshInterval = null;
+
+  function refreshAlerts() {
+    fetch("/analytics/api/alerts")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Update the page with new data
+          location.reload();
+        }
+      })
+      .catch((error) => {
+        console.error("Error refreshing alerts:", error);
+      });
+  }
+
+  // Refresh button
+  document.getElementById("refreshBtn").addEventListener("click", refreshAlerts);
+
+  // Auto-refresh toggle
+  document.getElementById("autoRefresh").addEventListener("change", function () {
+    if (this.checked) {
+      autoRefreshInterval = setInterval(refreshAlerts, 30000); // 30 seconds
+    } else {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+  });
+
+  // Update last updated time every minute
+  setInterval(function () {
+    document.getElementById("lastUpdated").textContent = `Last updated: ${new Date().toLocaleString()}`;
+  }, 60000);
+</script>
+
+<%- include('../../../partials/_footer') %>

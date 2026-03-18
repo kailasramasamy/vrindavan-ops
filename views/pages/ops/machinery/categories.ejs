@@ -1,0 +1,283 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Sub Navigation -->
+  <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Categories' }) %>
+  
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Machine Categories</h1>
+            <p class="text-gray-600 dark:text-gray-300">Organize your machinery into categories for better management</p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <button onclick="openAddCategoryModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Category
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% if (categories && categories.length > 0) { %>
+          <% categories.forEach(category => { %>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div class="p-6">
+                <!-- Category Header -->
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full mr-3" style="background-color: <%= category.color %>"></div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= category.name %></h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400"><%= category.machine_count %> machines</p>
+                    </div>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button onclick="editCategory(<%= category.id %>)" class="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                    <button onclick="deleteCategory(<%= category.id %>)" class="p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Category Description -->
+                <% if (category.description) { %>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-4"><%= category.description %></p>
+                <% } %>
+
+                <!-- Category Actions -->
+                <div class="flex space-x-2">
+                  <a href="/machinery/machines?category_id=<%= category.id %>" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    View Machines
+                  </a>
+                  <button onclick="editCategory(<%= category.id %>)" class="px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
+                    Edit
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="col-span-full">
+            <div class="text-center py-12">
+              <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Categories Found</h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-4">Get started by creating your first machine category.</p>
+              <button onclick="openAddCategoryModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Category
+              </button>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div id="addCategoryModal" class="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full border dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Category</h3>
+        </div>
+        <form id="addCategoryForm" method="POST" action="/machinery/categories" class="p-6">
+          <div class="space-y-4">
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category Name *</label>
+              <input type="text" id="name" name="name" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea id="description" name="description" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+              <label for="icon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icon</label>
+              <input type="text" id="icon" name="icon" placeholder="e.g., snowflake, package, thermometer" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
+              <div class="flex items-center space-x-2">
+                <input type="color" id="color" name="color" value="#3B82F6" class="w-12 h-8 border border-gray-300 dark:border-gray-600 rounded cursor-pointer bg-white dark:bg-gray-700">
+                <input type="text" id="colorHex" name="colorHex" value="#3B82F6" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3 mt-6">
+            <button type="button" onclick="closeAddCategoryModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              Add Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div id="editCategoryModal" class="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full border dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Category</h3>
+        </div>
+        <form id="editCategoryForm" method="POST" class="p-6">
+          <input type="hidden" name="_method" value="PUT">
+          <div class="space-y-4">
+            <div>
+              <label for="editName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category Name *</label>
+              <input type="text" id="editName" name="name" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="editDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea id="editDescription" name="description" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+              <label for="editIcon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icon</label>
+              <input type="text" id="editIcon" name="icon" placeholder="e.g., snowflake, package, thermometer" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="editColor" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
+              <div class="flex items-center space-x-2">
+                <input type="color" id="editColor" name="color" class="w-12 h-8 border border-gray-300 dark:border-gray-600 rounded cursor-pointer bg-white dark:bg-gray-700">
+                <input type="text" id="editColorHex" name="colorHex" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3 mt-6">
+            <button type="button" onclick="closeEditCategoryModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              Update Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openAddCategoryModal() {
+      document.getElementById('addCategoryModal').classList.remove('hidden');
+    }
+
+    function closeAddCategoryModal() {
+      document.getElementById('addCategoryModal').classList.add('hidden');
+      document.getElementById('addCategoryForm').reset();
+    }
+
+    function editCategory(id) {
+      // Find the category data
+      const categories = <%- JSON.stringify(categories) %>;
+      const category = categories.find(cat => cat.id === id);
+      
+      if (category) {
+        // Populate the form fields
+        document.getElementById('editName').value = category.name || '';
+        document.getElementById('editDescription').value = category.description || '';
+        document.getElementById('editIcon').value = category.icon || '';
+        
+        // Ensure we have a valid hex color (default to #3B82F6 if empty or invalid)
+        const validColor = category.color && /^#[0-9A-F]{6}$/i.test(category.color) ? category.color : '#3B82F6';
+        document.getElementById('editColor').value = validColor;
+        document.getElementById('editColorHex').value = validColor;
+        
+        // Update the form action to include the category ID
+        document.getElementById('editCategoryForm').action = `/machinery/categories/${id}`;
+        
+        // Show the modal
+        document.getElementById('editCategoryModal').classList.remove('hidden');
+      } else {
+        console.error('Category not found:', id);
+      }
+    }
+
+    function closeEditCategoryModal() {
+      document.getElementById('editCategoryModal').classList.add('hidden');
+      document.getElementById('editCategoryForm').reset();
+      // Ensure color inputs have valid default values after reset
+      document.getElementById('editColor').value = '#3B82F6';
+      document.getElementById('editColorHex').value = '#3B82F6';
+    }
+
+    function deleteCategory(id) {
+      if (confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/machinery/categories/${id}`;
+        
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        
+        form.appendChild(methodInput);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Color picker synchronization
+    document.getElementById('color').addEventListener('input', function(e) {
+      document.getElementById('colorHex').value = e.target.value;
+    });
+
+    document.getElementById('colorHex').addEventListener('input', function(e) {
+      document.getElementById('color').value = e.target.value;
+    });
+
+    document.getElementById('editColor').addEventListener('input', function(e) {
+      document.getElementById('editColorHex').value = e.target.value;
+    });
+
+    document.getElementById('editColorHex').addEventListener('input', function(e) {
+      document.getElementById('editColor').value = e.target.value;
+    });
+
+    // Close modals when clicking outside
+    document.getElementById('addCategoryModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeAddCategoryModal();
+      }
+    });
+
+    document.getElementById('editCategoryModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeEditCategoryModal();
+      }
+    });
+  </script>
+
+  <%- include('../../../partials/_footer') %>
+</body>
+</html>
+
+
+
+

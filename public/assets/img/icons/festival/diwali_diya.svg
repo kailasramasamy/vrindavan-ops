@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Diwali Diya Icon</title>
+  <defs>
+    <linearGradient id="g-bowl" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#FF6B6B"/>
+      <stop offset="100%" stop-color="#C9184A"/>
+    </linearGradient>
+    <linearGradient id="g-flame" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="60%" stop-color="#FFB703"/>
+      <stop offset="100%" stop-color="#FB8500"/>
+    </linearGradient>
+    <radialGradient id="g-glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#FFD166" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FFD166" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .stroke{stroke:#1F2937;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+
+  <!-- soft glow -->
+  <circle cx="256" cy="200" r="160" fill="url(#g-glow)"/>
+  
+  <!-- flame -->
+  <path class="stroke" fill="url(#g-flame)" d="M256 84c40 52 60 93 60 120 0 41-27 68-60 68s-60-27-60-68c0-27 20-68 60-120z"/>
+  <circle cx="256" cy="216" r="18" fill="#FFFDE7"/>
+
+  <!-- bowl -->
+  <path class="stroke" fill="url(#g-bowl)"
+        d="M92 276c0 88 74 152 164 152s164-64 164-152c0-6-4-10-10-10H102c-6 0-10 4-10 10z"/>
+  
+  <!-- oil surface -->
+  <path class="stroke" fill="#FDE68A" d="M124 270c30 22 78 36 132 36s102-14 132-36H124z"/>
+
+  <!-- decoration dots -->
+  <g fill="#FFD166">
+    <circle cx="166" cy="362" r="8"/>
+    <circle cx="206" cy="386" r="8"/>
+    <circle cx="246" cy="398" r="8"/>
+    <circle cx="286" cy="386" r="8"/>
+    <circle cx="326" cy="362" r="8"/>
+  </g>
+</svg>

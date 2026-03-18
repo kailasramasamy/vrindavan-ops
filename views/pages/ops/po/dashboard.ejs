@@ -1,0 +1,474 @@
+<%- include('../../../partials/_head', { seo }) %>
+<link rel="stylesheet" href="/assets/css/po-dark-mode.css">
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'PO', subsection: 'Dashboard' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Purchase Order Management</h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Manage products, vendors, and purchase orders</p>
+          </div>
+        </div>
+      </div>
+
+          <!-- Quick Stats -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Total POs</h3>
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="file-text" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                </div>
+              </div>
+              <p id="totalPOs" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">This month</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Value</h3>
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="dollar-sign" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                </div>
+              </div>
+              <p id="totalValue" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">This month</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Payments</h3>
+                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+                </div>
+              </div>
+              <p id="pendingPayment" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Outstanding</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Cycle Time</h3>
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="clock" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                </div>
+              </div>
+              <p id="avgCycleTime" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Days</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Vendors</h3>
+                <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="building" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+                </div>
+              </div>
+              <p id="vendorsCount" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Active vendors</p>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <a href="/po/purchase-orders/create" class="flex items-center gap-3 p-4 rounded-lg border border-blue-100 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                <div class="p-2 bg-blue-500 rounded-lg">
+                  <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Create PO</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">New purchase order</p>
+                </div>
+              </a>
+
+              <a href="/po/categories" class="flex items-center gap-3 p-4 rounded-lg border border-orange-100 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
+                <div class="p-2 bg-orange-500 rounded-lg">
+                  <i data-lucide="folder" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Manage Categories</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Product categories</p>
+                </div>
+              </a>
+
+              <a href="/po/products" class="flex items-center gap-3 p-4 rounded-lg border border-green-100 dark:border-green-800/50 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                <div class="p-2 bg-green-500 rounded-lg">
+                  <i data-lucide="package" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Manage Products</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Product profiles & pricing</p>
+                </div>
+              </a>
+
+              <a href="/po/vendors" class="flex items-center gap-3 p-4 rounded-lg border border-purple-100 dark:border-purple-800/50 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                <div class="p-2 bg-purple-500 rounded-lg">
+                  <i data-lucide="users" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Manage Vendors</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Vendor profiles & documents</p>
+                </div>
+              </a>
+
+              <a href="/po/logistics-partners" class="flex items-center gap-3 p-4 rounded-lg border border-indigo-100 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors">
+                <div class="p-2 rounded-lg flex items-center justify-center" style="background-color: #6366f1 !important; min-width: 40px; min-height: 40px">
+                  <i data-lucide="truck" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Logistics Partners</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Shipping & logistics partners</p>
+                </div>
+              </a>
+
+              <a href="/po/pricing" class="flex items-center gap-3 p-4 rounded-lg border border-purple-100 dark:border-purple-800/50 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                <div class="p-2 bg-purple-500 rounded-lg">
+                  <i data-lucide="calculator" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Variant Pricing</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Calculate & manage MRP</p>
+                </div>
+              </a>
+
+              <a href="/po/reports" class="flex items-center gap-3 p-4 rounded-lg border border-pink-100 dark:border-pink-800/50 bg-pink-50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition-colors">
+                <div class="p-2 bg-pink-500 rounded-lg">
+                  <i data-lucide="bar-chart-3" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Reports</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Invoices & analytics</p>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Status Overview -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">PO Status Overview</h2>
+              <a href="/po/purchase-orders" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">View All →</a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer group" onclick="viewPOsByStatus('draft')">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="text-sm text-gray-600 dark:text-gray-300">Draft</p>
+                  <i data-lucide="external-link" class="h-3 w-3 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"></i>
+                </div>
+                <p id="draftCount" class="text-2xl font-bold text-gray-900 dark:text-white">-</p>
+              </div>
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer group" onclick="viewPOsByStatus('in_transit')">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="text-sm text-blue-600 dark:text-blue-400">In Transit</p>
+                  <i data-lucide="external-link" class="h-3 w-3 text-blue-400 dark:text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors"></i>
+                </div>
+                <p id="inTransitCount" class="text-2xl font-bold text-blue-700 dark:text-blue-300">-</p>
+              </div>
+              <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer group" onclick="viewPOsByStatus('received')">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="text-sm text-green-600 dark:text-green-400">Received</p>
+                  <i data-lucide="external-link" class="h-3 w-3 text-green-400 dark:text-green-500 group-hover:text-green-600 dark:group-hover:text-green-300 transition-colors"></i>
+                </div>
+                <p id="receivedCount" class="text-2xl font-bold text-green-700 dark:text-green-300">-</p>
+              </div>
+              <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer group" onclick="viewPOsByPaymentStatus('pending')">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="text-sm text-orange-600 dark:text-orange-400">Pending Payments</p>
+                  <i data-lucide="external-link" class="h-3 w-3 text-orange-400 dark:text-orange-500 group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors"></i>
+                </div>
+                <p id="pendingPaymentCount" class="text-2xl font-bold text-orange-700 dark:text-orange-300">-</p>
+              </div>
+              <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer group" onclick="viewPOsByMissingInvoice()">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="text-sm text-red-600 dark:text-red-400">Pending Invoices</p>
+                  <i data-lucide="external-link" class="h-3 w-3 text-red-400 dark:text-red-500 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors"></i>
+                </div>
+                <p id="pendingInvoiceCount" class="text-2xl font-bold text-red-700 dark:text-red-300">-</p>
+              </div>
+              <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors cursor-pointer group" onclick="viewPOsByStatus('all')">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="text-sm text-purple-600 dark:text-purple-400">Total This Month</p>
+                  <i data-lucide="external-link" class="h-3 w-3 text-purple-400 dark:text-purple-500 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors"></i>
+                </div>
+                <p id="monthTotal" class="text-2xl font-bold text-purple-700 dark:text-purple-300">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent POs -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Purchase Orders</h2>
+              <a href="/po/purchase-orders" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">View All →</a>
+            </div>
+            <div id="recentPOsContainer">
+              <div class="text-center py-8">
+                <i data-lucide="loader" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 animate-spin mb-4"></i>
+                <p class="text-gray-600 dark:text-gray-400">Loading recent purchase orders...</p>
+              </div>
+            </div>
+          </div>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <%- include('../../../partials/_toast') %>
+
+    <script>
+      // Initialize Lucide icons
+      if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+      }
+
+      // Load dashboard statistics
+      async function loadDashboardStats() {
+        try {
+          const response = await fetch("/po/api/v1/dashboard/stats");
+          const result = await response.json();
+
+          if (result.success) {
+            const stats = result.data;
+
+            document.getElementById("totalPOs").textContent = stats.total_pos || 0;
+            document.getElementById("totalValue").textContent = "₹" + (stats.total_value || 0).toLocaleString("en-IN");
+            document.getElementById("pendingPayment").textContent = "₹" + (stats.pending_payment_value || 0).toLocaleString("en-IN");
+            document.getElementById("avgCycleTime").textContent = Math.round(stats.avg_cycle_time || 0);
+
+            document.getElementById("draftCount").textContent = stats.draft_count || 0;
+            document.getElementById("inTransitCount").textContent = stats.in_transit_count || 0;
+            document.getElementById("receivedCount").textContent = stats.received_count || 0;
+            document.getElementById("pendingPaymentCount").textContent = stats.pending_payment_count || 0;
+            document.getElementById("pendingInvoiceCount").textContent = stats.pending_invoice_count || 0;
+            document.getElementById("monthTotal").textContent = stats.total_pos || 0;
+          }
+        } catch (error) {
+          console.error("Error loading dashboard stats:", error);
+        }
+      }
+
+      // Load vendors statistics
+      async function loadVendorsStats() {
+        try {
+          const response = await fetch("/po/api/v1/vendors");
+          const result = await response.json();
+
+          if (result.success) {
+            const vendors = result.data || [];
+            document.getElementById("vendorsCount").textContent = vendors.length || 0;
+          }
+        } catch (error) {
+          console.error("Error loading vendors stats:", error);
+          document.getElementById("vendorsCount").textContent = "0";
+        }
+      }
+
+      // Load recent POs
+      async function loadRecentPOs() {
+        try {
+          const response = await fetch("/po/api/v1/purchase-orders?limit=5");
+          const result = await response.json();
+
+          if (result.success) {
+            const pos = result.data;
+            const container = document.getElementById("recentPOsContainer");
+
+            if (pos.length === 0) {
+              container.innerHTML = `
+                <div class="text-center py-8">
+                  <i data-lucide="file-text" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"></i>
+                  <p class="text-gray-600 dark:text-gray-400">No purchase orders found</p>
+                </div>
+              `;
+            } else {
+              container.innerHTML = `
+                <!-- Mobile Card View -->
+                <div class="block md:hidden space-y-3">
+                  ${pos
+                    .map(
+                      (po) => `
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                      <div class="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 class="font-semibold text-gray-900 dark:text-white">${po.po_number}</h3>
+                          <p class="text-sm text-gray-600 dark:text-gray-400">${po.vendor_name}</p>
+                        </div>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPOTypeColor(po.po_type)}">
+                          ${getPOTypeText(po.po_type)}
+                        </span>
+                      </div>
+                      
+                      <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">Date</p>
+                          <p class="text-sm font-medium text-gray-900 dark:text-white">${new Date(po.po_date).toLocaleDateString("en-IN")}</p>
+                        </div>
+                        <div>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">Amount</p>
+                          <p class="text-sm font-medium text-gray-900 dark:text-white">₹${(parseFloat(po.subtotal || 0) + parseFloat(po.shipping_cost || 0)).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        </div>
+                      </div>
+                      
+                      <div class="flex justify-between items-center">
+                        <div class="flex space-x-2">
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(po.status)}">
+                            ${po.status.replace("_", " ").toUpperCase()}
+                          </span>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(po.payment_status)}">
+                            ${po.payment_status.replace("_", " ").toUpperCase()}
+                          </span>
+                        </div>
+                        <a href="/po/purchase-orders/${po.id}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium">
+                          View →
+                        </a>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b border-gray-200 dark:border-gray-600">
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">PO Number</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Type</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Vendor</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Amount</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Payment</th>
+                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${pos
+                        .map(
+                          (po) => `
+                        <tr class="border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td class="py-3 px-4">
+                            <span class="font-medium text-gray-900 dark:text-white">${po.po_number}</span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPOTypeColor(po.po_type)}">
+                              ${getPOTypeText(po.po_type)}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="text-gray-700 dark:text-gray-300">${po.vendor_name}</span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="text-gray-600 dark:text-gray-400">${new Date(po.po_date).toLocaleDateString("en-IN")}</span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="font-medium text-gray-900 dark:text-white">₹${(parseFloat(po.subtotal || 0) + parseFloat(po.shipping_cost || 0)).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(po.status)}">
+                              ${po.status.replace("_", " ").toUpperCase()}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(po.payment_status)}">
+                              ${po.payment_status.replace("_", " ").toUpperCase()}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <a href="/po/purchase-orders/${po.id}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                              View →
+                            </a>
+                          </td>
+                        </tr>
+                      `,
+                        )
+                        .join("")}
+                    </tbody>
+                  </table>
+                </div>
+              `;
+            }
+
+            // Re-initialize icons
+            if (typeof lucide !== "undefined") {
+              lucide.createIcons();
+            }
+          }
+        } catch (error) {
+          console.error("Error loading recent POs:", error);
+        }
+      }
+
+      function getStatusColor(status) {
+        const colors = {
+          draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
+          submitted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+          approved: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+          ordered: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+          in_transit: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+          received: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+          closed: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
+          cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+        };
+        return colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      }
+
+      function getPaymentStatusColor(status) {
+        const colors = {
+          pending: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+          partially_paid: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+          paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+        };
+        return colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      }
+
+      function getPOTypeColor(poType) {
+        const colors = {
+          product: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+          material: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+        };
+        return colors[poType] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      }
+
+      function getPOTypeText(poType) {
+        const texts = {
+          product: "Product PO",
+          material: "Material PO",
+        };
+        return texts[poType] || poType?.toUpperCase() || "N/A";
+      }
+
+      // Navigation functions for status cards
+      function viewPOsByStatus(status) {
+        if (status === "all") {
+          window.location.href = "/po/purchase-orders";
+        } else {
+          window.location.href = `/po/purchase-orders?status=${status}`;
+        }
+      }
+
+      function viewPOsByPaymentStatus(paymentStatus) {
+        window.location.href = `/po/purchase-orders?payment_status=${paymentStatus}`;
+      }
+
+      function viewPOsByMissingInvoice() {
+        window.location.href = "/po/purchase-orders?missing_invoice=true";
+      }
+
+      // Load data on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadDashboardStats();
+        loadVendorsStats();
+        loadRecentPOs();
+      });
+    </script>
+  </body>
+</html>

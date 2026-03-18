@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-brand-bg text-brand-ink antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %> 
+      <%- include('../../../partials/_subnav', { section: 'Procurement', subsection: 'Billing', page: 'Farmers', user }) %>
+      
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+
+          <div class="flex items-center justify-between mb-8">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Farmers Billing</h1>
+              <p class="text-gray-600 mt-2">Manage individual farmer billing and payments</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span class="text-sm text-gray-600">Active Level</span>
+            </div>
+          </div>
+          
+          <!-- Filters -->
+          <div class="card card--white p-6 mb-8">
+            <h2 class="text-lg font-semibold mb-4">Filters</h2>
+            <form method="get" action="/procurement/billing/farmers" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-semibold mb-2">Month</label>
+                <select name="month" class="w-full border rounded p-2 text-slate-900">
+                  <% for(let i = 1; i <= 12; i++) { %>
+                    <option value="<%= i %>" <%= month == i ? 'selected' : '' %>>
+                      <%= new Date(2024, i-1).toLocaleString('default', { month: 'long' }) %>
+                    </option>
+                  <% } %>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-2">Year</label>
+                <input name="year" type="number" value="<%= year %>" min="2020" max="2030" class="w-full border rounded p-2 text-slate-900" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-2">Period</label>
+                <select name="period" class="w-full border rounded p-2 text-slate-900">
+                  <option value="H1" <%= period === 'H1' ? 'selected' : '' %>>H1 (1-15)</option>
+                  <option value="H2" <%= period === 'H2' ? 'selected' : '' %>>H2 (16-31)</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button type="submit" class="btn btn-primary w-full">Apply Filters</button>
+              </div>
+            </form>
+            
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p class="text-sm text-blue-800">
+                <strong>Period:</strong> <%= startDate %> to <%= endDate %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <% if (typeof error !== 'undefined' && error) { %>
+            <div class="card card--red p-4 mb-6">
+              <p class="text-red-800"><%= error %></p>
+            </div>
+          <% } %>
+
+          <!-- Payment Breakup Section -->
+          <div class="card card--white p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Payment Breakup</h2>
+            <div id="paymentBreakupContent">
+              <div class="flex items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span class="ml-3 text-gray-600">Loading payment breakup...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Total Farmers</p>
+                  <p class="text-2xl font-bold text-gray-900"><%= farmersData.summary.count %></p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Total Volume</p>
+                  <p class="text-2xl font-bold text-gray-900"><%= farmersData.summary.totalQty.toFixed(1) %>L</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Total Amount</p>
+                  <p class="text-2xl font-bold text-gray-900">₹<%= farmersData.summary.totalAmount.toFixed(2) %></p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Avg per Farmer</p>
+                  <p class="text-2xl font-bold text-gray-900">₹<%= farmersData.summary.count > 0 ? (farmersData.summary.totalAmount / farmersData.summary.count).toFixed(2) : '0.00' %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Farmers Data Table -->
+          <div class="card card--white p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold">Farmer Details</h2>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                <%= farmersData.summary.count %> farmers
+              </span>
+            </div>
+
+            <% if (farmersData.data && farmersData.data.length > 0) { %>
+              <!-- Desktop Table View -->
+              <div class="overflow-x-auto" style="display: none;" id="desktop-table">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left font-semibold">Farmer</th>
+                      <th class="px-4 py-3 text-left font-semibold">Village</th>
+                      <th class="px-4 py-3 text-left font-semibold">CPP</th>
+                      <th class="px-4 py-3 text-right font-semibold">Qty (L)</th>
+                      <th class="px-4 py-3 text-right font-semibold">Avg Fat</th>
+                      <th class="px-4 py-3 text-right font-semibold">Avg SNF</th>
+                      <th class="px-4 py-3 text-right font-semibold">Rate</th>
+                      <th class="px-4 py-3 text-right font-semibold">Amount</th>
+                      <th class="px-4 py-3 text-center font-semibold">Billing Status</th>
+                      <th class="px-4 py-3 text-center font-semibold">Payment Status</th>
+                      <th class="px-4 py-3 text-center font-semibold">Payment Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% farmersData.data.forEach(farmer => { %>
+                      <tr class="border-t hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                          <div class="font-medium"><%= farmer.name %></div>
+                          <div class="text-xs text-gray-500"><%= farmer.milk_type %></div>
+                        </td>
+                        <td class="px-4 py-3"><%= farmer.village || '-' %></td>
+                        <td class="px-4 py-3"><%= farmer.cpp_name || '-' %></td>
+                        <td class="px-4 py-3 text-right"><%= farmer.total_qty ? Number(farmer.total_qty).toFixed(1) : '0.0' %></td>
+                        <td class="px-4 py-3 text-right"><%= farmer.avg_fat ? Number(farmer.avg_fat).toFixed(1) : '-' %></td>
+                        <td class="px-4 py-3 text-right"><%= farmer.avg_snf ? Number(farmer.avg_snf).toFixed(1) : '-' %></td>
+                        <td class="px-4 py-3 text-right">₹<%= farmer.rate ? Number(farmer.rate).toFixed(2) : '0.00' %></td>
+                        <td class="px-4 py-3 text-right font-semibold">₹<%= farmer.amount ? Number(farmer.amount).toFixed(2) : '0.00' %></td>
+                        <td class="px-4 py-3 text-center">
+                          <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                            <%= farmer.billing_status || 'Pending' %>
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            <%= farmer.payment_status || 'Pending' %>
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm text-gray-600">
+                          <%= farmer.payment_date ? new Date(farmer.payment_date).toISOString().split('T')[0] : '-' %>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Card View -->
+              <div class="space-y-4" style="display: block;" id="mobile-cards">
+                <% farmersData.data.forEach(farmer => { %>
+                  <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <!-- Farmer Header -->
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 class="font-semibold text-gray-900"><%= farmer.name %></h3>
+                          <p class="text-sm text-gray-500"><%= farmer.milk_type %></p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-lg font-bold text-green-600">₹<%= farmer.amount ? Number(farmer.amount).toFixed(2) : '0.00' %></div>
+                        <div class="text-xs text-gray-500">Total Amount</div>
+                      </div>
+                    </div>
+
+                    <!-- Farmer Details Grid -->
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Village</div>
+                        <div class="font-medium text-gray-900"><%= farmer.village || '-' %></div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">CPP</div>
+                        <div class="font-medium text-gray-900"><%= farmer.cpp_name || '-' %></div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Quantity</div>
+                        <div class="font-medium text-gray-900"><%= farmer.total_qty ? Number(farmer.total_qty).toFixed(1) : '0.0' %>L</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Rate</div>
+                        <div class="font-medium text-gray-900">₹<%= farmer.rate ? Number(farmer.rate).toFixed(2) : '0.00' %></div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Avg Fat</div>
+                        <div class="font-medium text-gray-900"><%= farmer.avg_fat ? Number(farmer.avg_fat).toFixed(1) : '-' %>%</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Avg SNF</div>
+                        <div class="font-medium text-gray-900"><%= farmer.avg_snf ? Number(farmer.avg_snf).toFixed(1) : '-' %>%</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Billing Status</div>
+                        <div class="font-medium text-gray-900">
+                          <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                            <%= farmer.billing_status || 'Pending' %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Payment Status</div>
+                        <div class="font-medium text-gray-900">
+                          <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            <%= farmer.payment_status || 'Pending' %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Payment Date</div>
+                        <div class="font-medium text-gray-900"><%= farmer.payment_date ? new Date(farmer.payment_date).toISOString().split('T')[0] : '-' %></div>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8 text-gray-500">
+                <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <p class="text-lg font-medium">No farmer data available</p>
+                <p class="text-sm">Try adjusting your filters or check back later</p>
+              </div>
+            <% } %>
+          </div>
+        </section>
+      </main>
+      <%- include('../../../partials/_footer') %>
+    </div>
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+      // Responsive view handling
+      function toggleViews() {
+        const desktopTable = document.getElementById('desktop-table');
+        const mobileCards = document.getElementById('mobile-cards');
+        
+        if (window.innerWidth >= 1024) {
+          // Large screens - show table, hide cards
+          if (desktopTable) desktopTable.style.display = 'block';
+          if (mobileCards) mobileCards.style.display = 'none';
+        } else {
+          // Small/medium screens - show cards, hide table
+          if (desktopTable) desktopTable.style.display = 'none';
+          if (mobileCards) mobileCards.style.display = 'block';
+        }
+      }
+      
+      // Load payment breakup data
+      async function loadPaymentBreakup() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const month = urlParams.get('month') || '<%= month %>';
+          const year = urlParams.get('year') || '<%= year %>';
+          const period = urlParams.get('period') || '<%= period %>';
+          
+          const url = `/api/billing/payment-breakup?month=${month}&year=${year}&period=${period}`;
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data.success) {
+            displayPaymentBreakup(data.data);
+          } else {
+            displayPaymentBreakupError(data.error || 'Failed to load payment breakup');
+          }
+        } catch (error) {
+          console.error('Error loading payment breakup:', error);
+          displayPaymentBreakupError('Failed to load payment breakup data');
+        }
+      }
+      
+      // Display payment breakup data
+      function displayPaymentBreakup(data) {
+        const content = document.getElementById('paymentBreakupContent');
+        
+        if (!data.hasBills) {
+          content.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+              <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <p class="text-lg font-medium">No Bills Generated</p>
+              <p class="text-sm">No bills have been generated for the selected period</p>
+            </div>
+          `;
+          return;
+        }
+        
+        content.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Bills -->
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-blue-900">Total Bills</h3>
+                  <p class="text-sm text-blue-700">All generated bills</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-blue-700">Count:</span>
+                  <span class="font-semibold text-blue-900">${data.totalBills.count}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-blue-700">Amount:</span>
+                  <span class="font-semibold text-blue-900">₹${data.totalBills.amount}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pending Bills -->
+            <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-yellow-900">Pending Bills</h3>
+                  <p class="text-sm text-yellow-700">Awaiting payment</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-yellow-700">Count:</span>
+                  <span class="font-semibold text-yellow-900">${data.pendingBills.count}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-yellow-700">Amount:</span>
+                  <span class="font-semibold text-yellow-900">₹${data.pendingBills.amount}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Paid Bills -->
+            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-green-900">Paid Bills</h3>
+                  <p class="text-sm text-green-700">Payment completed</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-green-700">Count:</span>
+                  <span class="font-semibold text-green-900">${data.paidBills.count}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-green-700">Amount:</span>
+                  <span class="font-semibold text-green-900">₹${data.paidBills.amount}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Summary Row -->
+          <div class="mt-6 pt-6 border-t border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div>
+                <div class="text-2xl font-bold text-blue-600">${data.totalBills.count}</div>
+                <div class="text-sm text-gray-600">Total Bills</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-yellow-600">${data.pendingBills.count}</div>
+                <div class="text-sm text-gray-600">Pending Bills</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-green-600">${data.paidBills.count}</div>
+                <div class="text-sm text-gray-600">Paid Bills</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Display payment breakup error
+      function displayPaymentBreakupError(error) {
+        const content = document.getElementById('paymentBreakupContent');
+        content.innerHTML = `
+          <div class="text-center py-8 text-red-500">
+            <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-lg font-medium">Error Loading Payment Breakup</p>
+            <p class="text-sm">${error}</p>
+          </div>
+        `;
+      }
+      
+      // Run on load and resize
+      window.addEventListener('load', () => {
+        toggleViews();
+        loadPaymentBreakup();
+      });
+      window.addEventListener('resize', toggleViews);
+    </script>
+  </body>
+</html>

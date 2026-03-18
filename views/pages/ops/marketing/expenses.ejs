@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50 dark:bg-gray-900">
+  <head>
+    <%- include('../../../partials/_head', { title: title, seo: seo }) %>
+    <style>
+      .expense-form {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    </style>
+  </head>
+  <body class="h-full">
+    <%- include('../../../partials/_subnav', { section: 'Marketing', user: user }) %> <%- include('../../../partials/_toast') %>
+
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Campaign Expenses</h1>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">Track and manage your marketing campaign expenses</p>
+        </div>
+
+        <!-- Add Expense Button -->
+        <div class="mb-6">
+          <button onclick="showAddExpenseModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span>Add Expense</span>
+          </button>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Recent Expenses</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Campaign</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Expenses will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Add New Expense</h3>
+            <button onclick="hideAddExpenseModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <form id="expenseForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign</label>
+              <select id="campaignSelect" name="campaign_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="">Select Campaign</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+              <select id="categorySelect" name="category" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="">Select Category</option>
+                <option value="digital_ads">Digital Ads</option>
+                <option value="printing">Printing</option>
+                <option value="distribution">Distribution</option>
+                <option value="vendor">Vendor</option>
+                <option value="commission">Commission</option>
+                <option value="miscellaneous">Miscellaneous</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <input type="text" id="descriptionInput" name="description" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="Enter expense description" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (₹)</label>
+              <input type="number" id="amountInput" name="amount" step="0.01" min="0" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="0.00" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vendor Name</label>
+              <input type="text" id="vendorInput" name="vendor_name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="Enter vendor name (optional)" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expense Date</label>
+              <input type="date" id="expenseDateInput" name="expense_date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" />
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4">
+              <button type="button" onclick="hideAddExpenseModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md">Cancel</button>
+              <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">Add Expense</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Load expenses on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadExpenses();
+        loadCampaigns();
+        setDefaultDate();
+      });
+
+      // Set default date to today
+      function setDefaultDate() {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("expenseDateInput").value = today;
+      }
+
+      // Load campaigns for dropdown
+      async function loadCampaigns() {
+        try {
+          const response = await fetch("/marketing/api/campaigns");
+          const result = await response.json();
+
+          const campaignSelect = document.getElementById("campaignSelect");
+          campaignSelect.innerHTML = '<option value="">Select Campaign</option>';
+
+          if (result.success && Array.isArray(result.data)) {
+            result.data.forEach((campaign) => {
+              const option = document.createElement("option");
+              option.value = campaign.id;
+              option.textContent = campaign.name;
+              campaignSelect.appendChild(option);
+            });
+          } else {
+            console.error("Error loading campaigns:", result.error || "Invalid response format");
+            showErrorToast("Error loading campaigns: " + (result.error || "Invalid response format"));
+          }
+        } catch (error) {
+          console.error("Error loading campaigns:", error);
+          showErrorToast("Error loading campaigns. Please refresh the page.");
+        }
+      }
+
+      // Load expenses
+      async function loadExpenses() {
+        try {
+          const response = await fetch("/marketing/api/expenses");
+          const result = await response.json();
+
+          const tbody = document.getElementById("expensesTableBody");
+          tbody.innerHTML = "";
+
+          if (result.success && Array.isArray(result.data)) {
+            if (result.data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No expenses found</td></tr>';
+              return;
+            }
+
+            result.data.forEach((expense) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${expense.campaign_name || "N/A"}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${expense.category.replace("_", " ").toUpperCase()}</td>
+              <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${expense.description}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">₹${parseFloat(expense.amount).toLocaleString()}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${new Date(expense.expense_date).toLocaleDateString()}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="editExpense(${expense.id})" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
+                <button onclick="deleteExpense(${expense.id})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+              </td>
+            `;
+              tbody.appendChild(row);
+            });
+          } else {
+            console.error("Error loading expenses:", result.error || "Invalid response format");
+            showErrorToast("Error loading expenses: " + (result.error || "Invalid response format"));
+            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Error loading expenses: ' + (result.error || "Invalid response") + "</td></tr>";
+          }
+        } catch (error) {
+          console.error("Error loading expenses:", error);
+          showErrorToast("Error loading expenses. Please refresh the page.");
+          document.getElementById("expensesTableBody").innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Error loading expenses</td></tr>';
+        }
+      }
+
+      // Show add expense modal
+      function showAddExpenseModal() {
+        document.getElementById("addExpenseModal").classList.remove("hidden");
+      }
+
+      // Hide add expense modal
+      function hideAddExpenseModal() {
+        document.getElementById("addExpenseModal").classList.add("hidden");
+        document.getElementById("expenseForm").reset();
+        setDefaultDate();
+      }
+
+      // Handle form submission
+      document.getElementById("expenseForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const expenseData = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch("/marketing/api/expenses", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(expenseData),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              hideAddExpenseModal();
+              loadExpenses();
+              // Show success message
+              showSuccessToast("Expense added successfully!");
+            } else {
+              showErrorToast("Error adding expense: " + (result.error || "Unknown error"));
+            }
+          } else {
+            const error = await response.json();
+            showErrorToast("Error adding expense: " + (error.error || error.message || "Unknown error"));
+          }
+        } catch (error) {
+          console.error("Error adding expense:", error);
+          showErrorToast("Error adding expense. Please try again.");
+        }
+      });
+
+      // Edit expense (placeholder)
+      function editExpense(id) {
+        showInfoToast("Edit functionality coming soon!");
+      }
+
+      // Delete expense (placeholder)
+      function deleteExpense(id) {
+        if (confirm("Are you sure you want to delete this expense?")) {
+          showInfoToast("Delete functionality coming soon!");
+        }
+      }
+    </script>
+
+    <%- include('../../../partials/_footer') %>
+  </body>
+</html>

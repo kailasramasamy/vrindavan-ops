@@ -1,0 +1,833 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
+  <div class="min-h-dvh flex flex-col">
+    <%- include('../../../partials/_subnav', { user, section, subsection }) %>
+    
+    <main class="flex-1 bg-white dark:bg-gray-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Page Header -->
+        <div class="mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Product Management</h1>
+              <p class="text-gray-600 dark:text-gray-300">Manage products, categories, and production settings</p>
+            </div>
+            <div class="mt-4 sm:mt-0">
+              <button id="addProductBtn" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Product
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                <select id="categoryFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Categories</option>
+                  <% if (allCategories) { %>
+                    <% allCategories.forEach(category => { %>
+                      <option value="<%= category.id %>" <%= selectedCategory == category.id ? 'selected' : '' %>>
+                        <%= category.name %>
+                      </option>
+                    <% }) %>
+                  <% } %>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milk Type</label>
+                <select id="milkTypeFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Types</option>
+                  <option value="A1" <%= selectedMilkType === 'A1' ? 'selected' : '' %>>A1</option>
+                  <option value="A2" <%= selectedMilkType === 'A2' ? 'selected' : '' %>>A2</option>
+                  <option value="Buffalo" <%= selectedMilkType === 'Buffalo' ? 'selected' : '' %>>Buffalo</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button id="applyFilters" class="w-full px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products by Category -->
+        <% if (categories && categories.length > 0) { %>
+          <% categories.forEach(category => { %>
+            <% if (category.products && category.products.length > 0) { %>
+              <div class="mb-8">
+                <!-- Category Header -->
+                <div class="flex items-center mb-4">
+                  <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white"><%= category.name %></h2>
+                    <% if (category.description) { %>
+                      <p class="text-sm text-gray-600 dark:text-gray-300 mt-1"><%= category.description %></p>
+                    <% } %>
+                  </div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <%= category.products.length %> product<%= category.products.length !== 1 ? 's' : '' %>
+                  </div>
+                </div>
+                
+                <!-- Products Table for Desktop -->
+                <div class="hidden md:block overflow-x-auto">
+                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Milk Type</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Storage</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Milk per Unit</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Auto-calculate</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Milk Source</th>
+                          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <% category.products.forEach(product => { %>
+                          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                              <div class="flex items-center">
+                                <% if (product.image_url) { %>
+                                  <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                                    <img src="<%= product.image_url %>" alt="<%= product.name %>" class="w-full h-full object-cover">
+                                  </div>
+                                <% } %>
+                                <div>
+                                  <div class="text-sm font-medium text-gray-900 dark:text-white"><%= product.name %></div>
+                                  <div class="text-sm text-gray-500 dark:text-gray-400"><%= product.unit_size %></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                <%= product.milk_type === 'A1' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' : 
+                                    product.milk_type === 'A2' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' : 
+                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' %>">
+                                <%= product.milk_type %>
+                              </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                <%= product.storage_type === 'cold' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' %>">
+                                <%= product.storage_type === 'cold' ? 'Cold' : 'Room Temp' %>
+                              </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                              <%= product.milk_per_unit ? product.milk_per_unit + ' L' : 'Manual' %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                              <%- product.auto_calculate_milk ? 
+                                '<span class="text-green-600 dark:text-green-400">Yes</span>' : 
+                                '<span class="text-orange-600 dark:text-orange-400">No</span>' %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                              <% if (product.milk_source === 'pool' && product.pool_name) { %>
+                                <span class="text-purple-600 dark:text-purple-400">Pool: <%= product.pool_name %></span>
+                              <% } else { %>
+                                <span class="text-blue-600 dark:text-blue-400">Direct Inventory</span>
+                              <% } %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div class="flex items-center justify-end space-x-2">
+                                <button class="edit-product-btn p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
+                                        data-product-id="<%= product.id %>" title="Edit">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                  </svg>
+                                </button>
+                                <button class="delete-product-btn p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" 
+                                        data-product-id="<%= product.id %>" title="Delete">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        <% }) %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <!-- Products Grid for Mobile -->
+                <div class="md:hidden grid grid-cols-1 gap-6">
+                  <% category.products.forEach(product => { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+                      <div class="p-4">
+                        <!-- Top row: Small image + Product name -->
+                        <div class="flex items-center mb-3">
+                          <% if (product.image_url) { %>
+                            <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                              <img src="<%= product.image_url %>" alt="<%= product.name %>" class="w-full h-full object-cover">
+                            </div>
+                          <% } %>
+                          <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= product.name %></h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300"><%= product.unit_size %> • <%= product.milk_type %></p>
+                          </div>
+                        </div>
+                        
+                        <!-- Product badges -->
+                        <div class="flex items-center space-x-2 mb-3">
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            <%= product.milk_type === 'A1' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' : 
+                                product.milk_type === 'A2' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' : 
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' %>">
+                            <%= product.milk_type %>
+                          </span>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            <%= product.storage_type === 'cold' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' %>">
+                            <%= product.storage_type === 'cold' ? 'Cold' : 'Room Temp' %>
+                          </span>
+                        </div>
+                        
+                        <!-- Product details -->
+                        <div class="space-y-2 mb-4">
+                          <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Milk per unit:</span>
+                            <span class="text-gray-900 dark:text-gray-100"><%= product.milk_per_unit ? product.milk_per_unit + ' L' : 'Manual' %></span>
+                          </div>
+                          <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Auto-calculate:</span>
+                            <span class="text-gray-900 dark:text-gray-100">
+                              <%- product.auto_calculate_milk ? 
+                                '<span class="text-green-600 dark:text-green-400">Yes</span>' : 
+                                '<span class="text-orange-600 dark:text-orange-400">No</span>' %>
+                            </span>
+                          </div>
+                          <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Milk source:</span>
+                            <span class="text-gray-900 dark:text-gray-100">
+                              <% if (product.milk_source === 'pool' && product.pool_name) { %>
+                                <span class="text-purple-600 dark:text-purple-400">Pool: <%= product.pool_name %></span>
+                              <% } else { %>
+                                <span class="text-blue-600 dark:text-blue-400">Direct Inventory</span>
+                              <% } %>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <!-- Bottom row: Action buttons -->
+                        <div class="flex justify-end space-x-2">
+                          <button class="edit-product-btn p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
+                                  data-product-id="<%= product.id %>" title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                          </button>
+                          <button class="delete-product-btn p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" 
+                                  data-product-id="<%= product.id %>" title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              </div>
+            <% } %>
+          <% }) %>
+        <% } else { %>
+          <div class="text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Products Found</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Get started by adding your first product.</p>
+            <button id="addProductBtnEmpty" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Product
+            </button>
+          </div>
+        <% } %>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div id="productModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50 transition-opacity duration-300" style="background-color: rgba(15, 23, 42, 0.7);">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 ring-1 ring-slate-200 dark:ring-gray-700 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white" id="modalTitle">Add Product</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Create a new product for production management</p>
+            </div>
+          </div>
+          <button id="closeModal" class="text-slate-400 dark:text-gray-400 hover:text-slate-600 dark:hover:text-gray-200 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <form id="productForm" class="space-y-4" enctype="multipart/form-data">
+          <input type="hidden" id="removeImageFlag" name="remove_image" value="false">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Product Name</label>
+              <input type="text" id="productName" name="name" required
+                     class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Unit Size</label>
+              <input type="text" id="unitSize" name="unit_size" required placeholder="e.g., 500ml, 1L, 250g"
+                     class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Milk Type</label>
+              <select id="milkType" name="milk_type" required
+                      class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Milk Type</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="Buffalo">Buffalo</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Storage Type</label>
+              <select id="storageType" name="storage_type" required
+                      class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="cold">Cold Storage</option>
+                <option value="room_temperature">Room Temperature</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Milk Source</label>
+              <select id="milkSource" name="milk_source" required
+                      class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Milk Source</option>
+                <option value="direct">Direct from Milk Inventory</option>
+                <option value="pool">From Milk Pool</option>
+              </select>
+            </div>
+            <div id="poolSelectionContainer" class="hidden">
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Milk Pool</label>
+              <select id="poolId" name="pool_id"
+                      class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Pool</option>
+                <% if (allPools && allPools.length > 0) { %>
+                  <% allPools.forEach(pool => { %>
+                    <option value="<%= pool.id %>"><%= pool.name %> (<%= pool.milk_type %>)</option>
+                  <% }) %>
+                <% } %>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Category</label>
+            <select id="categoryId" name="category_id" required
+                    class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Category</option>
+              <% if (allCategories) { %>
+                <% allCategories.forEach(category => { %>
+                  <option value="<%= category.id %>"><%= category.name %></option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Milk per Unit (Liters)</label>
+              <input type="number" id="milkPerUnit" name="milk_per_unit" step="0.1" min="0"
+                     class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Product Image</label>
+              <input type="file" id="productImage" name="product_image" accept="image/*"
+                     class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">Upload an image file (JPG, PNG, WebP)</p>
+              <!-- Image Preview -->
+              <div id="imagePreview" class="mt-2 hidden">
+                <img id="previewImg" src="" alt="Preview" class="w-20 h-20 object-cover rounded-lg border border-slate-300 dark:border-gray-600">
+                <button type="button" id="removeImage" class="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm">Remove</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center">
+            <input type="checkbox" id="autoCalculateMilk" name="auto_calculate_milk" checked
+                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-gray-600 rounded">
+            <label for="autoCalculateMilk" class="ml-2 block text-sm font-medium text-slate-700 dark:text-gray-300">
+              Auto-calculate milk usage based on quantity produced
+            </label>
+          </div>
+          
+          <div class="flex items-center">
+            <input type="checkbox" id="isActive" name="is_active" checked
+                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-gray-600 rounded">
+            <label for="isActive" class="ml-2 block text-sm font-medium text-slate-700 dark:text-gray-300">
+              Product is active
+            </label>
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="button" id="cancelBtn" class="px-4 py-2 bg-slate-300 dark:bg-gray-600 text-slate-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-slate-400 dark:hover:bg-gray-500 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" id="saveBtn" class="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              Save Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50 transition-opacity duration-300" style="background-color: rgba(15, 23, 42, 0.7);">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 lg:w-1/4 xl:w-1/5 max-w-sm shadow-2xl rounded-lg bg-white dark:bg-gray-800 ring-1 ring-slate-200 dark:ring-gray-700 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-slate-900 dark:text-white">Delete Product</h3>
+          <button id="closeDeleteModal" class="text-slate-400 dark:text-gray-400 hover:text-slate-600 dark:hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <p class="text-sm text-slate-700 dark:text-gray-300">Are you sure you want to delete this product? This action cannot be undone.</p>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button type="button" id="cancelDeleteBtn" class="px-4 py-2 bg-slate-300 dark:bg-gray-600 text-slate-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-slate-400 dark:hover:bg-gray-500 transition-colors">
+            Cancel
+          </button>
+          <button type="button" id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 dark:bg-red-700 text-white text-sm font-medium rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../../../partials/_toast') %>
+
+  <script>
+    let currentProductId = null;
+    let isEditMode = false;
+
+    // Initialize page
+    function init() {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeProductManagement);
+      } else {
+        initializeProductManagement();
+      }
+    }
+    
+    init();
+
+    function initializeProductManagement() {
+      // Add product buttons
+      const addProductBtn = document.getElementById('addProductBtn');
+      if (addProductBtn) {
+        addProductBtn.addEventListener('click', () => openModal());
+      }
+      
+      const addProductBtnEmpty = document.getElementById('addProductBtnEmpty');
+      if (addProductBtnEmpty) {
+        addProductBtnEmpty.addEventListener('click', () => openModal());
+      }
+      
+      // Edit product buttons
+      document.querySelectorAll('.edit-product-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const productId = e.currentTarget.dataset.productId;
+          editProduct(productId);
+        });
+      });
+      
+      // Delete product buttons
+      document.querySelectorAll('.delete-product-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const productId = e.currentTarget.dataset.productId;
+          showDeleteModal(productId);
+        });
+      });
+      
+      // Modal controls
+      const closeModalBtn = document.getElementById('closeModal');
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+      }
+      
+      const cancelBtn = document.getElementById('cancelBtn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+      }
+      
+      const productForm = document.getElementById('productForm');
+      if (productForm) {
+        productForm.addEventListener('submit', saveProduct);
+      }
+      
+      // Delete modal controls
+      const closeDeleteModalBtn = document.getElementById('closeDeleteModal');
+      if (closeDeleteModalBtn) {
+        closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
+      }
+      
+      const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+      if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+      }
+      
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', () => {
+          if (currentProductId) {
+            deleteProduct(currentProductId);
+          }
+        });
+      }
+      
+      // Filter controls
+      const applyFiltersBtn = document.getElementById('applyFilters');
+      if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', applyFilters);
+      }
+      
+      // Auto-calculate toggle
+      const autoCalculateMilk = document.getElementById('autoCalculateMilk');
+      if (autoCalculateMilk) {
+        autoCalculateMilk.addEventListener('change', function() {
+          const milkPerUnitField = document.getElementById('milkPerUnit');
+          if (milkPerUnitField) {
+            milkPerUnitField.disabled = !this.checked;
+            if (!this.checked) {
+              milkPerUnitField.value = '';
+            }
+          }
+        });
+      }
+      
+      // Milk source toggle
+      const milkSource = document.getElementById('milkSource');
+      if (milkSource) {
+        milkSource.addEventListener('change', function() {
+          const poolSelectionContainer = document.getElementById('poolSelectionContainer');
+          const poolId = document.getElementById('poolId');
+          
+          if (this.value === 'pool') {
+            poolSelectionContainer.classList.remove('hidden');
+            poolId.required = true;
+          } else {
+            poolSelectionContainer.classList.add('hidden');
+            poolId.required = false;
+            // Don't clear pool_id value - let the backend handle the logic
+            // poolId.value = '';
+          }
+        });
+      }
+      
+      // Image preview functionality
+      const productImage = document.getElementById('productImage');
+      if (productImage) {
+        productImage.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          const imagePreview = document.getElementById('imagePreview');
+          const previewImg = document.getElementById('previewImg');
+          
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              previewImg.src = e.target.result;
+              imagePreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+          } else {
+            imagePreview.classList.add('hidden');
+          }
+        });
+      }
+      
+      // Remove image functionality
+      const removeImageBtn = document.getElementById('removeImage');
+      if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', function() {
+          const productImage = document.getElementById('productImage');
+          const imagePreview = document.getElementById('imagePreview');
+          productImage.value = '';
+          imagePreview.classList.add('hidden');
+          
+          // Set a flag to indicate image should be removed
+          document.getElementById('removeImageFlag').value = 'true';
+        });
+      }
+    }
+
+    function openModal(productId = null) {
+      isEditMode = !!productId;
+      currentProductId = productId;
+      
+      const modal = document.getElementById('productModal');
+      const title = document.getElementById('modalTitle');
+      const form = document.getElementById('productForm');
+      
+      title.textContent = isEditMode ? 'Edit Product' : 'Add Product';
+      
+      if (!isEditMode) {
+        // Reset form for new product
+        form.reset();
+        document.getElementById('autoCalculateMilk').checked = true;
+        document.getElementById('isActive').checked = true;
+        document.getElementById('milkPerUnit').disabled = false;
+        
+        // Reset milk source fields
+        document.getElementById('milkSource').value = '';
+        document.getElementById('poolId').value = '';
+        document.getElementById('poolSelectionContainer').classList.add('hidden');
+        document.getElementById('poolId').required = false;
+        
+        // Reset image preview
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) {
+          imagePreview.classList.add('hidden');
+        }
+      } else {
+        // For edit mode, ensure image preview is ready
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) {
+          imagePreview.classList.add('hidden'); // Will be shown by loadProductData if image exists
+        }
+        // Reset remove image flag
+        document.getElementById('removeImageFlag').value = 'false';
+      }
+      
+      // Show modal with animation
+      modal.classList.remove('hidden');
+      
+      // Trigger animation after a small delay to ensure the modal is visible
+      setTimeout(() => {
+        const modalContent = modal.querySelector('.relative');
+        if (modalContent) {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }
+      }, 10);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('productModal');
+      const modalContent = modal.querySelector('.relative');
+      
+      if (modalContent) {
+        // Animate out
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        
+        // Hide modal after animation completes
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 300);
+      } else {
+        modal.classList.add('hidden');
+      }
+      
+      currentProductId = null;
+      isEditMode = false;
+    }
+
+    async function editProduct(productId) {
+      try {
+        openModal(productId);
+        await loadProductData(productId);
+      } catch (error) {
+        console.error('Error loading product data:', error);
+        showErrorToast('Failed to load product data: ' + error.message);
+      }
+    }
+
+    async function loadProductData(productId) {
+      try {
+        const response = await fetch(`/production/products/${productId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          const product = result.product;
+          
+          // Populate form fields
+          document.getElementById('productName').value = product.name || '';
+          document.getElementById('categoryId').value = product.category_id || '';
+          document.getElementById('unitSize').value = product.unit_size || '';
+          document.getElementById('milkType').value = product.milk_type || '';
+          // Handle image display for existing products
+          if (product.image_url) {
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            if (imagePreview && previewImg) {
+              previewImg.src = product.image_url;
+              imagePreview.classList.remove('hidden');
+            }
+          }
+          document.getElementById('storageType').value = product.storage_type || '';
+          document.getElementById('milkPerUnit').value = product.milk_per_unit || '';
+          document.getElementById('autoCalculateMilk').checked = product.auto_calculate_milk == 1;
+          document.getElementById('isActive').checked = product.is_active !== false;
+          
+          // Handle milk source and pool fields
+          const milkSource = document.getElementById('milkSource');
+          const poolId = document.getElementById('poolId');
+          const poolSelectionContainer = document.getElementById('poolSelectionContainer');
+          
+          // If product has a pool_id, it should use pool as milk source
+          if (product.pool_id) {
+            milkSource.value = 'pool';
+            poolId.value = product.pool_id;
+            poolSelectionContainer.classList.remove('hidden');
+            poolId.required = true;
+          } else {
+            milkSource.value = 'direct';
+            poolId.value = '';
+            poolSelectionContainer.classList.add('hidden');
+            poolId.required = false;
+          }
+          
+          // Enable/disable milk per unit field based on auto-calculate setting
+          const milkPerUnitField = document.getElementById('milkPerUnit');
+          const autoCalculateChecked = document.getElementById('autoCalculateMilk').checked;
+          milkPerUnitField.disabled = !autoCalculateChecked;
+          
+        } else {
+          throw new Error(result.error || 'Failed to load product data');
+        }
+      } catch (error) {
+        console.error('Error loading product data:', error);
+        showErrorToast('Failed to load product data: ' + error.message);
+      }
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      
+      // Convert checkbox values
+      formData.set('auto_calculate_milk', document.getElementById('autoCalculateMilk').checked);
+      formData.set('is_active', document.getElementById('isActive').checked);
+      
+      // Explicitly ensure milk_source is set
+      const milkSource = document.getElementById('milkSource').value;
+      formData.set('milk_source', milkSource);
+      
+      
+      try {
+        const url = isEditMode ? `/production/products/${currentProductId}` : '/production/products';
+        const method = isEditMode ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method: method,
+          body: formData // Send FormData directly for file uploads
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showSuccessToast(result.message);
+          closeModal();
+          // Reload page to show updated data
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          throw new Error(result.error || 'Failed to save product');
+        }
+      } catch (error) {
+        console.error('Error saving product:', error);
+        showErrorToast('Failed to save product: ' + error.message);
+      }
+    }
+
+    function showDeleteModal(productId) {
+      currentProductId = productId;
+      const modal = document.getElementById('deleteModal');
+      modal.classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('deleteModal');
+      modal.classList.add('hidden');
+      currentProductId = null;
+    }
+
+    async function deleteProduct(productId) {
+      try {
+        const response = await fetch(`/production/products/${productId}`, {
+          method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showSuccessToast(result.message);
+          closeDeleteModal();
+          // Reload page to show updated data
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          throw new Error(result.error || 'Failed to delete product');
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        showErrorToast('Failed to delete product: ' + error.message);
+      }
+    }
+
+    function applyFilters() {
+      const categoryId = document.getElementById('categoryFilter').value;
+      const milkType = document.getElementById('milkTypeFilter').value;
+      
+      const url = new URL(window.location);
+      if (categoryId) {
+        url.searchParams.set('category_id', categoryId);
+      } else {
+        url.searchParams.delete('category_id');
+      }
+      
+      if (milkType) {
+        url.searchParams.set('milk_type', milkType);
+      } else {
+        url.searchParams.delete('milk_type');
+      }
+      
+      window.location.href = url.toString();
+    }
+
+  </script>
+</body>
+</html>

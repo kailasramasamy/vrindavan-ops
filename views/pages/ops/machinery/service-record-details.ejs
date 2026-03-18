@@ -1,0 +1,302 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Sub Navigation -->
+  <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Service History', page: 'Service Record Details' }) %>
+  
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          <li><a href="/" class="hover:text-gray-700 dark:hover:text-gray-300">Ops</a></li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/machinery" class="hover:text-gray-700 dark:hover:text-gray-300">Machinery</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/machinery/service-history" class="hover:text-gray-700 dark:hover:text-gray-300">Service History</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/machinery/service-history" class="text-gray-900 dark:text-gray-100 font-medium">Service Record Details</a>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Service Record Details</h1>
+            <p class="text-gray-600 dark:text-gray-400">Detailed information about this service record</p>
+          </div>
+          <div class="mt-4 sm:mt-0 flex gap-2">
+            <a href="/machinery/machines/<%= record.machine_id %>" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Machine
+            </a>
+            <a href="/machinery/service-history" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              All Service Records
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Service Information -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Service Information</h3>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Service Type</label>
+                  <p class="text-gray-900 dark:text-gray-100 text-lg font-medium">
+                    <%= record.service_type_name || 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Service Date</label>
+                  <p class="text-gray-900 dark:text-gray-100 text-lg font-medium">
+                    <%= record.service_date ? new Date(record.service_date).toLocaleDateString() : 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Technician</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.technician_name || 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    <% if (record.status === 'completed') { %>
+                      bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                    <% } else if (record.status === 'in_progress') { %>
+                      bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                    <% } else if (record.status === 'pending') { %>
+                      bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                    <% } else if (record.status === 'cancelled') { %>
+                      bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                    <% } else if (record.status === 'failed') { %>
+                      bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                    <% } else { %>
+                      bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                    <% } %>">
+                    <%= record.status ? record.status.charAt(0).toUpperCase() + record.status.slice(1) : 'Unknown' %>
+                  </span>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Service Provider</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.service_provider || 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Labor Hours</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.labor_hours ? record.labor_hours + ' hours' : 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Cost</label>
+                  <p class="text-gray-900 dark:text-gray-100 text-lg font-medium">
+                    <%= record.total_cost ? '$' + parseFloat(record.total_cost).toFixed(2) : 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Next Service Due</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.next_service_due ? new Date(record.next_service_due).toLocaleDateString() : 'Not scheduled' %>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <% if (record.description) { %>
+                <div class="mt-6">
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Description</label>
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <p class="text-gray-900 dark:text-gray-100 whitespace-pre-wrap"><%= record.description %></p>
+                  </div>
+                </div>
+              <% } %>
+
+              <!-- Notes -->
+              <% if (record.notes) { %>
+                <div class="mt-6">
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Notes</label>
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <p class="text-gray-900 dark:text-gray-100 whitespace-pre-wrap"><%= record.notes %></p>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Invoice Information -->
+          <% if (record.invoice_file || record.invoice_url) { %>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Invoice Information</h3>
+              </div>
+              <div class="p-6">
+                <% if (record.invoice_file) { %>
+                  <% 
+                    let invoiceData;
+                    try {
+                      // Handle both cases: if it's already an object or if it's a JSON string
+                      if (typeof record.invoice_file === 'object') {
+                        invoiceData = record.invoice_file;
+                      } else {
+                        invoiceData = JSON.parse(record.invoice_file);
+                      }
+                    } catch (e) {
+                      console.error('Error parsing invoice file:', e);
+                      invoiceData = null;
+                    }
+                  %>
+                  <% if (invoiceData) { %>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex-shrink-0">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          <%= invoiceData.originalName || 'Invoice File' %>
+                        </p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                          <%= invoiceData.size ? (invoiceData.size / 1024).toFixed(1) + ' KB' : 'Unknown size' %>
+                        </p>
+                      </div>
+                      <div class="flex-shrink-0">
+                        <a href="<%= invoiceData.path %>" target="_blank" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                          </svg>
+                          Download
+                        </a>
+                      </div>
+                    </div>
+                  <% } else { %>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      Invoice file data is corrupted or invalid.
+                    </div>
+                  <% } %>
+                <% } else if (record.invoice_url) { %>
+                  <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                      <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Invoice URL</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        <%= record.invoice_url %>
+                      </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <a href="<%= record.invoice_url %>" target="_blank" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                        Open Link
+                      </a>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Machine Information -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Machine Information</h3>
+            </div>
+            <div class="p-6">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Machine Name</label>
+                  <p class="text-gray-900 dark:text-gray-100 font-medium">
+                    <a href="/machinery/machines/<%= record.machine_id %>" class="text-blue-600 dark:text-blue-400 hover:underline">
+                      <%= record.machine_name || 'Unknown Machine' %>
+                    </a>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Serial Number</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.serial_number || 'Not specified' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.category_name || 'Not specified' %>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Record Information -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Record Information</h3>
+            </div>
+            <div class="p-6">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Record ID</label>
+                  <p class="text-gray-900 dark:text-gray-100 font-mono text-sm">
+                    #<%= record.id %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Created</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.created_at ? new Date(record.created_at).toLocaleString() : 'Unknown' %>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Last Updated</label>
+                  <p class="text-gray-900 dark:text-gray-100">
+                    <%= record.updated_at ? new Date(record.updated_at).toLocaleString() : 'Unknown' %>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

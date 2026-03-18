@@ -1,0 +1,451 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <!-- Sub Navigation -->
+  <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Service Schedules', page: 'Service Schedule Details' }) %>
+  
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          <li><a href="/" class="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Ops</a></li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/machinery" class="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Machinery</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/machinery/machines" class="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Machines</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/machinery/machines/<%= schedule.machine_id %>" class="hover:text-gray-900 dark:hover:text-gray-100 transition-colors"><%= schedule.machine_name %></a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-900 dark:text-gray-100 font-medium">Service Schedule Details</span>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              <%= schedule.service_type_name || 'Service Schedule' %>
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+              Service Schedule for <%= schedule.machine_name %> 
+              <% if (schedule.serial_number) { %>
+                (SN: <%= schedule.serial_number %>)
+              <% } %>
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0 flex flex-wrap gap-3">
+            <a href="/machinery/machines/<%= schedule.machine_id %>" class="inline-flex items-center px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Machine
+            </a>
+            <a href="/machinery/service-schedules" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              All Service Schedules
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Layout -->
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Side - 3/4 width -->
+        <div class="lg:w-3/4 space-y-8">
+          <!-- Service Schedule Overview -->
+          <div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Service Schedule Information</h3>
+                  <button onclick="openEditServiceScheduleModal()" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors mt-2 sm:mt-0">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Schedule
+                  </button>
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <!-- Service Type -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Service Type</label>
+                    <p class="text-gray-900 dark:text-gray-100 text-lg font-medium">
+                      <%= schedule.service_type_name || 'Not specified' %>
+                    </p>
+                    <% if (schedule.service_type_description) { %>
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <%= schedule.service_type_description %>
+                      </p>
+                    <% } %>
+                  </div>
+
+                  <!-- Frequency -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Frequency</label>
+                    <p class="text-gray-900 dark:text-gray-100 text-lg font-medium">
+                      <%= schedule.frequency_unit ? schedule.frequency_unit.charAt(0).toUpperCase() + schedule.frequency_unit.slice(1) : 'Not specified' %>
+                    </p>
+                    <% if (schedule.frequency_value && schedule.frequency_value > 1) { %>
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Every <%= schedule.frequency_value %> <%= schedule.frequency_unit %>
+                      </p>
+                    <% } %>
+                  </div>
+
+                  <!-- Next Service Date -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Next Service Due</label>
+                    <div>
+                      <% if (schedule.next_service_date) { %>
+                        <p class="text-gray-900 dark:text-gray-100 text-lg font-medium">
+                          <%= new Date(schedule.next_service_date).toLocaleDateString() %>
+                        </p>
+                        <% if (schedule.days_until_due !== undefined) { %>
+                          <div class="mt-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                              <% if (schedule.days_until_due < 0) { %>
+                                bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                              <% } else if (schedule.days_until_due <= 7) { %>
+                                bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                              <% } else { %>
+                                bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                              <% } %>">
+                              <% if (schedule.days_until_due < 0) { %>
+                                <%= Math.abs(schedule.days_until_due) %> days overdue
+                              <% } else if (schedule.days_until_due === 0) { %>
+                                Due today
+                              <% } else { %>
+                                <%= schedule.days_until_due %> days remaining
+                              <% } %>
+                            </span>
+                          </div>
+                        <% } %>
+                      <% } else { %>
+                        <p class="text-gray-500 dark:text-gray-400">Not scheduled</p>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <!-- Last Service Date -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Last Service</label>
+                    <p class="text-gray-900 dark:text-gray-100">
+                      <% if (schedule.last_service_date) { %>
+                        <%= new Date(schedule.last_service_date).toLocaleDateString() %>
+                      <% } else { %>
+                        <span class="text-gray-500 dark:text-gray-400">Never serviced</span>
+                      <% } %>
+                    </p>
+                  </div>
+
+                </div>
+
+                <!-- Notes -->
+                <% if (schedule.notes) { %>
+                  <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Notes</label>
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <p class="text-gray-900 dark:text-gray-100 whitespace-pre-wrap"><%= schedule.notes %></p>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service History -->
+          <div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Related Service History</h3>
+                  <a href="/machinery/service-history?machine_id=<%= schedule.machine_id %>&service_type_id=<%= schedule.service_type_id %>" class="inline-flex items-center px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md transition-colors mt-2 sm:mt-0">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    View All History
+                  </a>
+                </div>
+              </div>
+              <div class="p-6">
+                <% if (serviceHistory && serviceHistory.length > 0) { %>
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Service Date</th>
+                          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Technician</th>
+                          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cost</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <% serviceHistory.forEach(record => { %>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                            <%= new Date(record.service_date).toLocaleDateString() %>
+                          </td>
+                          <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                            <%= record.technician_name || 'Not specified' %>
+                          </td>
+                          <td class="px-3 py-2 text-sm">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                              <% if (record.status === 'completed') { %>
+                                bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                              <% } else if (record.status === 'in_progress') { %>
+                                bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                              <% } else if (record.status === 'pending') { %>
+                                bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                              <% } else { %>
+                                bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
+                              <% } %>">
+                              <%= record.status ? record.status.charAt(0).toUpperCase() + record.status.slice(1) : 'Unknown' %>
+                            </span>
+                          </td>
+                          <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
+                            <% if (record.total_cost) { %>
+                              ₹<%= parseFloat(record.total_cost).toLocaleString() %>
+                            <% } else { %>
+                              <span class="text-gray-500 dark:text-gray-400">Not specified</span>
+                            <% } %>
+                          </td>
+                        </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% } else { %>
+                  <div class="text-center py-8">
+                    <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                      </svg>
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">No service history found for this schedule</p>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side - 1/4 width -->
+        <div class="lg:w-1/4">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Machine Information</h3>
+            </div>
+            <div class="p-6">
+              <!-- Machine Image -->
+              <div class="mb-6">
+                <div class="h-48 bg-gradient-to-br from-gray-50 dark:from-gray-700 to-gray-100 dark:to-gray-600 relative rounded-lg overflow-hidden">
+                  <% 
+                    let hasImage = false;
+                    let imagePath = null;
+                    
+                    if (schedule.machine_images) {
+                      try {
+                        const images = JSON.parse(schedule.machine_images);
+                        if (images && images.length > 0 && images[0].path) {
+                          hasImage = true;
+                          imagePath = images[0].path;
+                        }
+                      } catch (e) {
+                        // JSON parse error, no image
+                      }
+                    }
+                  %>
+                  
+                  <% if (hasImage) { %>
+                    <img src="<%= imagePath %>" 
+                         alt="<%= schedule.machine_name %>" 
+                         class="w-full h-full object-contain bg-white dark:bg-gray-800 pt-2 pr-2 pb-2 rounded-lg" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                    <div class="h-full flex items-center justify-center p-4 rounded-lg" style="display: none;">
+                      <div class="text-center">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Image Not Found</p>
+                      </div>
+                    </div>
+                  <% } else { %>
+                    <div class="h-full flex items-center justify-center p-4 rounded-lg">
+                      <div class="text-center">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No Image Available</p>
+                      </div>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Machine Details -->
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Machine Name</label>
+                  <p class="text-gray-900 dark:text-gray-100 font-medium">
+                    <a href="/machinery/machines/<%= schedule.machine_id %>" class="text-blue-600 dark:text-blue-400 hover:underline">
+                      <%= schedule.machine_name %>
+                    </a>
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Serial Number</label>
+                  <p class="text-gray-900 dark:text-gray-100"><%= schedule.serial_number || 'Not specified' %></p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Location</label>
+                  <p class="text-gray-900 dark:text-gray-100"><%= schedule.location || 'Not specified' %></p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category</label>
+                  <p class="text-gray-900 dark:text-gray-100"><%= schedule.category_name || 'Not specified' %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Service Schedule Modal -->
+  <div id="editServiceScheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Service Schedule</h3>
+        </div>
+        <div class="p-6">
+          <form id="editServiceScheduleForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Service Type</label>
+                <input type="text" name="service_type_name" value="<%= schedule.service_type_name || '' %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" readonly>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequency</label>
+                <select name="frequency_unit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100">
+                  <option value="daily" <%= schedule.frequency_unit === 'daily' ? 'selected' : '' %>>Daily</option>
+                  <option value="weekly" <%= schedule.frequency_unit === 'weekly' ? 'selected' : '' %>>Weekly</option>
+                  <option value="monthly" <%= schedule.frequency_unit === 'monthly' ? 'selected' : '' %>>Monthly</option>
+                  <option value="quarterly" <%= schedule.frequency_unit === 'quarterly' ? 'selected' : '' %>>Quarterly</option>
+                  <option value="semi-annually" <%= schedule.frequency_unit === 'semi-annually' ? 'selected' : '' %>>Semi-Annually</option>
+                  <option value="annually" <%= schedule.frequency_unit === 'annually' ? 'selected' : '' %>>Annually</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Next Service Date</label>
+                <input type="date" name="next_service_date" value="<%= schedule.next_service_date ? new Date(schedule.next_service_date).toISOString().split('T')[0] : '' %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Service Date</label>
+                <input type="date" name="last_service_date" value="<%= schedule.last_service_date ? new Date(schedule.last_service_date).toISOString().split('T')[0] : '' %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100">
+              </div>
+            </div>
+            <div class="mt-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+              <textarea name="notes" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"><%= schedule.notes || '' %></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+          <button onclick="closeEditServiceScheduleModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">
+            Cancel
+          </button>
+          <button onclick="saveServiceSchedule()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Edit Service Schedule Functions
+    function openEditServiceScheduleModal() {
+      document.getElementById('editServiceScheduleModal').classList.remove('hidden');
+    }
+
+    function closeEditServiceScheduleModal() {
+      document.getElementById('editServiceScheduleModal').classList.add('hidden');
+    }
+
+    function saveServiceSchedule() {
+      const form = document.getElementById('editServiceScheduleForm');
+      const formData = new FormData(form);
+      
+      // Convert FormData to JSON
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        data[key] = value;
+      }
+
+      // Add the schedule ID
+      data.id = <%= schedule.id %>;
+
+      fetch(`/machinery/service-schedules/<%= schedule.id %>`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert('Error updating service schedule: ' + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating service schedule');
+      });
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const editModal = document.getElementById('editServiceScheduleModal');
+      
+      if (event.target === editModal) {
+        closeEditServiceScheduleModal();
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1542 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+
+<!-- Marketing Dark Mode CSS -->
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js Datalabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<!-- Chart.js Annotations Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { section: 'Marketing', subsection: 'Campaign Details' }) %>
+
+  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 rounded-xl p-6 text-white shadow-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <h1 id="campaignTitle" class="text-3xl font-bold mb-2">Campaign Details</h1>
+            <p class="text-blue-100 dark:text-blue-200">View detailed information about your marketing campaign</p>
+            <div class="mt-4 flex items-center space-x-4">
+              <span id="campaignStatusBadge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white"></span>
+              <span id="campaignTypeBadge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-10 text-white"></span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="/marketing/campaigns" class="inline-flex items-center px-4 py-2 border border-white border-opacity-30 rounded-lg text-sm font-medium text-white bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-200">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Campaigns
+            </a>
+            <button id="editCampaign" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-blue-600 bg-white hover:bg-gray-50 transition-all duration-200 shadow-md">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Campaign
+            </button>
+            <button id="deleteCampaign" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200 shadow-md">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete Campaign
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-500 dark:text-gray-400">Loading campaign details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p class="mt-2 text-red-500">Failed to load campaign details</p>
+    </div>
+
+    <!-- Campaign Details -->
+    <div id="campaignDetails" class="hidden">
+      <!-- Basic Information and Campaign Duration Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+        <!-- Basic Information -->
+        <div class="lg:col-span-3 bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center mb-6">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Campaign details and configuration</p>
+            </div>
+          </div>
+          
+          <!-- Campaign Info -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Campaign Name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Campaign Name</label>
+              <p id="campaignName" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+            </div>
+            
+            <!-- Channel -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Channel</label>
+              <p id="campaignChannel" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+            </div>
+            
+            <!-- Objective -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Objective</label>
+              <p id="campaignObjective" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campaign Duration -->
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center mb-4">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Campaign Duration</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Start and end dates for the campaign</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Start Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+              <p id="campaignStartDate" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+            </div>
+            
+            <!-- End Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+              <p id="campaignEndDate" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Information -->
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">Target Information</h3>
+        
+        <!-- Target Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Target Audience</p>
+              <p id="targetAudience" class="text-lg font-semibold text-gray-900 dark:text-white">Loading...</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-green-600 dark:text-green-400">Target Location</p>
+              <p id="targetLocation" class="text-lg font-semibold text-gray-900 dark:text-white">Loading...</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-purple-600 dark:text-purple-400">Expected Reach</p>
+              <p id="expectedReach" class="text-lg font-semibold text-gray-900 dark:text-white">Loading...</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-orange-600 dark:text-orange-400">Expected Conversions</p>
+              <p id="expectedConversions" class="text-lg font-semibold text-gray-900 dark:text-white">Loading...</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Budget</p>
+              <p id="expectedRevenue" class="text-lg font-semibold text-gray-900 dark:text-white">Loading...</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Target Products Table -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Target Products</label>
+          <div id="targetProductsTable" class="overflow-hidden">
+            <!-- Loading state -->
+            <div id="targetProductsLoading" class="flex items-center justify-center py-8">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading products...</span>
+            </div>
+            <!-- Table will be populated here -->
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Performance History -->
+      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Performance History</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Tracked metrics and performance data</p>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <!-- Performance Chart -->
+          <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <h4 class="text-md font-semibold text-gray-900 dark:text-white mb-4">Product Sales Performance</h4>
+            <div class="relative">
+              <!-- Loading Spinner -->
+              <div id="chartLoading" class="flex items-center justify-center h-96">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <span class="ml-3 text-gray-600 dark:text-gray-400">Loading chart data...</span>
+              </div>
+              <!-- Chart Canvas -->
+              <canvas id="performanceChart" width="400" height="400" style="display: none;"></canvas>
+            </div>
+            <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              <p>Chart shows individual product sales (quantities sold) for each target product from 15/10 to 13/11</p>
+            </div>
+          </div>
+          
+          <!-- Performance History -->
+          <div id="performanceHistory" class="space-y-3">
+            <div class="text-center py-6">
+              <span class="text-gray-500 dark:text-gray-400">No performance data recorded yet</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Summary -->
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Performance Summary</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="totalExpenses">₹0</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Budget</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="totalConversions">0</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Conversions</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="totalRevenue">₹0</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Revenue</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="roi">0%</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">ROI</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign Expenses -->
+      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Campaign Expenses</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Track and manage campaign expenses</p>
+            </div>
+          </div>
+          <button id="addExpenseBtn" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200 shadow-md">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add Expense
+          </button>
+        </div>
+
+        <!-- Expenses Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-red-600 dark:text-red-400">Total Spent</p>
+                <p id="totalSpent" class="text-lg font-semibold text-gray-900 dark:text-white">₹0</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Expense Count</p>
+                <p id="expenseCount" class="text-lg font-semibold text-gray-900 dark:text-white">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-green-600 dark:text-green-400">Budget Remaining</p>
+                <p id="budgetRemaining" class="text-lg font-semibold text-gray-900 dark:text-white">₹0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vendor</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="expensesTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <!-- Expenses will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Loading and Empty States -->
+        <div id="expensesLoadingState" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+          <p class="mt-2 text-gray-500 dark:text-gray-400">Loading expenses...</p>
+        </div>
+        
+        <div id="expensesEmptyState" class="text-center py-8 hidden">
+          <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+          <p class="mt-2 text-gray-500 dark:text-gray-400">No expenses recorded yet</p>
+        </div>
+      </div>
+
+      <!-- Creative Assets -->
+      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Creative Assets</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Uploaded images, videos, and other media</p>
+          </div>
+        </div>
+        <div id="creativeAssets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="text-center py-6">
+            <span class="text-gray-500 dark:text-gray-400">No creative assets uploaded</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign Content -->
+      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Campaign Content</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Rich text content and description</p>
+          </div>
+        </div>
+        <div id="campaignContent" class="prose prose-sm max-w-none dark:prose-invert">
+          <p class="text-gray-500 dark:text-gray-400">No content available</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+  <%- include('../../../partials/_toast') %>
+
+  <script>
+    const campaignId = '<%= campaignId %>';
+    let campaign = null;
+    let expenses = [];
+
+
+    // Load target products table
+    async function loadTargetProductsTable(targetProducts) {
+      const targetProductsTable = document.getElementById('targetProductsTable');
+      const targetProductsLoading = document.getElementById('targetProductsLoading');
+      
+      if (!targetProducts || targetProducts.length === 0) {
+        targetProductsLoading.style.display = 'none';
+        targetProductsTable.innerHTML = `
+          <div class="text-center py-8">
+            <div class="text-gray-400 dark:text-gray-500 mb-2">
+              <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400">No products specified</p>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        let allProducts = [];
+        let selectedCategories = [];
+        let selectedSubcategories = [];
+        
+        // Separate individual products from categories/subcategories
+        const individualProducts = targetProducts.filter(item => item && item.type === 'product' && (item.id || item.product_id));
+        
+        // Determine if items are categories or subcategories
+        // For now, we'll need to check the database to determine this
+        // Let's fetch all categories and subcategories first to make the determination
+        const categoriesResponse = await fetch('/marketing/api/product-data/categories');
+        const categoriesResult = await categoriesResponse.json();
+        const allCategories = categoriesResult.success ? categoriesResult.data : [];
+        
+        // Get all subcategories for each category
+        const allSubcategories = [];
+        for (const category of allCategories) {
+          try {
+            const subResponse = await fetch(`/marketing/api/product-data/categories/${category.id}/subcategories`);
+            const subResult = await subResponse.json();
+            if (subResult.success && subResult.data) {
+              allSubcategories.push(...subResult.data);
+            }
+          } catch (error) {
+            console.error(`Error fetching subcategories for category ${category.id}:`, error);
+          }
+        }
+        
+        // Categorize the target products
+        for (const item of targetProducts) {
+          if (item && item.id) {
+            if (item.type === 'category') {
+              selectedCategories.push(item);
+            } else if (item.type === 'sub-category') {
+              selectedSubcategories.push(item);
+            } else if (!item.type || item.type === 'category') {
+              // Legacy: check if this ID exists in categories or subcategories
+              const isCategory = allCategories.find(cat => cat.id == item.id);
+              const isSubcategory = allSubcategories.find(sub => sub.id == item.id);
+              
+              if (isCategory) {
+                selectedCategories.push(item);
+              } else if (isSubcategory) {
+                selectedSubcategories.push(item);
+              }
+            }
+          }
+        }
+        
+        // Check for category-subcategory conflicts
+        // If both a category and its subcategory are selected, prioritize subcategory
+        const categoriesToFetch = [];
+        const subcategoriesToFetch = [...selectedSubcategories];
+        
+        for (const category of selectedCategories) {
+          // Check if any selected subcategory belongs to this category
+          const hasSubcategoryFromThisCategory = selectedSubcategories.some(sub => {
+            return allSubcategories.find(s => s.id === sub.id && s.category_id === category.id);
+          });
+          
+          if (!hasSubcategoryFromThisCategory) {
+            // Only fetch category if no subcategory from this category is selected
+            categoriesToFetch.push(category);
+          }
+        }
+        
+        // Fetch individual products
+        if (individualProducts.length > 0) {
+          const productIds = individualProducts.map(item => item.id || item.product_id);
+          const response = await fetch(`/marketing/api/product-data/products?ids=${productIds.join(',')}`);
+          const result = await response.json();
+          
+          if (result.success && result.data) {
+            allProducts = [...allProducts, ...result.data];
+          }
+        }
+        
+        // Fetch products from categories (only if no subcategory from that category is selected)
+        for (const category of categoriesToFetch) {
+          try {
+            const response = await fetch(`/marketing/api/product-data/categories/${category.id}/products`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+              allProducts = [...allProducts, ...result.data];
+            }
+          } catch (error) {
+            console.error(`Error fetching products for category ${category.id}:`, error);
+          }
+        }
+        
+        // Fetch products from subcategories
+        for (const subcategory of subcategoriesToFetch) {
+          try {
+            const response = await fetch(`/marketing/api/product-data/subcategories/${subcategory.id}/products`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+              allProducts = [...allProducts, ...result.data];
+            }
+          } catch (error) {
+            console.error(`Error fetching products for subcategory ${subcategory.id}:`, error);
+          }
+        }
+
+        if (allProducts.length === 0) {
+          targetProductsLoading.style.display = 'none';
+          targetProductsTable.innerHTML = `
+            <div class="text-center py-8">
+              <div class="text-gray-400 dark:text-gray-500 mb-2">
+                <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+              <p class="text-gray-500 dark:text-gray-400">No products found in selected categories</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Remove duplicates based on product ID
+        const uniqueProducts = allProducts.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        targetProductsLoading.style.display = 'none';
+        
+        // Create products table
+        targetProductsTable.innerHTML = `
+          <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-medium text-gray-800 dark:text-gray-200">Products Found: ${uniqueProducts.length}</h4>
+                ${(categoriesToFetch.length > 0 || subcategoriesToFetch.length > 0) ? `
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Including products from selected categories and subcategories</p>
+                ` : ''}
+              </div>
+              ${(categoriesToFetch.length > 0 || subcategoriesToFetch.length > 0) ? `
+                <div class="flex flex-wrap gap-1">
+                  ${categoriesToFetch.map(category => `
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      📁 ${category.name} (all subcategories)
+                    </span>
+                  `).join('')}
+                  ${subcategoriesToFetch.map(subcategory => `
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      📂 ${subcategory.name}
+                    </span>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Unit Size</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                ${uniqueProducts.map(product => `
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12">
+                          <div class="h-12 w-12 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900 dark:text-white">${product.name}</div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">${product.sku_code || 'N/A'}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      ${product.unit || 'N/A'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <div class="flex flex-col">
+                        ${product.discount_price && product.discount_price > 0 ? `
+                          <span class="text-lg font-semibold text-green-600 dark:text-green-400">₹${parseFloat(product.discount_price).toFixed(2)}</span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400 line-through">₹${parseFloat(product.price || 0).toFixed(2)}</span>
+                        ` : `
+                          <span class="text-lg font-semibold text-gray-900 dark:text-white">₹${parseFloat(product.price || 0).toFixed(2)}</span>
+                        `}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === '1' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+                        ${product.status === '1' ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        
+      } catch (error) {
+        console.error('Error loading target products:', error);
+        targetProductsLoading.style.display = 'none';
+        targetProductsTable.innerHTML = `
+          <div class="text-center py-8">
+            <div class="text-red-400 dark:text-red-500 mb-2">
+              <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <p class="text-red-500 dark:text-red-400">Error loading product details</p>
+          </div>
+        `;
+      }
+    }
+
+    // Load campaign details
+    async function loadCampaignDetails() {
+      try {
+        showLoading();
+        const response = await fetch(`/marketing/api/campaigns/${campaignId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          campaign = result.data;
+          renderCampaignDetails();
+        } else {
+          showError('Failed to load campaign details');
+        }
+      } catch (error) {
+        console.error('Error loading campaign details:', error);
+        showError('Error loading campaign details');
+      }
+    }
+
+    // Show loading state
+    function showLoading() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('campaignDetails').classList.add('hidden');
+    }
+
+    // Show error state
+    function showError(message) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.remove('hidden');
+      document.getElementById('campaignDetails').classList.add('hidden');
+      document.querySelector('#errorState p').textContent = message;
+    }
+
+    // Render campaign details
+    function renderCampaignDetails() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('campaignDetails').classList.remove('hidden');
+
+      // Update header with campaign name
+      document.getElementById('campaignTitle').textContent = campaign.name || 'Campaign Details';
+
+      // Basic information
+      document.getElementById('campaignName').textContent = campaign.name || 'N/A';
+      document.getElementById('campaignChannel').textContent = campaign.channel || 'N/A';
+      
+      // Objective mapping to readable text
+      const objectiveMapping = {
+        'brand_awareness': 'Brand Awareness',
+        'lead_generation': 'Lead Generation',
+        'sales_conversion': 'Sales Conversion',
+        'customer_retention': 'Customer Retention',
+        'product_launch': 'Product Launch',
+        'event_promotion': 'Event Promotion',
+        'seasonal_campaign': 'Seasonal Campaign',
+        'social_engagement': 'Social Engagement'
+      };
+      const readableObjective = objectiveMapping[campaign.objective] || campaign.objective || 'N/A';
+      document.getElementById('campaignObjective').textContent = readableObjective;
+      
+
+      // Header badges
+      const status = campaign.status || 'draft';
+      document.getElementById('campaignStatusBadge').textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      document.getElementById('campaignTypeBadge').textContent = campaign.type ? campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1) : 'N/A';
+      
+      
+
+      // Dates
+      document.getElementById('campaignStartDate').textContent = campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'N/A';
+      document.getElementById('campaignEndDate').textContent = campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'N/A';
+
+      // Target information - load products table
+      loadTargetProductsTable(campaign.target_products);
+
+      // Target information cards
+      document.getElementById('targetAudience').textContent = campaign.target_audience || 'Not specified';
+      document.getElementById('targetLocation').textContent = campaign.target_location || 'Not specified';
+      document.getElementById('expectedReach').textContent = campaign.expected_reach ? campaign.expected_reach.toLocaleString() : 'Not specified';
+
+      // Goals & metrics (now in Target Information cards)
+      const goalMetrics = campaign.expected_goal_metrics || {};
+      document.getElementById('expectedConversions').textContent = goalMetrics.conversions || 'Not specified';
+      document.getElementById('expectedRevenue').textContent = goalMetrics.budget ? `₹${Math.round(parseFloat(goalMetrics.budget)).toLocaleString()}` : 'Not specified';
+
+      // Performance summary - show budget instead of expenses (since expenses are 0)
+      const budget = goalMetrics.budget || 0;
+      document.getElementById('totalExpenses').textContent = budget ? `₹${Math.round(parseFloat(budget)).toLocaleString()}` : '₹0';
+      document.getElementById('totalConversions').textContent = campaign.total_conversions || '0';
+      document.getElementById('totalRevenue').textContent = campaign.total_revenue ? `₹${Math.round(parseFloat(campaign.total_revenue)).toLocaleString()}` : '₹0';
+      
+      // Calculate ROI
+      const totalExpenses = parseFloat(campaign.total_expenses || 0);
+      const revenue = parseFloat(campaign.total_revenue || 0);
+      const roi = totalExpenses > 0 ? ((revenue - totalExpenses) / totalExpenses * 100).toFixed(1) : '0';
+      document.getElementById('roi').textContent = `${roi}%`;
+
+      // Load expenses
+      loadCampaignExpenses();
+
+      // Campaign content
+      const campaignContent = document.getElementById('campaignContent');
+      if (campaign.campaign_content && campaign.campaign_content.trim()) {
+        campaignContent.innerHTML = campaign.campaign_content;
+      } else {
+        campaignContent.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No content available</p>';
+      }
+
+      // Creative assets
+      const creativeAssets = document.getElementById('creativeAssets');
+      if (campaign.creative_assets && campaign.creative_assets.length > 0) {
+        creativeAssets.innerHTML = campaign.creative_assets.map(asset => {
+          // Handle new object format with file info
+          if (typeof asset === 'object' && asset.path) {
+            const isImage = asset.mimetype && asset.mimetype.startsWith('image/');
+            const isVideo = asset.mimetype && asset.mimetype.startsWith('video/');
+            const isPDF = asset.mimetype === 'application/pdf';
+            
+            if (isImage) {
+              return `<div class="relative group">
+                <img src="${asset.path}" alt="${asset.originalName}" class="w-full rounded-lg border border-gray-200 dark:border-gray-600" style="max-height: 300px; object-fit: contain;">
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+                    <a href="${asset.path}" target="_blank" class="bg-white text-gray-900 px-3 py-1 rounded-full text-sm font-medium hover:bg-gray-100">
+                      View Full Size
+                    </a>
+                    <a href="${asset.path}" download="${asset.originalName}" class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-700">
+                      Download
+                    </a>
+                  </div>
+                </div>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 truncate">${asset.originalName}</p>
+              </div>`;
+            } else if (isVideo) {
+              return `<div class="relative group">
+                <video class="w-full rounded-lg border border-gray-200 dark:border-gray-600" controls style="max-height: 300px; object-fit: contain;">
+                  <source src="${asset.path}" type="${asset.mimetype}">
+                  Your browser does not support the video tag.
+                </video>
+                <div class="mt-2 flex space-x-2">
+                  <a href="${asset.path}" target="_blank" class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-gray-700">
+                    Open in New Tab
+                  </a>
+                  <a href="${asset.path}" download="${asset.originalName}" class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-700">
+                    Download
+                  </a>
+                </div>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 truncate">${asset.originalName}</p>
+              </div>`;
+            } else if (isPDF) {
+              return `<div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <div class="flex items-center space-x-3 mb-3">
+                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                  </svg>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">${asset.originalName}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">PDF Document</p>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <a href="${asset.path}" target="_blank" class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-gray-700">
+                    Open in New Tab
+                  </a>
+                  <a href="${asset.path}" download="${asset.originalName}" class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-700">
+                    Download
+                  </a>
+                </div>
+              </div>`;
+            } else {
+              return `<div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <div class="flex items-center space-x-3 mb-3">
+                  <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">${asset.originalName}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">File</p>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <a href="${asset.path}" target="_blank" class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-gray-700">
+                    Open in New Tab
+                  </a>
+                  <a href="${asset.path}" download="${asset.originalName}" class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-700">
+                    Download
+                  </a>
+                </div>
+              </div>`;
+            }
+          } else {
+            // Handle old string format (just file names)
+            return `<div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <div class="flex items-center space-x-3">
+                <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">${asset}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">File</p>
+                </div>
+              </div>
+            </div>`;
+          }
+        }).join('');
+      } else {
+        creativeAssets.innerHTML = '<div class="text-center py-6"><span class="text-gray-500 dark:text-gray-400">No creative assets uploaded</span></div>';
+      }
+    }
+
+    // Load campaign expenses
+    async function loadCampaignExpenses() {
+      try {
+        showExpensesLoading();
+        const response = await fetch(`/marketing/api/campaigns/${campaignId}/expenses`);
+        const result = await response.json();
+
+        if (result.success) {
+          expenses = result.data;
+          renderExpenses();
+          updateExpenseSummary();
+        } else {
+          showExpensesError('Failed to load expenses');
+        }
+      } catch (error) {
+        console.error('Error loading expenses:', error);
+        showExpensesError('Error loading expenses');
+      }
+    }
+
+    // Show expenses loading state
+    function showExpensesLoading() {
+      document.getElementById('expensesLoadingState').classList.remove('hidden');
+      document.getElementById('expensesEmptyState').classList.add('hidden');
+      document.getElementById('expensesTableBody').innerHTML = '';
+    }
+
+    // Show expenses empty state
+    function showExpensesEmpty() {
+      document.getElementById('expensesLoadingState').classList.add('hidden');
+      document.getElementById('expensesEmptyState').classList.remove('hidden');
+      document.getElementById('expensesTableBody').innerHTML = '';
+    }
+
+    // Show expenses error
+    function showExpensesError(message) {
+      document.getElementById('expensesLoadingState').classList.add('hidden');
+      document.getElementById('expensesEmptyState').classList.remove('hidden');
+      document.getElementById('expensesEmptyState').innerHTML = `
+        <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="mt-2 text-red-500">${message}</p>
+      `;
+    }
+
+    // Render expenses table
+    function renderExpenses() {
+      const tbody = document.getElementById('expensesTableBody');
+      
+      document.getElementById('expensesLoadingState').classList.add('hidden');
+      document.getElementById('expensesEmptyState').classList.add('hidden');
+
+      if (expenses.length === 0) {
+        showExpensesEmpty();
+        return;
+      }
+
+      tbody.innerHTML = expenses.map(expense => {
+        const categoryColors = {
+          'digital_ads': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+          'printing': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+          'distribution': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+          'vendor': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+          'commission': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+          'miscellaneous': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        };
+
+        const categoryColor = categoryColors[expense.category] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        const categoryName = expense.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        return `
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              ${new Date(expense.expense_date).toLocaleDateString()}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${categoryColor}">
+                ${categoryName}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm text-gray-900 dark:text-white max-w-xs truncate" title="${expense.description}">
+                ${expense.description}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+              ₹${parseFloat(expense.amount).toLocaleString()}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              ${expense.vendor_name || 'N/A'}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                <button onclick="editExpense(${expense.id})" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                  Edit
+                </button>
+                <button onclick="deleteExpense(${expense.id})" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-600 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Update expense summary
+    function updateExpenseSummary() {
+      const totalSpent = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+      const expenseCount = expenses.length;
+      
+      // Get budget from campaign
+      const budget = campaign.expected_goal_metrics?.budget || 0;
+      const budgetRemaining = Math.max(0, parseFloat(budget) - totalSpent);
+
+      document.getElementById('totalSpent').textContent = `₹${totalSpent.toLocaleString()}`;
+      document.getElementById('expenseCount').textContent = expenseCount;
+      document.getElementById('budgetRemaining').textContent = `₹${budgetRemaining.toLocaleString()}`;
+
+      // Update performance summary with actual expenses
+      document.getElementById('totalExpenses').textContent = `₹${totalSpent.toLocaleString()}`;
+      
+      // Recalculate ROI with actual expenses
+      const revenue = parseFloat(campaign.total_revenue || 0);
+      const roi = totalSpent > 0 ? ((revenue - totalSpent) / totalSpent * 100).toFixed(1) : '0';
+      document.getElementById('roi').textContent = `${roi}%`;
+    }
+
+    // Show add expense modal
+    function showAddExpenseModal() {
+      // Set today's date as default
+      document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('addExpenseModal').classList.remove('hidden');
+    }
+
+    // Hide add expense modal
+    function hideAddExpenseModal() {
+      document.getElementById('addExpenseModal').classList.add('hidden');
+      document.getElementById('addExpenseForm').reset();
+    }
+
+    // Add expense form submission
+    async function handleAddExpense(event) {
+      event.preventDefault();
+      
+      const formData = new FormData(event.target);
+      const expenseData = {
+        campaign_id: campaignId,
+        expense_date: formData.get('expense_date'),
+        category: formData.get('category'),
+        description: formData.get('description'),
+        amount: parseFloat(formData.get('amount')),
+        vendor_name: formData.get('vendor_name') || null,
+        receipt_path: null // TODO: Handle file upload
+      };
+
+      try {
+        const response = await fetch('/marketing/api/expenses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(expenseData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          hideAddExpenseModal();
+          loadCampaignExpenses(); // Reload expenses
+          showSuccessToast('Expense added successfully!');
+        } else {
+          showErrorToast('Failed to add expense: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error adding expense:', error);
+        showErrorToast('Error adding expense: ' + error.message);
+      }
+    }
+
+    // Edit expense (placeholder)
+    function editExpense(expenseId) {
+      showInfoToast('Edit expense functionality coming soon!');
+    }
+
+    // Delete expense
+    async function deleteExpense(expenseId) {
+      if (!confirm('Are you sure you want to delete this expense?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/marketing/api/expenses/${expenseId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          loadCampaignExpenses(); // Reload expenses
+          showSuccessToast('Expense deleted successfully!');
+        } else {
+          showErrorToast('Failed to delete expense: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+        showErrorToast('Error deleting expense: ' + error.message);
+      }
+    }
+
+    // Edit campaign button
+    document.getElementById('editCampaign').addEventListener('click', () => {
+      window.location.href = `/marketing/campaigns/${campaignId}/edit`;
+    });
+
+
+
+
+
+    // Register Chart.js plugins
+    Chart.register(ChartDataLabels);
+    
+    // Register annotations plugin
+    if (typeof ChartAnnotation !== 'undefined') {
+      Chart.register(ChartAnnotation);
+    }
+
+    // Helper function to get campaign start date label
+    function getCampaignStartDateLabel(startDate, chartLabels) {
+      if (!startDate) return null;
+      
+      const campaignDate = new Date(startDate);
+      const day = campaignDate.getDate().toString().padStart(2, '0');
+      const month = (campaignDate.getMonth() + 1).toString().padStart(2, '0');
+      const campaignLabel = `${day}/${month}`;
+      
+      // Find the closest label in the chart
+      const labelIndex = chartLabels.findIndex(label => label === campaignLabel);
+      return labelIndex >= 0 ? campaignLabel : null;
+    }
+
+    // Performance chart
+    let performanceChart = null;
+
+    async function loadPerformanceChart() {
+      try {
+        // Show loading spinner
+        document.getElementById('chartLoading').style.display = 'flex';
+        document.getElementById('performanceChart').style.display = 'none';
+
+        // Fetch both chart data and campaign data
+        const [chartResponse, campaignResponse] = await Promise.all([
+          fetch(`/marketing/api/campaigns/${campaignId}/performance-chart`),
+          fetch(`/marketing/api/campaigns/${campaignId}`)
+        ]);
+
+        const chartResult = await chartResponse.json();
+        const campaignResult = await campaignResponse.json();
+
+        // Hide loading spinner
+        document.getElementById('chartLoading').style.display = 'none';
+        document.getElementById('performanceChart').style.display = 'block';
+
+        if (chartResult.success && chartResult.data) {
+          const campaignStartDate = campaignResult.success ? campaignResult.data.start_date : null;
+          renderPerformanceChart(chartResult.data, campaignStartDate);
+        } else {
+          renderEmptyChart();
+        }
+      } catch (error) {
+        console.error('Error loading performance chart:', error);
+        // Hide loading spinner on error
+        document.getElementById('chartLoading').style.display = 'none';
+        document.getElementById('performanceChart').style.display = 'block';
+        renderEmptyChart();
+      }
+    }
+
+    function renderPerformanceChart(data, campaignStartDate) {
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (performanceChart) {
+        performanceChart.destroy();
+      }
+
+      // Check if we're in dark mode
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      
+      // Apply dark mode colors to datasets if needed
+      const datasets = data.datasets.map(dataset => {
+        if (isDarkMode) {
+          // Convert light mode colors to dark mode equivalents
+          const colorMap = {
+            '#3b82f6': '#60a5fa',
+            '#10b981': '#34d399',
+            '#f59e0b': '#fbbf24',
+            '#ef4444': '#f87171',
+            '#8b5cf6': '#a78bfa'
+          };
+          
+          const darkBorderColor = colorMap[dataset.borderColor] || dataset.borderColor;
+          const darkBackgroundColor = dataset.backgroundColor.replace(/rgba\(([^,]+),([^,]+),([^,]+),([^)]+)\)/, 
+            (match, r, g, b, a) => {
+              const rgb = darkBorderColor.replace('#', '');
+              const darkR = parseInt(rgb.substr(0, 2), 16);
+              const darkG = parseInt(rgb.substr(2, 2), 16);
+              const darkB = parseInt(rgb.substr(4, 2), 16);
+              return `rgba(${darkR}, ${darkG}, ${darkB}, ${a})`;
+            }
+          );
+          
+          return {
+            ...dataset,
+            borderColor: darkBorderColor,
+            backgroundColor: darkBackgroundColor
+          };
+        }
+        return dataset;
+      });
+      
+      const chartData = {
+        labels: data.labels || [],
+        datasets: datasets
+      };
+
+      performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: isDarkMode ? '#ffffff' : '#374151'
+              }
+            },
+            datalabels: {
+              display: true,
+              color: isDarkMode ? '#ffffff' : '#374151',
+              font: {
+                size: 10,
+                weight: 'bold'
+              },
+              formatter: function(value, context) {
+                // Only show labels for non-zero values to avoid clutter
+                return value > 0 ? value : '';
+              },
+              anchor: 'end',
+              align: 'top',
+              offset: 4
+            },
+            annotation: campaignStartDate ? {
+              annotations: {
+                campaignStartLine: {
+                  type: 'line',
+                  mode: 'vertical',
+                  scaleID: 'x',
+                  value: getCampaignStartDateLabel(campaignStartDate, data.labels),
+                  borderColor: isDarkMode ? '#ef4444' : '#dc2626',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  label: {
+                    content: 'Campaign Start',
+                    enabled: true,
+                    position: 'top',
+                    backgroundColor: isDarkMode ? '#ef4444' : '#dc2626',
+                    color: '#ffffff',
+                    font: {
+                      size: 12,
+                      weight: 'bold'
+                    },
+                    padding: 4,
+                    borderRadius: 4
+                  }
+                }
+              }
+            } : {}
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: isDarkMode ? '#ffffff' : '#374151'
+              },
+              grid: {
+                color: isDarkMode ? '#374151' : '#e5e7eb'
+              }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              beginAtZero: true,
+              ticks: {
+                color: isDarkMode ? '#ffffff' : '#374151',
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              },
+              grid: {
+                color: isDarkMode ? '#374151' : '#e5e7eb'
+              },
+              title: {
+                display: true,
+                text: 'Number of Products Sold',
+                color: isDarkMode ? '#ffffff' : '#374151'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderEmptyChart() {
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      
+      if (performanceChart) {
+        performanceChart.destroy();
+      }
+
+      const isDarkMode = document.documentElement.classList.contains('dark');
+
+      performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['No Data'],
+          datasets: [{
+            label: 'Sales (₹)',
+            data: [0],
+            borderColor: isDarkMode ? '#60a5fa' : '#3b82f6',
+            backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: isDarkMode ? '#ffffff' : '#374151'
+              }
+            },
+            datalabels: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: isDarkMode ? '#ffffff' : '#374151'
+              },
+              grid: {
+                color: isDarkMode ? '#374151' : '#e5e7eb'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: isDarkMode ? '#ffffff' : '#374151'
+              },
+              grid: {
+                color: isDarkMode ? '#374151' : '#e5e7eb'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Delete campaign functionality
+    function showDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function hideDeleteModal() {
+      document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    async function deleteCampaign() {
+      try {
+        const campaignId = window.location.pathname.split('/').pop();
+        const response = await fetch(`/marketing/api/campaigns/${campaignId}`, {
+          method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Show success message
+          showSuccessToast('Campaign deleted successfully!');
+          
+          // Redirect to campaigns list after a short delay
+          setTimeout(() => {
+            window.location.href = '/marketing/campaigns';
+          }, 1500);
+        } else {
+          // Show error message
+          showErrorToast('Failed to delete campaign: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error deleting campaign:', error);
+        showErrorToast('Error deleting campaign: ' + error.message);
+      }
+    }
+
+    // Load campaign details on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCampaignDetails();
+      loadPerformanceChart();
+      
+      // Add event listeners for delete functionality
+      document.getElementById('deleteCampaign').addEventListener('click', showDeleteModal);
+      document.getElementById('confirmDelete').addEventListener('click', deleteCampaign);
+      document.getElementById('cancelDelete').addEventListener('click', hideDeleteModal);
+      
+      // Add event listeners for expense functionality
+      document.getElementById('addExpenseBtn').addEventListener('click', showAddExpenseModal);
+      document.getElementById('closeAddExpenseModal').addEventListener('click', hideAddExpenseModal);
+      document.getElementById('cancelAddExpense').addEventListener('click', hideAddExpenseModal);
+      document.getElementById('addExpenseForm').addEventListener('submit', handleAddExpense);
+      
+      // Close modals when clicking outside
+      document.getElementById('deleteModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('deleteModal')) {
+          hideDeleteModal();
+        }
+      });
+      
+      document.getElementById('addExpenseModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('addExpenseModal')) {
+          hideAddExpenseModal();
+        }
+      });
+    });
+  </script>
+
+  <!-- Add Expense Modal -->
+  <div id="addExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Add New Expense</h3>
+          <button id="closeAddExpenseModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <form id="addExpenseForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="expenseDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expense Date *</label>
+              <input type="date" id="expenseDate" name="expense_date" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
+            </div>
+            <div>
+              <label for="expenseCategory" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category *</label>
+              <select id="expenseCategory" name="category" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
+                <option value="">Select Category</option>
+                <option value="digital_ads">Digital Ads</option>
+                <option value="printing">Printing</option>
+                <option value="distribution">Distribution</option>
+                <option value="vendor">Vendor</option>
+                <option value="commission">Commission</option>
+                <option value="miscellaneous">Miscellaneous</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label for="expenseDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description *</label>
+            <textarea id="expenseDescription" name="description" rows="3" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" placeholder="Describe the expense..."></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="expenseAmount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₹) *</label>
+              <input type="number" id="expenseAmount" name="amount" step="0.01" min="0" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" placeholder="0.00">
+            </div>
+            <div>
+              <label for="expenseVendor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vendor/Supplier</label>
+              <input type="text" id="expenseVendor" name="vendor_name" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" placeholder="Vendor name">
+            </div>
+          </div>
+          
+          <div>
+            <label for="expenseReceipt" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Receipt/Invoice</label>
+            <input type="file" id="expenseReceipt" name="receipt" accept="image/*,.pdf" class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-900 dark:file:text-red-200">
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Upload receipt or invoice (optional)</p>
+          </div>
+          
+          <div class="flex justify-end space-x-3 pt-4">
+            <button type="button" id="cancelAddExpense" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+              Add Expense
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
+      <div class="mt-3 text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
+          <svg class="h-6 w-6 text-red-600 dark:text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mt-2">Delete Campaign</h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500 dark:text-gray-400">Are you sure you want to delete this campaign? This action cannot be undone.</p>
+        </div>
+        <div class="items-center px-4 py-3">
+          <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700">
+            Delete
+          </button>
+          <button id="cancelDelete" class="px-4 py-2 bg-gray-600 text-white text-base font-medium rounded-md w-24 hover:bg-gray-700">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

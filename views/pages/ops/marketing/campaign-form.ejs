@@ -1,0 +1,1415 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+<!-- Quill.js Rich Text Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<!-- Custom Rich Text Editor Styles -->
+<style>
+  .rich-editor-container {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    background: white;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .dark .rich-editor-container {
+    border-color: #4b5563;
+    background: #1f2937;
+  }
+
+  .rich-editor-wrapper {
+    height: 350px;
+    min-height: 350px;
+  }
+
+  /* Quill Toolbar Styling */
+  .ql-toolbar {
+    border: none !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: #f9fafb !important;
+    padding: 12px 16px !important;
+  }
+
+  .dark .ql-toolbar {
+    background: #111827 !important;
+    border-bottom-color: #374151 !important;
+  }
+
+  /* Quill Editor Styling */
+  .ql-editor {
+    background: white !important;
+    color: #111827 !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    padding: 16px !important;
+  }
+
+  .dark .ql-editor {
+    background: #1f2937 !important;
+    color: #f9fafb !important;
+  }
+
+  /* Toolbar Button Styling */
+  .ql-toolbar .ql-stroke {
+    stroke: #374151 !important;
+  }
+
+  .ql-toolbar .ql-fill {
+    fill: #374151 !important;
+  }
+
+  .dark .ql-toolbar .ql-stroke {
+    stroke: #d1d5db !important;
+  }
+
+  .dark .ql-toolbar .ql-fill {
+    fill: #d1d5db !important;
+  }
+
+  /* Button Hover States */
+  .ql-toolbar button:hover {
+    background: #e5e7eb !important;
+    border-radius: 4px !important;
+  }
+
+  .dark .ql-toolbar button:hover {
+    background: #374151 !important;
+  }
+
+  /* Active Button States */
+  .ql-toolbar button.ql-active {
+    background: #3b82f6 !important;
+    color: white !important;
+  }
+
+  .ql-toolbar button.ql-active .ql-stroke {
+    stroke: white !important;
+  }
+
+  .ql-toolbar button.ql-active .ql-fill {
+    fill: white !important;
+  }
+
+  /* Dropdown Styling */
+  .ql-toolbar .ql-picker {
+    color: #374151 !important;
+  }
+
+  .dark .ql-toolbar .ql-picker {
+    color: #d1d5db !important;
+  }
+
+  .ql-toolbar .ql-picker-options {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .dark .ql-toolbar .ql-picker-options {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+
+  .ql-toolbar .ql-picker-item {
+    color: #374151 !important;
+  }
+
+  .dark .ql-toolbar .ql-picker-item {
+    color: #d1d5db !important;
+  }
+
+  .ql-toolbar .ql-picker-item:hover {
+    background: #f3f4f6 !important;
+  }
+
+  .dark .ql-toolbar .ql-picker-item:hover {
+    background: #374151 !important;
+  }
+
+  /* Focus States */
+  .rich-editor-container:focus-within {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  }
+
+  /* Placeholder Styling */
+  .ql-editor.ql-blank::before {
+    color: #9ca3af !important;
+    font-style: normal !important;
+  }
+
+  .dark .ql-editor.ql-blank::before {
+    color: #6b7280 !important;
+  }
+
+  /* Link Styling */
+  .ql-editor a {
+    color: #3b82f6 !important;
+    text-decoration: underline !important;
+  }
+
+  .dark .ql-editor a {
+    color: #60a5fa !important;
+  }
+
+  /* List Styling */
+  .ql-editor ul, .ql-editor ol {
+    padding-left: 1.5rem !important;
+  }
+
+  .ql-editor li {
+    margin: 0.25rem 0 !important;
+  }
+
+  /* Blockquote Styling */
+  .ql-editor blockquote {
+    border-left: 4px solid #e5e7eb !important;
+    padding-left: 1rem !important;
+    margin: 1rem 0 !important;
+    font-style: italic !important;
+  }
+
+  .dark .ql-editor blockquote {
+    border-left-color: #4b5563 !important;
+  }
+
+  /* Code Styling */
+  .ql-editor code {
+    background: #f3f4f6 !important;
+    padding: 0.125rem 0.25rem !important;
+    border-radius: 0.25rem !important;
+    font-family: 'Courier New', monospace !important;
+  }
+
+  .dark .ql-editor code {
+    background: #374151 !important;
+  }
+</style>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { currentPage: currentPage, section: 'Marketing', subsection: mode === 'create' ? 'New Campaign' : 'Edit Campaign' }) %>
+
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white"><%= mode === 'create' ? 'Create New Campaign' : 'Edit Campaign' %></h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Set up your marketing campaign details</p>
+          </div>
+          <div class="flex space-x-3 items-center">
+            
+            <a href="/marketing/campaigns" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Back to Campaigns
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <form id="campaignForm" class="space-y-6">
+        <!-- Basic Information -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Campaign Name *</label>
+              <input type="text" id="name" name="name" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Campaign Type *</label>
+              <select id="type" name="type" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" onchange="handleCampaignTypeChange()">
+                <option value="">Select Type</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+                <option value="product_sampling">Product Sampling</option>
+              </select>
+            </div>
+            <div id="channelField">
+              <label for="channel" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Marketing Channel <span id="channelRequired" class="text-red-500">*</span></label>
+              <select id="channel" name="channel" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Channel</option>
+                <!-- Online channels -->
+                <optgroup label="Online Channels">
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Google Ads">Google Ads</option>
+                  <option value="Pinterest">Pinterest</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Email">Email</option>
+                </optgroup>
+                <!-- Offline channels -->
+                <optgroup label="Offline Channels">
+                  <option value="onsite_stall">Onsite Stall</option>
+                  <option value="notice_board">Notice Board</option>
+                  <option value="community">Community (ADDA, MyGate, RWAs)</option>
+                  <option value="standee">Standee</option>
+                  <option value="digital_screen">Digital Screen</option>
+                </optgroup>
+              </select>
+            </div>
+            <div id="objectiveField">
+              <label for="objective" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Campaign Objective <span id="objectiveRequired" class="text-red-500">*</span></label>
+              <select id="objective" name="objective" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Objective</option>
+                <option value="brand_awareness">Brand Awareness</option>
+                <option value="sales_conversion">Sales Conversion</option>
+                <option value="trials">Product Trials</option>
+                <option value="lead_generation">Lead Generation</option>
+                <option value="customer_retention">Customer Retention</option>
+                <option value="market_expansion">Market Expansion</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Sampling Fields (shown only when type is Product Sampling) -->
+        <div id="samplingFields" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section hidden">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Product Sampling Configuration</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Reference Product (Product A) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Reference Product (Product A) *
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="referenceProductSearch" 
+                  placeholder="Search products..." 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  onkeyup="searchReferenceProducts()"
+                  autocomplete="off">
+                <div id="referenceProductResults" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"></div>
+              </div>
+              <input type="hidden" id="referenceProductId" name="reference_product_id">
+              <input type="hidden" id="referenceProductName" name="reference_product_name">
+              <div id="referenceProductDisplay" class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm hidden">
+                <span class="text-gray-900 dark:text-white"></span>
+                <button type="button" onclick="clearReferenceProductSelection()" class="ml-2 text-red-600 hover:text-red-800 dark:text-red-400 text-xs">Clear</button>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Customers order this product regularly</p>
+            </div>
+
+            <!-- Sample Product (Product B) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Sample Product (Product B) *
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="sampleProductSearch" 
+                  placeholder="Search products..." 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  onkeyup="searchSampleProducts()"
+                  autocomplete="off">
+                <div id="sampleProductResults" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"></div>
+              </div>
+              <input type="hidden" id="sampleProductId" name="sample_product_id">
+              <input type="hidden" id="sampleProductName" name="sample_product_name">
+              <div id="sampleProductDisplay" class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm hidden">
+                <span class="text-gray-900 dark:text-white"></span>
+                <button type="button" onclick="clearSampleProductSelection()" class="ml-2 text-red-600 hover:text-red-800 dark:text-red-400 text-xs">Clear</button>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Product to be sampled to customers</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Products -->
+        <div id="targetProductsSection" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Target Products</h3>
+          <div class="space-y-4">
+            <!-- Selection Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Select Target Type</label>
+              <div class="flex space-x-4">
+                <label class="inline-flex items-center">
+                  <input type="radio" name="target_type" value="product" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" checked>
+                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Individual Products</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input type="radio" name="target_type" value="category" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Categories</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Product Selection -->
+            <div id="product-selection" class="space-y-3">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Search and Select Products</label>
+              <div class="relative">
+                <input type="text" id="product-search" placeholder="Search products..." class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <div id="product-search-results" class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto hidden">
+                  <!-- Search results will be populated here -->
+                </div>
+              </div>
+              <div id="selected-products" class="flex flex-wrap gap-2">
+                <!-- Selected products will be displayed here -->
+              </div>
+            </div>
+
+            <!-- Category Selection -->
+            <div id="category-selection" class="space-y-3 hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Category</label>
+                  <select id="category-select" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Choose a category...</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Subcategory</label>
+                  <select id="subcategory-select" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" disabled>
+                    <option value="">Choose a subcategory...</option>
+                  </select>
+                </div>
+              </div>
+              <div id="selected-categories" class="flex flex-wrap gap-2">
+                <!-- Selected categories will be displayed here -->
+              </div>
+            </div>
+
+            <!-- Hidden input to store selected values -->
+            <input type="hidden" id="target_products" name="target_products" value="[]">
+          </div>
+        </div>
+
+        <!-- Campaign Duration -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Campaign Duration</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date *</label>
+              <input type="date" id="start_date" name="start_date" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date *</label>
+              <input type="date" id="end_date" name="end_date" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+              <select id="status" name="status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Audience -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Target Audience & Location</h3>
+          <div class="space-y-6">
+            <div>
+              <label for="target_audience" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Audience</label>
+              <textarea id="target_audience" name="target_audience" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Describe your target audience..."></textarea>
+            </div>
+            <div>
+              <label for="target_location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Location</label>
+              <textarea id="target_location" name="target_location" rows="2" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Specify target locations for offline campaigns..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals & Metrics -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Goals & Expected Metrics</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="expected_reach" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expected Reach</label>
+              <input type="number" id="expected_reach" name="expected_reach" min="0" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Number of people to reach">
+            </div>
+            <div>
+              <label for="expected_conversions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expected Conversions</label>
+              <input type="number" id="expected_conversions" name="expected_conversions" min="0" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Expected number of conversions">
+            </div>
+            <div>
+              <label for="expected_revenue" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expected Revenue (₹)</label>
+              <input type="number" id="expected_revenue" name="expected_revenue" min="0" step="0.01" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Expected revenue from campaign">
+            </div>
+            <div>
+              <label for="budget" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Campaign Budget (₹)</label>
+              <input type="number" id="budget" name="budget" min="0" step="0.01" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Total budget for this campaign">
+            </div>
+          </div>
+        </div>
+
+        <!-- Creative Assets -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Creative Assets</h3>
+          <div>
+            <label for="creative_assets" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Creative Assets</label>
+            <input type="file" id="creative_assets" name="creative_assets" multiple accept="image/*,video/*,.pdf" class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload images, videos, or PDFs for your campaign</p>
+          </div>
+        </div>
+
+        <!-- Campaign Content -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 marketing-form-section">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Campaign Content</h3>
+          <div>
+            <label for="campaign_content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Campaign Description & Content</label>
+            
+            <!-- Custom Rich Text Editor Container -->
+            <div class="rich-editor-container">
+              <div id="rich-editor" class="rich-editor-wrapper"></div>
+            </div>
+            
+            <input type="hidden" id="campaign_content" name="campaign_content" value="">
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Write detailed campaign content, descriptions, and any additional information</p>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3">
+          <a href="/marketing/campaigns" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md text-sm font-medium">
+            Cancel
+          </a>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium">
+            <%= mode === 'create' ? 'Create Campaign' : 'Update Campaign' %>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    const mode = '<%= mode %>';
+    const campaignId = '<%= campaignId || "" %>';
+    let allProducts = [];
+    let debounceTimer = null;
+
+    // Load campaign data for editing
+    async function loadCampaignData() {
+      if (mode === 'edit' && campaignId) {
+        try {
+          const response = await fetch(`/marketing/api/campaigns/${campaignId}`);
+          const result = await response.json();
+
+          if (result.success) {
+            const campaign = result.data;
+            
+            // Fill form fields
+            document.getElementById('name').value = campaign.name || '';
+            document.getElementById('type').value = campaign.type || '';
+            document.getElementById('channel').value = campaign.channel || '';
+            document.getElementById('objective').value = campaign.objective || '';
+            document.getElementById('status').value = campaign.status || 'draft';
+            // Format dates for input fields (convert from ISO to yyyy-MM-dd)
+            if (campaign.start_date) {
+              const startDate = new Date(campaign.start_date);
+              document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+            }
+            if (campaign.end_date) {
+              const endDate = new Date(campaign.end_date);
+              document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
+            }
+            document.getElementById('target_audience').value = campaign.target_audience || '';
+            document.getElementById('target_location').value = campaign.target_location || '';
+            document.getElementById('expected_reach').value = campaign.expected_reach || '';
+
+            // Set target products (handle new object format)
+            if (campaign.target_products && Array.isArray(campaign.target_products)) {
+              // Update the hidden input with the existing target products
+              document.getElementById('target_products').value = JSON.stringify(campaign.target_products);
+              
+              // If it's the new object format, populate the selected lists
+              if (campaign.target_products.length > 0 && typeof campaign.target_products[0] === 'object') {
+                // Make sure the lists are initialized
+                if (typeof window.selectedProductsList === 'undefined') {
+                  window.selectedProductsList = [];
+                }
+                if (typeof window.selectedCategoriesList === 'undefined') {
+                  window.selectedCategoriesList = [];
+                }
+                
+                campaign.target_products.forEach(item => {
+                  if (item.type === 'product') {
+                    window.selectedProductsList.push({ id: item.id, name: item.name });
+                  } else if (item.type === 'category') {
+                    window.selectedCategoriesList.push({ 
+                      id: item.id, 
+                      name: item.name,
+                      parent_category_id: null
+                    });
+                  } else if (item.type === 'sub-category') {
+                    // For subcategories, we need to determine the parent category
+                    // We'll need to fetch this information from the database
+                    // For now, we'll add it and let the system determine the parent later
+                    window.selectedCategoriesList.push({ 
+                      id: item.id, 
+                      name: item.name,
+                      parent_category_id: 'unknown' // Will be determined later
+                    });
+                  }
+                });
+                
+                // Re-render the selected items
+                if (typeof window.renderSelectedProducts === 'function') {
+                  window.renderSelectedProducts();
+                }
+                if (typeof window.renderSelectedCategories === 'function') {
+                  window.renderSelectedCategories();
+                }
+              }
+            }
+
+            // Set expected goal metrics
+            if (campaign.expected_goal_metrics) {
+              if (campaign.expected_goal_metrics.conversions) {
+                document.getElementById('expected_conversions').value = campaign.expected_goal_metrics.conversions;
+              }
+              if (campaign.expected_goal_metrics.revenue) {
+                document.getElementById('expected_revenue').value = campaign.expected_goal_metrics.revenue;
+              }
+              if (campaign.expected_goal_metrics.budget) {
+                document.getElementById('budget').value = campaign.expected_goal_metrics.budget;
+              }
+            }
+
+            // Set creative assets (display existing files)
+            if (campaign.creative_assets && Array.isArray(campaign.creative_assets)) {
+              const creativeAssetsContainer = document.querySelector('#creative_assets').parentNode;
+              const existingAssetsDiv = document.createElement('div');
+              existingAssetsDiv.className = 'mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-md';
+              existingAssetsDiv.innerHTML = '<p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Creative Assets:</p>' +
+                campaign.creative_assets.map(asset => {
+                  if (typeof asset === 'object' && asset.originalName) {
+                    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mr-2 mb-1">
+                      ${asset.originalName}
+                    </span>`;
+                  } else {
+                    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mr-2 mb-1">
+                      ${asset}
+                    </span>`;
+                  }
+                }).join('');
+              creativeAssetsContainer.appendChild(existingAssetsDiv);
+            }
+
+            // Set campaign content in rich text editor
+            if (campaign.campaign_content) {
+              // Wait for Quill to be initialized
+              setTimeout(() => {
+                const quillEditor = document.querySelector('#rich-editor .ql-editor');
+                if (quillEditor) {
+                  quillEditor.innerHTML = campaign.campaign_content;
+                  // Update the hidden input as well
+                  document.getElementById('campaign_content').value = campaign.campaign_content;
+                }
+              }, 500);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading campaign data:', error);
+          alert('Error loading campaign data');
+        }
+      }
+    }
+
+    // Handle form submission
+    document.getElementById('campaignForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      
+      // Handle creative assets files - upload them to server
+      const creativeAssetsFiles = formData.getAll('creative_assets');
+      let uploadedAssets = [];
+      
+      
+      if (creativeAssetsFiles.length > 0 && creativeAssetsFiles[0].name) {
+        // Create FormData for file upload
+        const uploadFormData = new FormData();
+        creativeAssetsFiles.forEach(file => {
+          if (file.name) {
+            uploadFormData.append('files', file);
+          }
+        });
+        
+        try {
+          const uploadResponse = await fetch('/marketing/api/upload-assets', {
+            method: 'POST',
+            body: uploadFormData
+          });
+          
+          const uploadResult = await uploadResponse.json();
+          if (uploadResult.success) {
+            uploadedAssets = uploadResult.files;
+          }
+        } catch (error) {
+          console.error('Error uploading assets:', error);
+        }
+      }
+      
+      // For edit mode, preserve existing assets if no new files uploaded
+      if (mode === 'edit') {
+        // Check if we have new uploaded assets (with actual file content)
+        const hasNewAssets = creativeAssetsFiles.length > 0 && creativeAssetsFiles[0].name && creativeAssetsFiles[0].size > 0;
+        
+        if (!hasNewAssets) {
+          // No new assets uploaded, fetch and preserve existing assets
+          const pathParts = window.location.pathname.split('/');
+          const campaignId = pathParts[pathParts.length - 2]; // Get the ID before 'edit'
+          try {
+            const response = await fetch(`/marketing/api/campaigns/${campaignId}`);
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data.creative_assets && Array.isArray(result.data.creative_assets) && result.data.creative_assets.length > 0) {
+              uploadedAssets = result.data.creative_assets;
+            }
+          } catch (error) {
+            console.error('Error fetching existing assets:', error);
+          }
+        }
+      }
+      
+      
+      const campaignType = formData.get('type');
+      
+      // If it's a Product Sampling campaign, create it using the sampling API
+      if (campaignType === 'product_sampling') {
+        const referenceProductId = document.getElementById('referenceProductId').value;
+        const sampleProductId = document.getElementById('sampleProductId').value;
+        const sampleProductName = document.getElementById('sampleProductName').value;
+        
+        if (!referenceProductId || !sampleProductId || !sampleProductName) {
+          showErrorToast('Please select both Reference Product and Sample Product');
+          return;
+        }
+        
+        try {
+          const response = await fetch('/marketing/api/sampling/campaigns', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              campaign_name: formData.get('name'),
+              description: formData.get('target_audience') || formData.get('campaign_content') || '',
+              product_id: sampleProductId,
+              product_name: sampleProductName,
+              created_by: 1
+            })
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showSuccessToast('Sampling campaign created successfully!', 2000);
+            // Redirect to add customers page
+            setTimeout(() => {
+              window.location.href = `/marketing/sampling/${result.data.campaign_id}/add-customers`;
+            }, 500);
+          } else {
+            showErrorToast('Error: ' + (result.error || 'Failed to create sampling campaign'), 5000);
+          }
+        } catch (error) {
+          console.error('Error creating sampling campaign:', error);
+          showErrorToast('Error creating sampling campaign. Please try again.', 5000);
+        }
+        return;
+      }
+      
+      // Regular campaign creation
+      const campaignData = {
+        name: formData.get('name'),
+        type: formData.get('type'),
+        channel: formData.get('channel'),
+        objective: formData.get('objective'),
+        start_date: formData.get('start_date'),
+        end_date: formData.get('end_date'),
+        status: formData.get('status') || 'draft',
+        target_audience: formData.get('target_audience'),
+        target_location: formData.get('target_location'),
+        expected_reach: parseInt(formData.get('expected_reach')) || 0,
+        target_products: JSON.parse(document.getElementById('target_products').value),
+        creative_assets: uploadedAssets.length > 0 ? uploadedAssets : null,
+        campaign_content: formData.get('campaign_content') || null,
+        expected_goal_metrics: {
+          conversions: parseInt(formData.get('expected_conversions')) || 0,
+          revenue: parseFloat(formData.get('expected_revenue')) || 0,
+          budget: parseFloat(formData.get('budget')) || 0
+        }
+      };
+      
+      try {
+        const url = mode === 'create' 
+          ? '/marketing/api/campaigns'
+          : `/marketing/api/campaigns/${campaignId}`;
+        
+        const method = mode === 'create' ? 'POST' : 'PUT';
+
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(campaignData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const message = mode === 'create' ? 'Campaign created successfully!' : 'Campaign updated successfully!';
+          showSuccessToast(message, 3000);
+          
+          // Redirect after a short delay to allow user to see the toast
+          setTimeout(() => {
+            window.location.href = '/marketing/campaigns';
+          }, 1500);
+        } else {
+          showErrorToast('Error: ' + (result.error || 'Failed to save campaign'), 5000);
+        }
+      } catch (error) {
+        console.error('Error saving campaign:', error);
+        showErrorToast('Error saving campaign. Please try again.', 5000);
+      }
+    });
+
+    // Handle campaign type change
+    function handleCampaignTypeChange() {
+      const campaignType = document.getElementById('type').value;
+      const isSampling = campaignType === 'product_sampling';
+      
+      // Show/hide sampling fields
+      const samplingFields = document.getElementById('samplingFields');
+      const targetProductsSection = document.getElementById('targetProductsSection');
+      const channelField = document.getElementById('channelField');
+      const objectiveField = document.getElementById('objectiveField');
+      const channelRequired = document.getElementById('channelRequired');
+      const objectiveRequired = document.getElementById('objectiveRequired');
+      const channel = document.getElementById('channel');
+      const objective = document.getElementById('objective');
+      
+      if (isSampling) {
+        samplingFields.classList.remove('hidden');
+        targetProductsSection.classList.add('hidden');
+        channelField.classList.add('hidden');
+        objectiveField.classList.add('hidden');
+        channel.removeAttribute('required');
+        objective.removeAttribute('required');
+        channel.value = ''; // Clear values
+        objective.value = '';
+        
+        // Load products for sampling if not already loaded
+        if (allProducts.length === 0) {
+          loadProductsForSampling();
+        }
+      } else {
+        samplingFields.classList.add('hidden');
+        targetProductsSection.classList.remove('hidden');
+        channelField.classList.remove('hidden');
+        objectiveField.classList.remove('hidden');
+        channel.setAttribute('required', 'required');
+        objective.setAttribute('required', 'required');
+      }
+    }
+
+    // Load products for sampling search
+    async function loadProductsForSampling() {
+      try {
+        const response = await fetch('/marketing/api/sampling/products?limit=200');
+        const result = await response.json();
+        if (result.success) {
+          allProducts = result.data;
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    }
+
+    // Product search functions for sampling
+    function searchReferenceProducts() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const searchTerm = document.getElementById('referenceProductSearch').value.toLowerCase();
+        const results = allProducts.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          (p.sku_code && p.sku_code.toLowerCase().includes(searchTerm))
+        ).slice(0, 10);
+
+        const resultsDiv = document.getElementById('referenceProductResults');
+        if (searchTerm && results.length > 0) {
+          resultsDiv.innerHTML = results.map(p => `
+            <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" onclick="selectReferenceProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${p.name}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">${p.unit || ''} - ₹${parseFloat(p.price || 0).toFixed(2)}</div>
+            </div>
+          `).join('');
+          resultsDiv.classList.remove('hidden');
+        } else {
+          resultsDiv.classList.add('hidden');
+        }
+      }, 300);
+    }
+
+    function selectReferenceProduct(id, name) {
+      document.getElementById('referenceProductId').value = id;
+      document.getElementById('referenceProductName').value = name;
+      document.getElementById('referenceProductSearch').value = name;
+      document.getElementById('referenceProductResults').classList.add('hidden');
+      
+      const displayDiv = document.getElementById('referenceProductDisplay');
+      displayDiv.querySelector('span').textContent = name;
+      displayDiv.classList.remove('hidden');
+    }
+
+    function clearReferenceProductSelection() {
+      document.getElementById('referenceProductId').value = '';
+      document.getElementById('referenceProductName').value = '';
+      document.getElementById('referenceProductSearch').value = '';
+      document.getElementById('referenceProductDisplay').classList.add('hidden');
+      document.getElementById('referenceProductResults').classList.add('hidden');
+    }
+
+    function searchSampleProducts() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const searchTerm = document.getElementById('sampleProductSearch').value.toLowerCase();
+        const results = allProducts.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          (p.sku_code && p.sku_code.toLowerCase().includes(searchTerm))
+        ).slice(0, 10);
+
+        const resultsDiv = document.getElementById('sampleProductResults');
+        if (searchTerm && results.length > 0) {
+          resultsDiv.innerHTML = results.map(p => `
+            <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" onclick="selectSampleProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${p.name}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">${p.unit || ''} - ₹${parseFloat(p.price || 0).toFixed(2)}</div>
+            </div>
+          `).join('');
+          resultsDiv.classList.remove('hidden');
+        } else {
+          resultsDiv.classList.add('hidden');
+        }
+      }, 300);
+    }
+
+    function selectSampleProduct(id, name) {
+      document.getElementById('sampleProductId').value = id;
+      document.getElementById('sampleProductName').value = name;
+      document.getElementById('sampleProductSearch').value = name;
+      document.getElementById('sampleProductResults').classList.add('hidden');
+      
+      const displayDiv = document.getElementById('sampleProductDisplay');
+      displayDiv.querySelector('span').textContent = name;
+      displayDiv.classList.remove('hidden');
+    }
+
+    function clearSampleProductSelection() {
+      document.getElementById('sampleProductId').value = '';
+      document.getElementById('sampleProductName').value = '';
+      document.getElementById('sampleProductSearch').value = '';
+      document.getElementById('sampleProductDisplay').classList.add('hidden');
+      document.getElementById('sampleProductResults').classList.add('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.relative')) {
+        document.getElementById('referenceProductResults').classList.add('hidden');
+        document.getElementById('sampleProductResults').classList.add('hidden');
+      }
+    });
+
+    // Initialize form
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize product/category selection first
+      initializeProductCategorySelection();
+      
+      // Then load campaign data for editing
+      loadCampaignData();
+      
+      // Set up campaign type change handler
+      handleCampaignTypeChange();
+    });
+
+    // Theme toggle functionality
+    document.getElementById('themeToggle').addEventListener('click', function() {
+      const html = document.documentElement;
+      const isCurrentlyDark = html.classList.contains('dark');
+      const newTheme = isCurrentlyDark ? 'light' : 'dark';
+
+      // Apply explicitly to avoid toggle inconsistencies
+      if (newTheme === 'dark') {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+
+      localStorage.setItem('theme', newTheme);
+      
+      // Reload the page to reinitialize with correct theme
+      window.location.reload();
+    });
+
+    // Dark mode toggle functionality
+    function initDarkMode() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const shouldUseDark = savedTheme === 'dark' || (savedTheme === 'system' && prefersDark);
+      
+      if (shouldUseDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    initDarkMode();
+
+    // Set default start date to today
+    function setDefaultStartDate() {
+      const startDateInput = document.getElementById('start_date');
+      if (startDateInput && !startDateInput.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayString = `${year}-${month}-${day}`;
+        startDateInput.value = todayString;
+      }
+    }
+
+    setDefaultStartDate();
+
+    // Initialize Rich Text Editor
+    function initializeRichEditor() {
+      const toolbarOptions = [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'align': [] }],
+        ['link', 'image'],
+        ['clean']
+      ];
+
+      const quill = new Quill('#rich-editor', {
+        theme: 'snow',
+        modules: {
+          toolbar: toolbarOptions
+        },
+        placeholder: 'Write your campaign content here...'
+      });
+
+      // Apply dark mode styling after initialization
+      function applyDarkModeStyling() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const editor = document.querySelector('.ql-editor');
+        const toolbar = document.querySelector('.ql-toolbar');
+        
+        if (isDark) {
+          if (editor) {
+            editor.style.backgroundColor = '#1f2937';
+            editor.style.color = '#f9fafb';
+          }
+          if (toolbar) {
+            toolbar.style.backgroundColor = '#111827';
+            toolbar.style.borderBottomColor = '#374151';
+          }
+        } else {
+          if (editor) {
+            editor.style.backgroundColor = '#ffffff';
+            editor.style.color = '#111827';
+          }
+          if (toolbar) {
+            toolbar.style.backgroundColor = '#f9fafb';
+            toolbar.style.borderBottomColor = '#e5e7eb';
+          }
+        }
+      }
+
+      // Apply initial styling
+      applyDarkModeStyling();
+
+      // Update hidden input when content changes
+      quill.on('text-change', function() {
+        const content = quill.root.innerHTML;
+        document.getElementById('campaign_content').value = content;
+      });
+
+
+      // Update dark mode on theme toggle
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+          setTimeout(applyDarkModeStyling, 100);
+        });
+      }
+    }
+
+    initializeRichEditor();
+    
+    // Force editor height after initialization
+    setTimeout(() => {
+      const editor = document.querySelector('#rich-editor .ql-editor');
+      const container = document.querySelector('#rich-editor .ql-container');
+      if (editor) {
+        editor.style.height = '350px !important';
+        editor.style.minHeight = '350px !important';
+        editor.style.maxHeight = '350px !important';
+        editor.style.overflow = 'auto';
+      }
+      if (container) {
+        container.style.height = '350px !important';
+        container.style.minHeight = '350px !important';
+        container.style.maxHeight = '350px !important';
+      }
+    }, 100);
+
+    // Product/Category Selection Functionality
+    function initializeProductCategorySelection() {
+    const targetTypeRadios = document.querySelectorAll('input[name="target_type"]');
+    const productSelection = document.getElementById('product-selection');
+    const categorySelection = document.getElementById('category-selection');
+    const productSearch = document.getElementById('product-search');
+    const productSearchResults = document.getElementById('product-search-results');
+    const selectedProducts = document.getElementById('selected-products');
+    const categorySelect = document.getElementById('category-select');
+    const subcategorySelect = document.getElementById('subcategory-select');
+    const selectedCategories = document.getElementById('selected-categories');
+    const targetProductsInput = document.getElementById('target_products');
+
+    let allProducts = [];
+    let allCategories = [];
+    let allSubcategories = [];
+    window.selectedProductsList = [];
+    window.selectedCategoriesList = [];
+
+    // Load initial data
+    loadProducts();
+    loadCategories();
+
+    // Handle target type change
+    targetTypeRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'product') {
+          productSelection.classList.remove('hidden');
+          categorySelection.classList.add('hidden');
+        } else {
+          productSelection.classList.add('hidden');
+          categorySelection.classList.remove('hidden');
+        }
+        updateTargetProductsInput();
+      });
+    });
+
+    // Product search functionality
+    productSearch.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      if (query.length >= 2) {
+        searchProducts(query);
+      } else {
+        productSearchResults.classList.add('hidden');
+      }
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!productSearch.contains(e.target) && !productSearchResults.contains(e.target)) {
+        productSearchResults.classList.add('hidden');
+      }
+    });
+
+    // Category selection change
+    categorySelect.addEventListener('change', (e) => {
+      const categoryId = e.target.value;
+      if (categoryId) {
+        loadSubcategories(categoryId);
+        subcategorySelect.disabled = false;
+        
+        // Add category to selection
+        if (!window.selectedCategoriesList.find(cat => cat.id === categoryId)) {
+          const category = allCategories.find(cat => cat.id == categoryId);
+          if (category) {
+            // Add parent_category_id as null to indicate this is a main category
+            window.selectedCategoriesList.push({
+              ...category,
+              parent_category_id: null
+            });
+            renderSelectedCategories();
+            updateTargetProductsInput();
+          }
+        }
+      } else {
+        subcategorySelect.innerHTML = '<option value="">Choose a subcategory...</option>';
+        subcategorySelect.disabled = true;
+      }
+    });
+
+    // Add subcategory to selection
+    subcategorySelect.addEventListener('change', (e) => {
+      const subcategoryId = e.target.value;
+      if (subcategoryId && !window.selectedCategoriesList.find(cat => cat.id === subcategoryId)) {
+        const subcategory = allSubcategories.find(sub => sub.id == subcategoryId);
+        if (subcategory) {
+          // Add parent_category_id to indicate this is a subcategory
+          window.selectedCategoriesList.push({
+            ...subcategory,
+            parent_category_id: subcategory.category_id
+          });
+          renderSelectedCategories();
+          updateTargetProductsInput();
+        }
+      }
+    });
+
+    // Load products
+    async function loadProducts() {
+      try {
+        const response = await fetch('/marketing/api/product-data/products');
+        const result = await response.json();
+        if (result.success) {
+          allProducts = result.data;
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    }
+
+    // Search products
+    async function searchProducts(query) {
+      try {
+        const response = await fetch(`/marketing/api/product-data/products/search?q=${encodeURIComponent(query)}`);
+        const result = await response.json();
+        if (result.success) {
+          renderProductSearchResults(result.data);
+        }
+      } catch (error) {
+        console.error('Error searching products:', error);
+      }
+    }
+
+    // Render product search results with multi-select checkboxes
+    function renderProductSearchResults(products) {
+      if (products.length === 0) {
+        productSearchResults.innerHTML = '<div class="p-3 text-gray-500 dark:text-gray-400">No products found</div>';
+      } else {
+        productSearchResults.innerHTML = products.map(product => {
+          const isSelected = window.selectedProductsList.find(p => p.id === product.id);
+          return `<div class="p-3 hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" 
+                     value="${product.id}" 
+                     data-name="${product.name.replace(/'/g, "\\'")}"
+                     class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 mr-3"
+                     ${isSelected ? 'checked' : ''}
+                     onchange="toggleProduct(${product.id}, '${product.name.replace(/'/g, "\\'")}')">
+              <div class="flex-1">
+                <div class="font-medium text-gray-900 dark:text-white">${product.name}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  ₹${product.price}${product.unit ? ' - ' + product.unit : ''}
+                </div>
+              </div>
+            </label>
+          </div>`;
+        }).join('');
+      }
+      productSearchResults.classList.remove('hidden');
+    }
+
+    // Load categories
+    async function loadCategories() {
+      try {
+        const response = await fetch('/marketing/api/product-data/categories');
+        const result = await response.json();
+        if (result.success) {
+          allCategories = result.data; // All categories (no parent_id column in current schema)
+          renderCategorySelect();
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+
+
+    // Load subcategories
+    async function loadSubcategories(categoryId) {
+      try {
+        const response = await fetch(`/marketing/api/product-data/categories/${categoryId}/subcategories`);
+        const result = await response.json();
+        if (result.success) {
+          allSubcategories = result.data;
+          renderSubcategorySelect();
+        }
+      } catch (error) {
+        console.error('Error loading subcategories:', error);
+      }
+    }
+
+    // Render category select
+    function renderCategorySelect() {
+      categorySelect.innerHTML = '<option value="">Choose a category...</option>' +
+        allCategories.map(category => 
+          `<option value="${category.id}">${category.name}</option>`
+        ).join('');
+    }
+
+    // Render subcategory select
+    function renderSubcategorySelect() {
+      if (allSubcategories.length === 0) {
+        subcategorySelect.innerHTML = '<option value="">No subcategories available</option>';
+      } else {
+        subcategorySelect.innerHTML = '<option value="">Choose a subcategory...</option>' +
+          allSubcategories.map(subcategory => 
+            `<option value="${subcategory.id}">${subcategory.name}</option>`
+          ).join('');
+      }
+    }
+
+
+    // Toggle product selection
+    window.toggleProduct = function(productId, productName) {
+      const existingIndex = window.selectedProductsList.findIndex(p => p.id === productId);
+      
+      if (existingIndex > -1) {
+        // Remove product
+        window.selectedProductsList.splice(existingIndex, 1);
+      } else {
+        // Add product
+        window.selectedProductsList.push({ id: productId, name: productName });
+      }
+      
+      renderSelectedProducts();
+      updateTargetProductsInput();
+    };
+
+    // Remove product from selection
+    window.removeProduct = function(productId) {
+      window.selectedProductsList = window.selectedProductsList.filter(p => p.id !== productId);
+      
+      // Update the checkbox in search results if visible
+      const checkbox = productSearchResults.querySelector(`input[value="${productId}"]`);
+      if (checkbox) {
+        checkbox.checked = false;
+      }
+      
+      renderSelectedProducts();
+      updateTargetProductsInput();
+    };
+
+    // Add category to selection
+    window.addCategory = function(categoryId, categoryName) {
+      if (!window.selectedCategoriesList.find(c => c.id === categoryId)) {
+        window.selectedCategoriesList.push({ 
+          id: categoryId, 
+          name: categoryName,
+          parent_category_id: null
+        });
+        renderSelectedCategories();
+        updateTargetProductsInput();
+      }
+    };
+
+    // Remove category from selection
+    window.removeCategory = function(categoryId) {
+      window.selectedCategoriesList = window.selectedCategoriesList.filter(c => c.id !== categoryId);
+      renderSelectedCategories();
+      updateTargetProductsInput();
+    };
+
+    // Render selected products
+    function renderSelectedProducts() {
+      selectedProducts.innerHTML = window.selectedProductsList.map(product => 
+        `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+          ${product.name}
+          <button type="button" onclick="removeProduct(${product.id})" class="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-200 dark:hover:text-blue-100">
+            ×
+          </button>
+        </span>`
+      ).join('');
+    }
+
+    // Render selected categories
+    function renderSelectedCategories() {
+      selectedCategories.innerHTML = window.selectedCategoriesList.map(category => 
+        `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+          ${category.name}
+          <button type="button" onclick="removeCategory(${category.id})" class="ml-2 text-green-600 hover:text-green-800 dark:text-green-200 dark:hover:text-green-100">
+            ×
+          </button>
+        </span>`
+      ).join('');
+    }
+
+    // Update hidden input with selected values
+    function updateTargetProductsInput() {
+      const targetType = document.querySelector('input[name="target_type"]:checked').value;
+      let selectedItems = [];
+      
+      if (targetType === 'product') {
+        selectedItems = window.selectedProductsList.map(p => ({ type: 'product', id: p.id, name: p.name }));
+      } else {
+        // Smart logic: if both category and its subcategory are selected, only store subcategory
+        const categoriesToStore = [];
+        const subcategoriesToStore = [];
+        
+        // Separate categories and subcategories
+        for (const item of window.selectedCategoriesList) {
+          // Check if this is a subcategory by looking at the database
+          // For now, we'll use a simple heuristic: if it has a parent_category_id, it's a subcategory
+          if (item.parent_category_id) {
+            subcategoriesToStore.push(item);
+          } else {
+            categoriesToStore.push(item);
+          }
+        }
+        
+        // Check for conflicts and apply smart logic
+        const finalCategories = [];
+        const finalSubcategories = [...subcategoriesToStore];
+        
+        for (const category of categoriesToStore) {
+          // Check if any subcategory belongs to this category
+          const hasSubcategoryFromThisCategory = subcategoriesToStore.some(sub => {
+            return sub.parent_category_id === category.id;
+          });
+          
+          if (!hasSubcategoryFromThisCategory) {
+            // Only store category if no subcategory from this category is selected
+            finalCategories.push(category);
+          }
+        }
+        
+        // Combine final results
+        selectedItems = [
+          ...finalCategories.map(c => ({ type: 'category', id: c.id, name: c.name })),
+          ...finalSubcategories.map(s => ({ type: 'sub-category', id: s.id, name: s.name }))
+        ];
+      }
+      
+      targetProductsInput.value = JSON.stringify(selectedItems);
+    }
+
+    // Initialize product/category selection
+    }
+    // end initializeProductCategorySelection
+  </script>
+
+  <%- include('../../../partials/_footer') %>
+  
+  <!-- Toast Notification System -->
+  <%- include('../../../partials/_toast') %>
+</body>
+</html>

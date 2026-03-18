@@ -1,0 +1,413 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen pt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          <li><a href="/" class="hover:text-gray-700 dark:hover:text-gray-300">Ops</a></li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/production" class="hover:text-gray-700 dark:hover:text-gray-300">Production</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-900 dark:text-white font-medium">Analytics</span>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Production Analytics</h1>
+          <p class="text-gray-600 dark:text-gray-300 mb-6">Analyze production trends, milk usage patterns, and efficiency metrics</p>
+        </div>
+        
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row gap-4" style="align-items: flex-end; justify-content: flex-end;">
+          <input type="date" id="startDate" value="<%= start_date %>" 
+                 class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-10">
+          <input type="date" id="endDate" value="<%= end_date %>" 
+                 class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-10">
+          <select id="groupBy" class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-10">
+            <option value="day" <%= group_by === 'day' ? 'selected' : '' %>>Daily</option>
+            <option value="week" <%= group_by === 'week' ? 'selected' : '' %>>Weekly</option>
+            <option value="month" <%= group_by === 'month' ? 'selected' : '' %>>Monthly</option>
+          </select>
+          <button id="applyFilters" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors h-10">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Production Days -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Production Days</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? analyticsSummary.total_production_days || 0 : 0 %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Milk Used -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Milk Used</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? Math.round((analyticsSummary.total_milk_used || 0) * 10) / 10 : 0 %> L
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Average Daily Production -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Daily Production</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? Math.round((analyticsSummary.avg_daily_production || 0) * 10) / 10 : 0 %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Product Count -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unique Products</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? analyticsSummary.total_unique_products || 0 : 0 %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Analytics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Peak Daily Production -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Peak Daily Production</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? Math.round((analyticsSummary.peak_daily_production || 0) * 10) / 10 : 0 %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Peak Daily Milk Usage -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Peak Daily Milk Usage</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? Math.round((analyticsSummary.peak_daily_milk_usage || 0) * 10) / 10 : 0 %> L
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Quantity Produced -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Quantity Produced</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= analyticsSummary ? Math.round((analyticsSummary.total_quantity_produced || 0) * 10) / 10 : 0 %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Milk Type Breakdown -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Milk Type Breakdown</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Detailed analysis of milk usage by type</p>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- A1 Milk -->
+            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-6 border border-green-200 dark:border-green-800">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 dark:bg-green-600 rounded-full mr-3"></div>
+                  <h3 class="text-lg font-semibold text-green-900 dark:text-green-200">A1 Milk</h3>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-green-900 dark:text-green-200">
+                    <%= analyticsSummary ? Math.round((analyticsSummary.total_a1_milk_used || 0) * 10) / 10 : 0 %> L
+                  </div>
+                  <div class="text-sm text-green-600 dark:text-green-400">
+                    <%= analyticsSummary ? analyticsSummary.a1_products_count || 0 : 0 %> products
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm text-green-700 dark:text-green-300">
+                <% if (analyticsSummary && analyticsSummary.total_milk_used > 0) { %>
+                  <%= Math.round(((analyticsSummary.total_a1_milk_used || 0) / analyticsSummary.total_milk_used) * 100 * 10) / 10 %>%
+                <% } else { %>
+                  0%
+                <% } %> of total milk usage
+              </div>
+            </div>
+
+            <!-- A2 Milk -->
+            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl p-6 border border-red-200 dark:border-red-800">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-red-500 dark:bg-red-600 rounded-full mr-3"></div>
+                  <h3 class="text-lg font-semibold text-red-900 dark:text-red-200">A2 Milk</h3>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-red-900 dark:text-red-200">
+                    <%= analyticsSummary ? Math.round((analyticsSummary.total_a2_milk_used || 0) * 10) / 10 : 0 %> L
+                  </div>
+                  <div class="text-sm text-red-600 dark:text-red-400">
+                    <%= analyticsSummary ? analyticsSummary.a2_products_count || 0 : 0 %> products
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm text-red-700 dark:text-red-300">
+                <% if (analyticsSummary && analyticsSummary.total_milk_used > 0) { %>
+                  <%= Math.round(((analyticsSummary.total_a2_milk_used || 0) / analyticsSummary.total_milk_used) * 100 * 10) / 10 %>%
+                <% } else { %>
+                  0%
+                <% } %> of total milk usage
+              </div>
+            </div>
+
+            <!-- Buffalo Milk -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-blue-500 dark:bg-blue-600 rounded-full mr-3"></div>
+                  <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-200">Buffalo Milk</h3>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-blue-900 dark:text-blue-200">
+                    <%= analyticsSummary ? Math.round((analyticsSummary.total_buffalo_milk_used || 0) * 10) / 10 : 0 %> L
+                  </div>
+                  <div class="text-sm text-blue-600 dark:text-blue-400">
+                    <%= analyticsSummary ? analyticsSummary.buffalo_products_count || 0 : 0 %> products
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm text-blue-700 dark:text-blue-300">
+                <% if (analyticsSummary && analyticsSummary.total_milk_used > 0) { %>
+                  <%= Math.round(((analyticsSummary.total_buffalo_milk_used || 0) / analyticsSummary.total_milk_used) * 100 * 10) / 10 %>%
+                <% } else { %>
+                  0%
+                <% } %> of total milk usage
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Products Section -->
+      <div class="mb-8">
+        <!-- Top Products -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Top Products</h2>
+          </div>
+          <div class="p-6">
+            <% if (topProducts && topProducts.length > 0) { %>
+              <div class="space-y-4">
+                <% topProducts.slice(0, 5).forEach((product, index) => { %>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <div class="w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300"><%= index + 1 %></span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-gray-900 dark:text-white"><%= product.product_name %></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400"><%= product.unit_size %> • <%= product.milk_type %></div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-lg font-semibold text-gray-900 dark:text-white"><%= Math.round(product.total_quantity * 10) / 10 %></div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400"><%= Math.round(product.total_milk_used * 10) / 10 %> L</div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Data Available</h3>
+                <p class="text-gray-600 dark:text-gray-300">No production data found for the selected period.</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Production Timeline -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Production Timeline</h2>
+        </div>
+        <div class="p-6">
+          <% if (productionAnalytics && productionAnalytics.length > 0) { %>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Period</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Products</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Quantity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Milk Used</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">A1</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">A2</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Buffalo</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <% productionAnalytics.forEach(analytics => { %>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        <%= new Date(analytics.production_date).toLocaleDateString() %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= analytics.total_products_produced %></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= Math.round(analytics.total_quantity_produced * 10) / 10 %></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= Math.round(analytics.total_milk_used * 10) / 10 %> L</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= Math.round(analytics.a1_milk_used * 10) / 10 %> L</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= Math.round(analytics.a2_milk_used * 10) / 10 %> L</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= Math.round(analytics.buffalo_milk_used * 10) / 10 %> L</td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Production Data</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">No production data found for the selected period.</p>
+              <a href="/production/daily-production" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                Add Production Data
+                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <script>
+    // Filter change handlers
+    function applyFilters() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const groupBy = document.getElementById('groupBy').value;
+      
+      if (startDate && endDate && groupBy) {
+        const url = new URL(window.location);
+        url.searchParams.set('start_date', startDate);
+        url.searchParams.set('end_date', endDate);
+        url.searchParams.set('group_by', groupBy);
+        window.location.href = url.toString();
+      }
+    }
+    
+    // Initialize filter functionality when DOM is ready
+    function initializeFilters() {
+      const applyBtn = document.getElementById('applyFilters');
+      
+      if (applyBtn) {
+        applyBtn.addEventListener('click', applyFilters);
+      }
+    }
+    
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeFilters);
+    
+    // Also call immediately in case DOM is already ready
+    if (document.readyState !== 'loading') {
+      initializeFilters();
+    }
+  </script>
+  <%- include('../../../partials/_toast') %>
+</body>
+</html>

@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo: { title: 'Purchase Order Details - PO Management', description: 'View and manage purchase order' } }) %>
+  <link rel="stylesheet" href="/assets/css/po-dark-mode.css" />
+
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'View Purchase Order' }) %>
+
+    <div class="min-h-screen pt-16">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="py-6">
+            <div class="md:flex md:items-center md:justify-between">
+              <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">Purchase Order Details</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">View and manage purchase order information</p>
+              </div>
+              <div class="mt-4 flex space-x-3 md:mt-0 md:ml-4">
+                <button onclick="printPO()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i data-lucide="printer" class="h-4 w-4 mr-2"></i>
+                  Print
+                </button>
+                <button onclick="showWhatsAppMessage()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                  <i data-lucide="message-circle" class="h-4 w-4 mr-2"></i>
+                  WhatsApp
+                </button>
+                <button id="calculateMRPButton" onclick="calculateMRP()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 hidden">
+                  <i data-lucide="calculator" class="h-4 w-4 mr-2"></i>
+                  Calculate MRP
+                </button>
+                <button onclick="showUploadInvoiceModal()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  <i data-lucide="upload" class="h-4 w-4 mr-2"></i>
+                  Upload Invoice
+                </button>
+                <button onclick="editPO()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i data-lucide="edit" class="h-4 w-4 mr-2"></i>
+                  Edit
+                </button>
+                <button onclick="deletePO()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  <i data-lucide="trash-2" class="h-4 w-4 mr-2"></i>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+          <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full mb-4">
+            <i data-lucide="loader" class="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-2">Loading Purchase Order</h3>
+          <p class="text-gray-600 dark:text-gray-400 dark:text-gray-500">Please wait while we fetch the details...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden text-center py-12">
+          <div class="inline-flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
+            <i data-lucide="alert-circle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-2">Error Loading Details</h3>
+          <p class="text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-4">We couldn't load the purchase order details. Please try again.</p>
+          <button onclick="loadPODetails()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+            Try Again
+          </button>
+        </div>
+
+        <!-- PO Details Content -->
+        <div id="poDetailsContent" class="hidden space-y-6">
+          <!-- Progress Stepper -->
+          <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 dark:border-gray-600 p-6">
+            <div class="relative px-5">
+              <!-- Progress Bar Background -->
+              <div class="absolute top-5 left-5 right-5 h-1 bg-gray-200 dark:bg-gray-600" style="z-index: 0"></div>
+              <!-- Progress Bar Active -->
+              <div id="progressBar" class="absolute top-5 left-5 h-1 bg-green-600 transition-all duration-500" style="z-index: 1; width: 0%"></div>
+
+              <!-- Steps -->
+              <div class="relative flex justify-between" style="z-index: 2">
+                <!-- Step 1: Submitted -->
+                <div class="flex flex-col items-center" style="flex: 1">
+                  <div id="step1" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 border-4 border-white dark:border-gray-800 flex items-center justify-center mb-2 transition-all duration-300">
+                    <i id="step1Icon" data-lucide="send" class="w-5 h-5 text-gray-400 dark:text-gray-500 dark:text-gray-500"></i>
+                  </div>
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300 text-center">Submitted</span>
+                  <span id="step1Date" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-500 mt-1"></span>
+                </div>
+
+                <!-- Step 2: Received -->
+                <div class="flex flex-col items-center" style="flex: 1">
+                  <div id="step2" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 border-4 border-white dark:border-gray-800 flex items-center justify-center mb-2 transition-all duration-300">
+                    <i id="step2Icon" data-lucide="package-check" class="w-5 h-5 text-gray-400 dark:text-gray-500"></i>
+                  </div>
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300 text-center">Received</span>
+                  <span id="step2Date" class="text-xs text-gray-400 dark:text-gray-500 mt-1"></span>
+                </div>
+
+                <!-- Step 3: Invoice Attached -->
+                <div class="flex flex-col items-center" style="flex: 1">
+                  <div id="step3" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 border-4 border-white dark:border-gray-800 flex items-center justify-center mb-2 transition-all duration-300">
+                    <i id="step3Icon" data-lucide="file-text" class="w-5 h-5 text-gray-400 dark:text-gray-500"></i>
+                  </div>
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300 text-center">Invoice Attached</span>
+                  <span id="step3Date" class="text-xs text-gray-400 dark:text-gray-500 mt-1"></span>
+                </div>
+
+                <!-- Step 4: Payment Completed -->
+                <div class="flex flex-col items-center" style="flex: 1">
+                  <div id="step4" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 border-4 border-white dark:border-gray-800 flex items-center justify-center mb-2 transition-all duration-300">
+                    <i id="step4Icon" data-lucide="check-circle" class="w-5 h-5 text-gray-400 dark:text-gray-500"></i>
+                  </div>
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300 text-center">Payment Completed</span>
+                  <span id="step4Date" class="text-xs text-gray-400 dark:text-gray-500 mt-1"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PO Details Section -->
+          <div>
+            <!-- PO Header Info - Compact Layout -->
+            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 dark:border-gray-600">
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 py-4">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                      <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="file-text" class="w-5 h-5 text-white"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h1 class="text-xl font-bold text-gray-900 dark:text-white dark:text-white" id="poNumber">-</h1>
+                      <div class="mt-1" id="poStatus">-</div>
+                    </div>
+                  </div>
+                  <div class="text-center lg:text-right">
+                    <div class="inline-flex flex-col items-center lg:items-end">
+                      <p class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white" id="poTotalAmount">-</p>
+                      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Amount</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-600 dark:border-gray-600">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-0">
+                  <div class="p-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-600 dark:border-gray-600">
+                    <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Vendor</dt>
+                    <dd class="text-sm font-medium text-gray-900 dark:text-white" id="vendorName">-</dd>
+                  </div>
+                  <div class="p-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-600">
+                    <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">PO Date</dt>
+                    <dd class="text-sm font-medium text-gray-900 dark:text-white" id="poDate">-</dd>
+                  </div>
+                  <div class="p-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-600">
+                    <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Delivery</dt>
+                    <dd class="text-sm font-medium text-gray-900 dark:text-white" id="expectedDelivery">-</dd>
+                  </div>
+                  <div class="p-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-600">
+                    <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">PO Type</dt>
+                    <dd class="text-sm font-medium text-gray-900 dark:text-white" id="poType">-</dd>
+                  </div>
+                  <div class="p-4">
+                    <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Payment</dt>
+                    <dd class="mt-1" id="paymentStatus">-</dd>
+                  </div>
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-700">
+                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Payment Terms</dt>
+                      <dd class="text-sm font-medium text-gray-900 dark:text-white" id="paymentTerms">-</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Logistics Partner</dt>
+                      <dd class="text-sm font-medium text-gray-900 dark:text-white" id="logisticsPartner">-</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Invoices</dt>
+                      <dd class="text-sm font-medium text-gray-900 dark:text-white" id="poInvoices">-</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Notes</dt>
+                      <dd class="text-xs text-gray-700 dark:text-gray-300" id="poNotes">-</dd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase Order Items & Financial Summary (stacked vertically) -->
+        <div class="space-y-4">
+          <div>
+            <!-- PO Items - Compact Layout -->
+            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+              <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 py-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="package" class="w-4 h-4 text-white"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Purchase Order Items</h3>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Items included in this purchase order</p>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-600">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Item Details</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Qty</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Unit Cost</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">GST %</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="poItemsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                      <!-- Items will be loaded here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <!-- Financial Summary Section -->
+            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+              <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 px-4 py-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="calculator" class="w-4 h-4 text-white"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Financial Summary</h3>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Cost breakdown and total calculations</p>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-600">
+                <div class="p-4">
+                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <dt class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        <div>Subtotal</div>
+                        <div class="text-2xs text-gray-500 dark:text-gray-400">Exclusive of GST</div>
+                      </dt>
+                      <dd class="text-lg font-semibold text-gray-900 dark:text-white" id="subtotal">-</dd>
+                    </div>
+                    <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <dt class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">GST</dt>
+                      <dd class="text-lg font-semibold text-gray-900 dark:text-white" id="gstTotal">-</dd>
+                    </div>
+                    <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <dt class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Shipping Cost</dt>
+                      <dd class="text-lg font-semibold text-gray-900 dark:text-white" id="shippingCost">-</dd>
+                    </div>
+                    <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700">
+                      <dt class="text-sm font-bold text-gray-900 dark:text-white mb-1">Total Amount</dt>
+                      <dd class="text-xl font-bold text-blue-900 dark:text-blue-400" id="totalAmount">-</dd>
+                    </div>
+                  </div>
+
+                  <!-- Payment Management Section -->
+                  <div class="border-t border-gray-200 dark:border-gray-600 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                          <i data-lucide="credit-card" class="h-3 w-3 text-white"></i>
+                        </div>
+                        <h4 class="text-md font-semibold text-gray-900 dark:text-white">Payment Management</h4>
+                      </div>
+                      <button onclick="showRecordPaymentModal()" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i data-lucide="plus" class="h-3 w-3 mr-1"></i>
+                        Record Payment
+                      </button>
+                    </div>
+
+                    <!-- Payment Status Summary -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <dt class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</dt>
+                        <dd class="text-lg font-semibold text-gray-900 dark:text-white" id="paymentTotalAmount">-</dd>
+                      </div>
+                      <div class="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                        <dt class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Paid</dt>
+                        <dd class="text-lg font-semibold text-yellow-800 dark:text-yellow-400" id="paymentTotalPaid">-</dd>
+                      </div>
+                      <div class="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-700">
+                        <dt class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Outstanding</dt>
+                        <dd class="text-lg font-semibold text-red-800 dark:text-red-400" id="paymentOutstanding">-</dd>
+                      </div>
+                    </div>
+
+                    <!-- Payment History -->
+                    <div>
+                      <h5 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Payment History</h5>
+                      <div id="paymentHistory" class="space-y-3">
+                        <!-- Payment records will be loaded here -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MRP Calculation Progress Modal -->
+    <div id="mrpProgressModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-gray-600 w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mr-3">
+                <i data-lucide="loader" class="h-5 w-5 text-purple-600 dark:text-purple-400 animate-spin"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Calculating MRP</h3>
+            </div>
+          </div>
+
+          <!-- Modal Content -->
+          <div class="mb-6">
+            <div class="flex items-center justify-center mb-4">
+              <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+                <i data-lucide="loader" class="w-8 h-8 text-purple-600 dark:text-purple-400 animate-spin"></i>
+              </div>
+            </div>
+            <p class="text-center text-gray-700 dark:text-gray-300 mb-2" id="mrpProgressText">Initializing calculation...</p>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+              <div id="mrpProgressBar" class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p class="text-center text-xs text-gray-500 dark:text-gray-400" id="mrpProgressStatus">Please wait while we calculate MRP for all variants...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MRP Calculation Success Modal -->
+    <div id="mrpSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-gray-600 w-11/12 md:w-1/2 lg:w-3/8 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-3">
+                <i data-lucide="check-circle" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">MRP Calculation Completed</h3>
+            </div>
+            <button onclick="closeMRPSuccessModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+          </div>
+
+          <!-- Modal Content -->
+          <div class="mb-6">
+            <p class="text-gray-700 dark:text-gray-300 mb-4">MRP calculation has been completed successfully! Would you like to view the pricing details?</p>
+          </div>
+
+          <!-- Modal Actions -->
+          <div class="flex justify-end space-x-3">
+            <button onclick="closeMRPSuccessModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors">Cancel</button>
+            <button onclick="viewPricingDetails()" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors">View Pricing Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp Message Modal -->
+    <div id="whatsappModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-3/8 shadow-lg rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
+        <div class="mt-3">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-3">
+                <i data-lucide="message-circle" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Message for Vendor</h3>
+            </div>
+            <button onclick="closeWhatsAppModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+              <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+          </div>
+
+          <!-- Modal Content -->
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Copy the message below and send it to the vendor via WhatsApp:</p>
+            <div class="bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Message Preview</span>
+                <button onclick="copyWhatsAppMessage()" class="inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i data-lucide="copy" class="h-3 w-3 mr-1"></i>
+                  Copy
+                </button>
+              </div>
+              <div id="whatsappMessageContent" class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed">
+                <!-- Message content will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="flex justify-end space-x-3">
+            <button onclick="closeWhatsAppModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Close</button>
+            <button onclick="openWhatsApp()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+              <i data-lucide="external-link" class="h-4 w-4 mr-2"></i>
+              Open WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Invoice Modal -->
+    <div id="uploadInvoiceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-3/8 shadow-lg rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
+        <div class="mt-3">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center mr-3">
+                <i data-lucide="upload" class="h-5 w-5 text-indigo-600 dark:text-indigo-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upload Vendor Invoice</h3>
+            </div>
+            <button onclick="closeUploadInvoiceModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+              <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+          </div>
+
+          <!-- Modal Content -->
+          <form id="uploadInvoiceForm" enctype="multipart/form-data" class="space-y-4">
+            <div>
+              <label for="invoiceNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Invoice Number *</label>
+              <input type="text" id="invoiceNumber" name="invoice_number" required class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Enter invoice number" />
+            </div>
+
+            <div>
+              <label for="invoiceDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Invoice Date *</label>
+              <input type="date" id="invoiceDate" name="invoice_date" required class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            </div>
+
+            <div>
+              <label for="invoiceAmount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Invoice Amount (₹) *</label>
+              <input type="number" id="invoiceAmount" name="invoice_amount" step="0.01" min="0" required class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="0.00" />
+            </div>
+
+            <div>
+              <label for="invoiceFile" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Invoice File *</label>
+              <div id="fileUploadArea" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md hover:border-gray-400 dark:hover:border-gray-500 transition-colors bg-gray-50 dark:bg-gray-700">
+                <div class="space-y-1 text-center">
+                  <i data-lucide="file-text" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"></i>
+                  <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                    <label for="invoiceFile" class="relative cursor-pointer bg-white dark:bg-gray-600 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                      <span>Upload a file</span>
+                      <input id="invoiceFile" name="invoice_file" type="file" accept=".pdf,.jpg,.jpeg,.png" required class="sr-only" onchange="handleFileSelection(this)" />
+                    </label>
+                    <p class="pl-1">or drag and drop</p>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">PDF, PNG, JPG up to 10MB</p>
+                </div>
+              </div>
+              <div id="selectedFileInfo" class="mt-2 hidden">
+                <div class="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-3">
+                  <div class="flex items-center">
+                    <i data-lucide="file-check" class="h-5 w-5 text-green-600 dark:text-green-400 mr-2"></i>
+                    <div>
+                      <p class="text-sm font-medium text-green-800 dark:text-green-300" id="selectedFileName"></p>
+                      <p class="text-xs text-green-600 dark:text-green-400" id="selectedFileSize"></p>
+                    </div>
+                  </div>
+                  <button type="button" onclick="clearFileSelection()" class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="invoiceNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+              <textarea id="invoiceNotes" name="notes" rows="3" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Additional notes about this invoice (optional)"></textarea>
+            </div>
+          </form>
+
+          <!-- Modal Footer -->
+          <div class="flex justify-end space-x-3 mt-6">
+            <button onclick="closeUploadInvoiceModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Cancel</button>
+            <button onclick="uploadInvoice()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <i data-lucide="upload" class="h-4 w-4 mr-2"></i>
+              Upload Invoice
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice Viewer Modal -->
+    <div id="invoiceViewerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-4 mx-auto p-4 border border-gray-200 dark:border-gray-600 w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-2xl rounded-xl bg-white dark:bg-gray-800" style="max-height: 95vh">
+        <div class="mt-3">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-3">
+                <i data-lucide="file-text" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Invoice Viewer</h3>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="downloadInvoice()" class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                <i data-lucide="download" class="h-4 w-4 mr-1"></i>
+                Download
+              </button>
+              <button onclick="closeInvoiceViewerModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <i data-lucide="x" class="h-6 w-6"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal Content -->
+          <div class="w-full" style="height: calc(95vh - 120px)">
+            <iframe id="invoiceViewer" src="" class="w-full h-full border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900" frameborder="0"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div id="recordPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-4 sm:top-20 mx-auto p-6 border border-gray-200 dark:border-gray-600 w-11/12 sm:w-1/2 lg:w-2/3 shadow-2xl rounded-xl bg-white dark:bg-gray-800">
+        <div class="mt-3">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="credit-card" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Record Payment</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Add a new payment record for this purchase order</p>
+              </div>
+            </div>
+            <button onclick="closeRecordPaymentModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <!-- Modal Content -->
+          <form id="recordPaymentForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="paymentAmount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Amount (₹) *</label>
+                <input type="number" id="paymentAmount" step="0.01" min="0" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="0.00" />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Maximum: ₹
+                  <span id="maxPaymentAmount" class="font-medium text-gray-700 dark:text-gray-300">0.00</span>
+                </p>
+              </div>
+              <div>
+                <label for="paymentDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Date *</label>
+                <input type="date" id="paymentDate" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="paymentMethod" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Method *</label>
+                <select id="paymentMethod" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="">Select Method</option>
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="upi">UPI</option>
+                  <option value="card">Card Payment</option>
+                </select>
+              </div>
+              <div>
+                <label for="paymentReference" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reference Number</label>
+                <input type="text" id="paymentReference" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="e.g., Cheque #1234" />
+              </div>
+            </div>
+
+            <div>
+              <label for="paymentNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Notes</label>
+              <textarea id="paymentNotes" rows="3" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none" placeholder="Additional notes about this payment..."></textarea>
+            </div>
+          </form>
+
+          <!-- Modal Footer -->
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+            <button onclick="closeRecordPaymentModal()" class="px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Cancel</button>
+            <button onclick="recordPayment()" class="inline-flex items-center px-4 py-2.5 bg-green-600 border-2 border-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 hover:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+              <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+              Record Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../../../partials/_footer') %> <%- include('../../../../partials/_toast') %>
+
+    <script>
+      let currentPOId = null;
+
+      // Load PO details on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        // Get PO ID from URL
+        const pathParts = window.location.pathname.split("/");
+        currentPOId = pathParts[pathParts.length - 1];
+
+        if (currentPOId) {
+          loadPODetails();
+        } else {
+          showError();
+        }
+      });
+
+      async function loadPODetails() {
+        try {
+          showLoading();
+
+          const response = await fetch(`/po/api/v1/purchase-orders/${currentPOId}`);
+          const result = await response.json();
+
+          if (result.success) {
+            currentPODetails = result.data; // Store PO details globally
+            displayPODetails(result.data);
+            loadPaymentHistory(); // Load payment history after PO details
+          } else {
+            showError();
+          }
+        } catch (error) {
+          console.error("Error loading PO details:", error);
+          showError();
+        }
+      }
+
+      async function loadPOItems(poId) {
+        try {
+          const response = await fetch(`/po/api/v1/purchase-orders/${poId}/items`);
+          const result = await response.json();
+
+          if (result.success) {
+            displayPOItems(result.data);
+          } else {
+            // If no items endpoint, show empty state
+            displayPOItems([]);
+          }
+        } catch (error) {
+          console.error("Error loading PO items:", error);
+          displayPOItems([]);
+        }
+      }
+
+      function displayPOItems(items) {
+        const tbody = document.getElementById("poItemsTableBody");
+
+        if (items.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400 text-sm">
+                No items found for this purchase order
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = items
+          .map(
+            (item) => `
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="package" class="w-3 h-3 text-green-600 dark:text-green-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-gray-900 dark:text-white">${item.item_name || "Unknown Item"}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">SKU: ${item.item_sku || "N/A"}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-center">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                ${parseFloat(item.quantity || 0).toFixed(1)}
+              </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-semibold text-gray-900 dark:text-white">₹${parseFloat(item.unit_cost || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-center">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400">
+                ${item.gst_percentage || 0}%
+              </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-white">₹${parseFloat(item.total_amount || (parseFloat(item.unit_cost || 0) * parseFloat(item.quantity || 0) + parseFloat(item.gst_amount || 0))).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          </tr>
+        `,
+          )
+          .join("");
+
+        // Re-initialize Lucide icons after rendering
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function getStatusBadge(status) {
+        const colors = {
+          draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600",
+          submitted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700",
+          approved: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700",
+          ordered: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-700",
+          in_transit: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700",
+          received: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700",
+          closed: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600",
+          cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-700",
+        };
+        const colorClass = colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600";
+        return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${colorClass} shadow-sm">${status.replace("_", " ").toUpperCase()}</span>`;
+      }
+
+      function getPaymentStatusBadge(status) {
+        const colors = {
+          pending: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-700",
+          partially_paid: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700",
+          paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700",
+        };
+        const colorClass = colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600";
+        return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${colorClass} shadow-sm">${status.replace("_", " ").toUpperCase()}</span>`;
+      }
+
+      function getPOTypeBadge(poType) {
+        const colors = {
+          product: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700",
+          material: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-700",
+        };
+        const colorClass = colors[poType] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600";
+        const displayText = poType === "product" ? "Product PO" : poType === "material" ? "Material PO" : poType?.toUpperCase() || "N/A";
+        return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${colorClass} shadow-sm">${displayText}</span>`;
+      }
+
+      function renderInvoices(invoices) {
+        if (!invoices || invoices.length === 0) {
+          return '<span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">Not available</span>';
+        }
+
+        // Find the first invoice with a file URL
+        const invoiceWithFile = invoices.find((invoice) => invoice.invoice_file_url);
+
+        if (!invoiceWithFile) {
+          return '<span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">Not available</span>';
+        }
+
+        // Show view invoice link with icon
+        return `
+          <button onclick="showInvoiceModal('${invoiceWithFile.invoice_file_url}')" class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <svg class="h-4 w-4 mr-2" style="color: #2563eb !important; fill: none !important; stroke: #2563eb !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            View Invoice
+          </button>
+        `;
+      }
+
+      function showAllInvoices() {
+        // Create a simple modal to show all invoices
+        const invoices = currentPODetails?.invoices || [];
+        if (invoices.length === 0) return;
+
+        let modalContent = `
+          <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-3/8 shadow-lg rounded-md bg-white">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                      <i data-lucide="file-text" class="h-5 w-5 text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Invoices (${invoices.length})</h3>
+                  </div>
+                  <button onclick="closeInvoicesModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                  </button>
+                </div>
+                <div class="space-y-3">
+        `;
+
+        invoices.forEach((invoice, index) => {
+          const invoiceDate = invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString("en-IN") : "N/A";
+          modalContent += `
+            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">${invoice.invoice_number}</div>
+                  <div class="text-xs text-gray-500">₹${parseFloat(invoice.invoice_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • ${invoiceDate}</div>
+                  ${invoice.notes ? `<div class="text-xs text-gray-600 mt-1">${invoice.notes}</div>` : ""}
+                </div>
+                ${
+                  invoice.invoice_file_url
+                    ? `
+                  <a href="${invoice.invoice_file_url}" target="_blank" class="inline-flex items-center px-3 py-1 border border-blue-300 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100">
+                    <i data-lucide="download" class="h-3 w-3 mr-1"></i>
+                    Download
+                  </a>
+                `
+                    : ""
+                }
+              </div>
+            </div>
+          `;
+        });
+
+        modalContent += `
+                </div>
+                <div class="flex justify-end mt-6">
+                  <button onclick="closeInvoicesModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Add modal to page
+        const modal = document.createElement("div");
+        modal.id = "invoicesModal";
+        modal.innerHTML = modalContent;
+        document.body.appendChild(modal);
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function closeInvoicesModal() {
+        const modal = document.getElementById("invoicesModal");
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      function showLoading() {
+        document.getElementById("loadingState").classList.remove("hidden");
+        document.getElementById("errorState").classList.add("hidden");
+        document.getElementById("poDetailsContent").classList.add("hidden");
+      }
+
+      function showError() {
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("errorState").classList.remove("hidden");
+        document.getElementById("poDetailsContent").classList.add("hidden");
+      }
+
+      function printPO() {
+        window.print();
+      }
+
+      function editPO() {
+        window.location.href = `/po/purchase-orders/${currentPOId}/edit`;
+      }
+
+      function deletePO() {
+        if (!currentPOId) return;
+
+        // Show single comprehensive confirmation dialog
+        if (confirm("Are you sure you want to permanently delete this purchase order? This action cannot be undone and will remove all associated data.")) {
+          performDelete();
+        }
+      }
+
+      async function performDelete() {
+        try {
+          const response = await fetch(`/po/api/v1/purchase-orders/${currentPOId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            // Show success message
+            if (typeof showSuccessToast !== "undefined") {
+              showSuccessToast("Purchase order deleted successfully");
+            } else {
+              alert("Purchase order deleted successfully");
+            }
+
+            // Redirect to purchase orders list
+            setTimeout(() => {
+              window.location.href = "/po/purchase-orders";
+            }, 1000);
+          } else {
+            // Show error message
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast(result.error || "Error deleting purchase order");
+            } else {
+              alert("Error deleting purchase order: " + (result.error || "Unknown error"));
+            }
+          }
+        } catch (error) {
+          console.error("Error deleting PO:", error);
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Error deleting purchase order");
+          } else {
+            alert("Error deleting purchase order");
+          }
+        }
+      }
+
+      // WhatsApp functionality
+      let currentPODetails = null;
+
+      function showWhatsAppMessage() {
+        if (!currentPODetails) {
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("PO details not loaded yet. Please wait and try again.");
+          } else {
+            alert("PO details not loaded yet. Please wait and try again.");
+          }
+          return;
+        }
+
+        // Load PO items first, then generate message
+        loadPOItemsForWhatsApp(currentPODetails.id);
+      }
+
+      function closeWhatsAppModal() {
+        document.getElementById("whatsappModal").classList.add("hidden");
+      }
+
+      // MRP Progress Modal functions
+      function showMRPProgressModal() {
+        document.getElementById("mrpProgressModal").classList.remove("hidden");
+        updateMRPProgress(0, "Initializing calculation...", "Preparing to calculate MRP for all variants...");
+
+        // Re-initialize icons for the modal
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function closeMRPProgressModal() {
+        document.getElementById("mrpProgressModal").classList.add("hidden");
+      }
+
+      function updateMRPProgress(percentage, text, status) {
+        const progressBar = document.getElementById("mrpProgressBar");
+        const progressText = document.getElementById("mrpProgressText");
+        const progressStatus = document.getElementById("mrpProgressStatus");
+
+        if (progressBar) {
+          progressBar.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+        }
+        if (progressText) {
+          progressText.textContent = text || "Processing...";
+        }
+        if (progressStatus) {
+          progressStatus.textContent = status || "Please wait...";
+        }
+      }
+
+      // MRP Success Modal functions
+      function showMRPSuccessModal() {
+        document.getElementById("mrpSuccessModal").classList.remove("hidden");
+
+        // Re-initialize icons for the modal
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function closeMRPSuccessModal() {
+        document.getElementById("mrpSuccessModal").classList.add("hidden");
+      }
+
+      function viewPricingDetails() {
+        closeMRPSuccessModal();
+        window.open("/po/pricing", "_blank");
+      }
+
+      function copyWhatsAppMessage() {
+        const messageContent = document.getElementById("whatsappMessageContent").textContent;
+
+        // Use the modern clipboard API if available
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard
+            .writeText(messageContent)
+            .then(() => {
+              if (typeof showSuccessToast !== "undefined") {
+                showSuccessToast("Message copied to clipboard!");
+              } else {
+                alert("Message copied to clipboard!");
+              }
+            })
+            .catch((err) => {
+              console.error("Failed to copy: ", err);
+              fallbackCopyTextToClipboard(messageContent);
+            });
+        } else {
+          fallbackCopyTextToClipboard(messageContent);
+        }
+      }
+
+      function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            if (typeof showSuccessToast !== "undefined") {
+              showSuccessToast("Message copied to clipboard!");
+            } else {
+              alert("Message copied to clipboard!");
+            }
+          } else {
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast("Failed to copy message. Please select and copy manually.");
+            } else {
+              alert("Failed to copy message. Please select and copy manually.");
+            }
+          }
+        } catch (err) {
+          console.error("Fallback: Oops, unable to copy", err);
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Failed to copy message. Please select and copy manually.");
+          } else {
+            alert("Failed to copy message. Please select and copy manually.");
+          }
+        }
+
+        document.body.removeChild(textArea);
+      }
+
+      async function loadPOItemsForWhatsApp(poId) {
+        try {
+          const response = await fetch(`/po/api/v1/purchase-orders/${poId}/items`);
+          const result = await response.json();
+
+          let items = [];
+          if (result.success) {
+            items = result.data;
+          }
+
+          const message = generateWhatsAppMessage(currentPODetails, items);
+          document.getElementById("whatsappMessageContent").textContent = message;
+          document.getElementById("whatsappModal").classList.remove("hidden");
+
+          // Re-initialize icons for the modal
+          if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+          }
+        } catch (error) {
+          console.error("Error loading PO items for WhatsApp:", error);
+          // Show message without items if there's an error
+          const message = generateWhatsAppMessage(currentPODetails, []);
+          document.getElementById("whatsappMessageContent").textContent = message;
+          document.getElementById("whatsappModal").classList.remove("hidden");
+
+          // Re-initialize icons for the modal
+          if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+          }
+        }
+      }
+
+      function openWhatsApp() {
+        if (!currentPODetails || !currentPODetails.contact_person_phone) {
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Vendor phone number not available.");
+          } else {
+            alert("Vendor phone number not available.");
+          }
+          return;
+        }
+
+        const phoneNumber = currentPODetails.contact_person_phone.replace(/\D/g, ""); // Remove non-digits
+        const message = document.getElementById("whatsappMessageContent").textContent;
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+        window.open(whatsappUrl, "_blank");
+      }
+
+      function generateWhatsAppMessage(po, items = []) {
+        const poNumber = po.po_number || "N/A";
+        const vendorName = po.vendor_name || "Vendor";
+        const contactPerson = po.contact_person_name || "Sir/Madam";
+        const poDate = po.po_date ? new Date(po.po_date).toLocaleDateString("en-IN") : "N/A";
+        const expectedDelivery = po.expected_delivery_date ? new Date(po.expected_delivery_date).toLocaleDateString("en-IN") : "N/A";
+        const logisticsPartner = po.logistics_partner_name ? (po.logistics_partner_city ? `${po.logistics_partner_name}, ${po.logistics_partner_city}` : po.logistics_partner_name) : "To be arranged";
+
+        // Generate products list
+        let productsList = "";
+        if (items && items.length > 0) {
+          productsList = "\n\n📦 *Products Required:*\n";
+          items.forEach((item, index) => {
+            const quantity = parseFloat(item.quantity || 0).toFixed(1);
+            const itemName = item.item_name || item.product_name || "Unknown Item";
+            const baseUnit = item.base_unit || "pc";
+
+            productsList += `${index + 1}. ${itemName} - Qty: ${quantity} ${baseUnit}\n`;
+          });
+        } else {
+          productsList = "\n\n📦 *Products Required:*\nNo items specified in this PO.";
+        }
+
+        return `Hello ${contactPerson},
+
+I hope this message finds you well. We have created a new Purchase Order for the following products.
+
+📋 *Purchase Order Details:*
+• PO Number: ${poNumber}
+• PO Date: ${poDate}
+• Expected Delivery: ${expectedDelivery}
+• Logistics Partner: ${logisticsPartner}${productsList}
+
+Please confirm receipt of this PO and provide us with the expected delivery timeline.
+
+We look forward to your prompt response and successful delivery.
+
+Best regards,
+Vrindavan Farm Team
+
+---
+*This is an automated message regarding PO ${poNumber}*`;
+      }
+
+      // Invoice Upload Functions
+      function showUploadInvoiceModal() {
+        document.getElementById("uploadInvoiceModal").classList.remove("hidden");
+
+        // Set today's date as default
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("invoiceDate").value = today;
+
+        // Auto-populate Invoice Number from PO details
+        if (currentPODetails && currentPODetails.po_number) {
+          document.getElementById("invoiceNumber").value = currentPODetails.po_number;
+        }
+
+        // Auto-populate Invoice Amount from PO details
+        if (currentPODetails && currentPODetails.total_amount) {
+          document.getElementById("invoiceAmount").value = parseFloat(currentPODetails.total_amount).toFixed(2);
+        }
+
+        // Re-initialize icons for the modal
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function closeUploadInvoiceModal() {
+        document.getElementById("uploadInvoiceModal").classList.add("hidden");
+        document.getElementById("uploadInvoiceForm").reset();
+        clearFileSelection(); // Clear file selection when modal closes
+      }
+
+      // File selection handling
+      function handleFileSelection(input) {
+        const file = input.files[0];
+        if (file) {
+          showSelectedFile(file);
+        }
+      }
+
+      function showSelectedFile(file) {
+        const selectedFileInfo = document.getElementById("selectedFileInfo");
+        const selectedFileName = document.getElementById("selectedFileName");
+        const selectedFileSize = document.getElementById("selectedFileSize");
+        const fileUploadArea = document.getElementById("fileUploadArea");
+
+        // Update file info
+        selectedFileName.textContent = file.name;
+        selectedFileSize.textContent = formatFileSize(file.size);
+
+        // Show file info and hide upload area
+        selectedFileInfo.classList.remove("hidden");
+        fileUploadArea.style.display = "none";
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function clearFileSelection() {
+        const selectedFileInfo = document.getElementById("selectedFileInfo");
+        const fileUploadArea = document.getElementById("fileUploadArea");
+        const invoiceFile = document.getElementById("invoiceFile");
+
+        // Clear file input
+        invoiceFile.value = "";
+
+        // Hide file info and show upload area
+        selectedFileInfo.classList.add("hidden");
+        fileUploadArea.style.display = "flex";
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      async function uploadInvoice() {
+        const form = document.getElementById("uploadInvoiceForm");
+        const formData = new FormData(form);
+
+        // Validate required fields
+        const invoiceNumber = document.getElementById("invoiceNumber").value.trim();
+        const invoiceDate = document.getElementById("invoiceDate").value;
+        const invoiceAmount = document.getElementById("invoiceAmount").value;
+        const invoiceFile = document.getElementById("invoiceFile").files[0];
+
+        if (!invoiceNumber || !invoiceDate || !invoiceAmount || !invoiceFile) {
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Please fill in all required fields");
+          } else {
+            alert("Please fill in all required fields");
+          }
+          return;
+        }
+
+        // Show loading state
+        const uploadButton = document.querySelector('#uploadInvoiceModal button[onclick="uploadInvoice()"]');
+        const originalText = uploadButton.innerHTML;
+        uploadButton.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 mr-2 animate-spin"></i>Uploading...';
+        uploadButton.disabled = true;
+
+        try {
+          const response = await fetch(`/po/api/v1/purchase-orders/${currentPOId}/invoice`, {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            if (typeof showSuccessToast !== "undefined") {
+              showSuccessToast("Invoice uploaded successfully");
+            } else {
+              alert("Invoice uploaded successfully");
+            }
+
+            closeUploadInvoiceModal();
+            // Optionally refresh the page to show the invoice
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast(result.error || "Error uploading invoice");
+            } else {
+              alert("Error uploading invoice: " + (result.error || "Unknown error"));
+            }
+          }
+        } catch (error) {
+          console.error("Error uploading invoice:", error);
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Error uploading invoice");
+          } else {
+            alert("Error uploading invoice");
+          }
+        } finally {
+          // Restore button state
+          uploadButton.innerHTML = originalText;
+          uploadButton.disabled = false;
+        }
+      }
+
+      // Invoice Viewer Functions
+      let currentInvoiceUrl = null;
+
+      function showInvoiceModal(invoiceUrl) {
+        currentInvoiceUrl = invoiceUrl;
+        document.getElementById("invoiceViewer").src = invoiceUrl;
+        document.getElementById("invoiceViewerModal").classList.remove("hidden");
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function closeInvoiceViewerModal() {
+        document.getElementById("invoiceViewerModal").classList.add("hidden");
+        document.getElementById("invoiceViewer").src = "";
+        currentInvoiceUrl = null;
+      }
+
+      function downloadInvoice() {
+        if (currentInvoiceUrl) {
+          const link = document.createElement("a");
+          link.href = currentInvoiceUrl;
+          link.download = currentInvoiceUrl.split("/").pop();
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+
+      // Payment Management Functions
+
+      function showRecordPaymentModal() {
+        if (!currentPODetails) {
+          showErrorToast("PO details not loaded yet. Please wait and try again.");
+          return;
+        }
+
+        // Set today's date as default
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("paymentDate").value = today;
+
+        // Set maximum payment amount
+        const totalAmount = parseFloat(currentPODetails.total_amount || 0);
+        document.getElementById("maxPaymentAmount").textContent = totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Clear form
+        document.getElementById("paymentAmount").value = "";
+        document.getElementById("paymentMethod").value = "";
+        document.getElementById("paymentReference").value = "";
+        document.getElementById("paymentNotes").value = "";
+
+        document.getElementById("recordPaymentModal").classList.remove("hidden");
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function closeRecordPaymentModal() {
+        document.getElementById("recordPaymentModal").classList.add("hidden");
+        document.getElementById("recordPaymentForm").reset();
+      }
+
+      async function recordPayment() {
+        const amount = document.getElementById("paymentAmount").value;
+        const date = document.getElementById("paymentDate").value;
+        const method = document.getElementById("paymentMethod").value;
+        const reference = document.getElementById("paymentReference").value;
+        const notes = document.getElementById("paymentNotes").value;
+
+        // Validate required fields
+        if (!amount || !date || !method) {
+          showWarningToast("Please fill in all required payment fields");
+          return;
+        }
+
+        if (parseFloat(amount) <= 0) {
+          showWarningToast("Payment amount must be greater than 0");
+          return;
+        }
+
+        // Check if payment amount exceeds outstanding amount
+        const totalAmount = parseFloat(currentPODetails.total_amount || 0);
+        const totalPaid = parseFloat(currentPODetails.total_paid || 0);
+        const outstanding = totalAmount - totalPaid;
+
+        if (parseFloat(amount) > outstanding) {
+          showWarningToast(`Payment amount cannot exceed outstanding amount of ₹${outstanding.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+          return;
+        }
+
+        try {
+          const response = await fetch(`/po/api/v1/purchase-orders/${currentPOId}/payments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              amount: parseFloat(amount),
+              payment_date: date,
+              payment_method: method,
+              reference_number: reference || null,
+              notes: notes || null,
+              recorded_by: 1, // You might want to get this from session
+            }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            showSuccessToast(`Payment recorded successfully! Status updated to: ${result.data.payment_status}`);
+            closeRecordPaymentModal();
+            // Reload PO details to update payment information
+            loadPODetails();
+            // Reload payment history
+            loadPaymentHistory();
+          } else {
+            showErrorToast(result.error || "Error recording payment");
+          }
+        } catch (error) {
+          console.error("Error recording payment:", error);
+          showErrorToast("Error recording payment");
+        }
+      }
+
+      // Load payment history
+      async function loadPaymentHistory() {
+        try {
+          const response = await fetch(`/po/api/v1/purchase-orders/${currentPOId}/payments`, {
+            credentials: "same-origin",
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            renderPaymentHistory(result.data);
+          } else {
+            console.error("Error loading payment history:", result.error);
+          }
+        } catch (error) {
+          console.error("Error loading payment history:", error);
+        }
+      }
+
+      // Render payment history
+      function renderPaymentHistory(payments) {
+        const container = document.getElementById("paymentHistory");
+
+        if (!payments || payments.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+              <i data-lucide="credit-card" class="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500"></i>
+              <p>No payments recorded yet</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = payments
+          .map(
+            (payment) => `
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center space-x-4">
+                  <div class="text-lg font-semibold text-gray-900 dark:text-white">₹${parseFloat(payment.amount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">${new Date(payment.payment_date).toLocaleDateString()}</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 capitalize">${payment.payment_method.replace("_", " ")}</div>
+                  ${payment.reference_number ? `<div class="text-sm text-gray-500 dark:text-gray-400">Ref: ${payment.reference_number}</div>` : ""}
+                </div>
+                ${payment.notes ? `<div class="text-sm text-gray-600 dark:text-gray-400 mt-2">${payment.notes}</div>` : ""}
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                ${new Date(payment.created_at).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        `,
+          )
+          .join("");
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Calculate MRP function
+      async function calculateMRP() {
+        if (!currentPODetails) {
+          showErrorToast("PO details not loaded yet. Please wait and try again.");
+          return;
+        }
+
+        const poId = currentPODetails.id;
+
+        try {
+          // Show loading state on button
+          const button = document.getElementById("calculateMRPButton");
+          const originalText = button.innerHTML;
+          button.innerHTML = '<i data-lucide="loader" class="h-4 w-4 mr-2 animate-spin"></i>Calculating...';
+          button.disabled = true;
+
+          // Show progress modal
+          showMRPProgressModal();
+          updateMRPProgress(10, "Connecting to server...", "Establishing connection...");
+
+          // Simulate progress updates
+          setTimeout(() => {
+            updateMRPProgress(25, "Fetching PO data...", "Retrieving purchase order information...");
+          }, 300);
+
+          setTimeout(() => {
+            updateMRPProgress(40, "Loading variant data...", "Collecting product variant information...");
+          }, 600);
+
+          setTimeout(() => {
+            updateMRPProgress(55, "Calculating expenses...", "Processing expense settings and costs...");
+          }, 900);
+
+          setTimeout(() => {
+            updateMRPProgress(70, "Computing MRP...", "Calculating Maximum Retail Price for all variants...");
+          }, 1200);
+
+          setTimeout(() => {
+            updateMRPProgress(85, "Saving calculations...", "Storing pricing data to database...");
+          }, 1500);
+
+          const response = await fetch(`/po/api/v1/purchase-orders/${poId}/calculate-mrp`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          updateMRPProgress(95, "Finalizing...", "Completing calculation process...");
+
+          const result = await response.json();
+
+          if (result.success) {
+            updateMRPProgress(100, "Calculation completed!", "MRP calculation completed successfully!");
+            
+            // Close progress modal and show success modal after a brief delay
+            setTimeout(() => {
+              closeMRPProgressModal();
+              setTimeout(() => {
+                showMRPSuccessModal();
+              }, 300);
+            }, 500);
+          } else {
+            closeMRPProgressModal();
+            showErrorToast("Error calculating MRP: " + result.error);
+          }
+        } catch (error) {
+          console.error("Error calculating MRP:", error);
+          closeMRPProgressModal();
+          showErrorToast("Error calculating MRP. Please try again.");
+        } finally {
+          // Reset button state
+          const button = document.getElementById("calculateMRPButton");
+          button.innerHTML = '<i data-lucide="calculator" class="h-4 w-4 mr-2"></i>Calculate MRP';
+          button.disabled = false;
+
+          // Re-initialize icons
+          if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+          }
+        }
+      }
+
+      // Store PO details when loaded
+      function displayPODetails(po) {
+        // Hide loading, show content
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("errorState").classList.add("hidden");
+        document.getElementById("poDetailsContent").classList.remove("hidden");
+
+        // Store PO details for WhatsApp functionality
+        currentPODetails = po;
+
+        // Populate header info
+        document.getElementById("poNumber").textContent = po.po_number || "-";
+        document.getElementById("poStatus").innerHTML = getStatusBadge(po.status);
+        // Total amount will be set after calculating with shipping cost
+
+        // Populate details
+        document.getElementById("vendorName").textContent = po.vendor_name || "-";
+        document.getElementById("poDate").textContent = po.po_date ? new Date(po.po_date).toLocaleDateString("en-IN") : "-";
+        document.getElementById("expectedDelivery").textContent = po.expected_delivery_date ? new Date(po.expected_delivery_date).toLocaleDateString("en-IN") : "-";
+        document.getElementById("poType").innerHTML = getPOTypeBadge(po.po_type);
+        document.getElementById("paymentStatus").innerHTML = getPaymentStatusBadge(po.payment_status);
+        document.getElementById("paymentTerms").textContent = po.payment_terms || "-";
+        document.getElementById("logisticsPartner").textContent = po.logistics_partner_name ? (po.logistics_partner_city ? `${po.logistics_partner_name}, ${po.logistics_partner_city}` : po.logistics_partner_name) : "Not assigned";
+        document.getElementById("poInvoices").innerHTML = renderInvoices(po.invoices || []);
+        document.getElementById("poNotes").textContent = po.notes || "No notes";
+
+        // Re-initialize Lucide icons for the invoice section
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+
+        // Show Calculate MRP button for received Product POs only
+        if (po.status === "received" && po.po_type === "product") {
+          document.getElementById("calculateMRPButton").classList.remove("hidden");
+        }
+
+        // Populate financial summary
+        const subtotal = parseFloat(po.subtotal || 0);
+        const gstAmount = parseFloat(po.gst_amount || 0);
+        const shippingCost = parseFloat(po.shipping_cost || 0);
+        // Total = Subtotal (base cost) + GST Amount + Shipping
+        const calculatedTotal = subtotal + gstAmount + shippingCost;
+
+        document.getElementById("subtotal").textContent = `₹${subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById("gstTotal").textContent = `₹${gstAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById("shippingCost").textContent = `₹${shippingCost.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById("totalAmount").textContent = `₹${calculatedTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        // Update PO header total amount
+        document.getElementById("poTotalAmount").textContent = `₹${calculatedTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        // Update currentPODetails with calculated total for other functions to use
+        currentPODetails.total_amount = calculatedTotal;
+
+        // Populate payment summary
+        const totalAmount = calculatedTotal;
+        const totalPaid = parseFloat(po.total_paid || 0);
+        const outstanding = totalAmount - totalPaid;
+
+        document.getElementById("paymentTotalAmount").textContent = `₹${totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById("paymentTotalPaid").textContent = `₹${totalPaid.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById("paymentOutstanding").textContent = `₹${outstanding.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        // Load PO items (if available)
+        loadPOItems(po.id);
+
+        // Update progress stepper
+        updateProgressStepper(po);
+      }
+
+      // Update progress stepper based on PO status
+      function updateProgressStepper(po) {
+        let progressPercentage = 0;
+
+        // Check completion status for each step independently
+        const isStep1Complete = true; // Always complete if PO exists
+        const isStep2Complete = po.status === "received" || po.status === "closed" || po.actual_delivery_date;
+        const isStep3Complete = po.invoices && po.invoices.length > 0;
+        const isStep4Complete = po.payment_status === "paid";
+
+        // Step 1: Submitted (always complete if PO exists)
+        const step1 = document.getElementById("step1");
+        const step1Icon = document.getElementById("step1Icon");
+        const step1Date = document.getElementById("step1Date");
+        if (step1 && step1Icon && step1Date && isStep1Complete) {
+          step1.classList.remove("bg-gray-200");
+          step1.classList.add("bg-green-600");
+          step1Icon.classList.remove("text-gray-400", "dark:text-gray-500");
+          step1Icon.classList.add("text-white");
+          step1Date.textContent = po.po_date ? new Date(po.po_date).toLocaleDateString("en-IN") : "";
+        }
+
+        // Step 2: Received
+        if (isStep2Complete) {
+          const step2 = document.getElementById("step2");
+          const step2Icon = document.getElementById("step2Icon");
+          const step2Date = document.getElementById("step2Date");
+          if (step2 && step2Icon && step2Date) {
+            step2.classList.remove("bg-gray-200");
+            step2.classList.add("bg-green-600");
+            step2Icon.classList.remove("text-gray-400", "dark:text-gray-500");
+            step2Icon.classList.add("text-white");
+            step2Date.textContent = po.actual_delivery_date ? new Date(po.actual_delivery_date).toLocaleDateString("en-IN") : "";
+          }
+        }
+
+        // Step 3: Invoice Attached
+        if (isStep3Complete) {
+          const step3 = document.getElementById("step3");
+          const step3Icon = document.getElementById("step3Icon");
+          const step3Date = document.getElementById("step3Date");
+          if (step3 && step3Icon && step3Date) {
+            step3.classList.remove("bg-gray-200");
+            step3.classList.add("bg-green-600");
+            step3Icon.classList.remove("text-gray-400", "dark:text-gray-500");
+            step3Icon.classList.add("text-white");
+            // Get the latest invoice date
+            const latestInvoice = po.invoices.sort((a, b) => new Date(b.invoice_date) - new Date(a.invoice_date))[0];
+            step3Date.textContent = latestInvoice.invoice_date ? new Date(latestInvoice.invoice_date).toLocaleDateString("en-IN") : "";
+          }
+        }
+
+        // Step 4: Payment Completed
+        if (isStep4Complete) {
+          const step4 = document.getElementById("step4");
+          const step4Icon = document.getElementById("step4Icon");
+          const step4Date = document.getElementById("step4Date");
+          if (step4 && step4Icon && step4Date) {
+            step4.classList.remove("bg-gray-200");
+            step4.classList.add("bg-green-600");
+            step4Icon.classList.remove("text-gray-400", "dark:text-gray-500");
+            step4Icon.classList.add("text-white");
+            // Get the latest payment date
+            if (po.payments && po.payments.length > 0) {
+              const latestPayment = po.payments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0];
+              step4Date.textContent = latestPayment.payment_date ? new Date(latestPayment.payment_date).toLocaleDateString("en-IN") : "";
+            }
+          }
+        }
+
+        // Calculate progress bar position - stop at first incomplete step in sequence
+        if (isStep1Complete && isStep2Complete && isStep3Complete && isStep4Complete) {
+          progressPercentage = 100; // All complete
+        } else if (isStep1Complete && isStep2Complete && isStep3Complete) {
+          progressPercentage = 66.66; // Up to step 3
+        } else if (isStep1Complete && isStep2Complete) {
+          progressPercentage = 33.33; // Up to step 2
+        } else if (isStep1Complete) {
+          progressPercentage = 0; // Only step 1
+        }
+
+        // Update progress bar
+        const progressBar = document.getElementById("progressBar");
+        if (progressBar) {
+          progressBar.style.width = `${progressPercentage}%`;
+        }
+      }
+
+      // Initialize Lucide icons
+      if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+      }
+    </script>
+  </body>
+</html>

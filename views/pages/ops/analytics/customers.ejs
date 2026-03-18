@@ -1,0 +1,1082 @@
+<%- include('../../../partials/_head') %> <%- include('../../../partials/_subnav', { section: 'Analytics', page: 'Customers Analytics', user: user }) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Customers Analytics</h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">Customer insights, segmentation, and lifetime value analysis</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Date Range Selector -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</label>
+          <select id="dateRange" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="this_quarter">This Quarter</option>
+            <option value="last_quarter">Last Quarter</option>
+            <option value="this_year">This Year</option>
+            <option value="last_year">Last Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+          <div id="customDateInputs" class="hidden flex items-center gap-2">
+            <input type="date" id="customStartDate" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm" />
+            <span class="text-sm text-gray-500 dark:text-gray-400">to</span>
+            <input type="date" id="customEndDate" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm" />
+            <button id="applyCustomRange" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">Apply</button>
+          </div>
+        </div>
+
+        <!-- Export Button -->
+        <button id="exportBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards: 3-column grid, six cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Total Customers -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-1a6 6 0 00-9-5.197M9 20H4v-1a6 6 0 0111.197-1.803M15 11a4 4 0 10-8 0 4 4 0 008 0zm6-2a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Customers</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" data-metric="total_customers"><%= metrics.total_customers || 0 %></p>
+          </div>
+          </div>
+          <a id="download_total" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Active Customers (0-15 days) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active (0-15 days)</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" data-metric="active_customers"><%= metrics.active_customers || 0 %></p>
+          </div>
+          </div>
+          <a id="download_active" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Inactive Customers (30+ days) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Inactive (30+ days)</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" data-metric="inactive_customers"><%= metrics.inactive_customers || 0 %></p>
+          </div>
+          </div>
+          <a id="download_inactive" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Discontinued Customers (15-16 days) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Discontinued (15-16 days)</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" data-metric="discontinued_customers"><%= metrics.discontinued_customers || 0 %></p>
+          </div>
+          </div>
+          <a id="download_discontinued" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- At Risk (15-30 days) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">At Risk (15-30 days)</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" data-metric="at_risk_customers"><%= metrics.at_risk_customers || 0 %></p>
+          </div>
+          </div>
+          <a id="download_at_risk" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- New/Prospect (Never ordered) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">New/Prospect (Never ordered)</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" data-metric="new_prospect_customers"><%= metrics.new_prospect_customers || 0 %></p>
+          </div>
+          </div>
+          <a id="download_new_prospect" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Customer Acquisition Trend -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Customer Acquisition Trend</h3>
+          <a id="download_acquisition" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" href="#" title="Download CSV" aria-label="Download CSV">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+        <div class="relative h-64">
+          <div id="acqSpinner" class="absolute inset-0 flex items-center justify-center">
+            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span class="text-sm">Loading trend…</span>
+            </div>
+          </div>
+          <canvas id="acquisitionTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- LTV Distribution -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Lifetime Value Distribution</h3>
+        <div class="h-64 relative">
+          <div id="ltvChartSpinner" class="absolute inset-0 flex items-center justify-center">
+            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span class="text-sm">Loading chart…</span>
+            </div>
+          </div>
+          <canvas id="ltvDistributionChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- LTV Distribution Results Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Lifetime Value Distribution Results</h3>
+      <div class="overflow-x-auto">
+        <div id="ltvSpinner" class="w-full py-6 flex items-center justify-center">
+          <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+            <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="text-sm">Loading LTV results…</span>
+          </div>
+        </div>
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">LTV Range</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer Count</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Percentage</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Average LTV</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total LTV</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ltvTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Customer Segmentation -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Top Customers by LTV -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top Customers by Lifetime Value</h3>
+          <div class="relative">
+            <button id="download_top_ltv" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors flex items-center gap-2" title="Download CSV" aria-label="Download CSV">
+              <i data-lucide="download" class="w-5 h-5"></i>
+              <svg id="download_top_ltv_spinner" class="hidden animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            </button>
+            <div id="download_top_ltv_menu" class="hidden absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
+              <a href="#" data-limit="100" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Top 100</a>
+              <a href="#" data-limit="500" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Top 500</a>
+              <a href="#" data-limit="1000" class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Top 1000</a>
+            </div>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <div id="topLtvSpinner" class="w-full py-6 flex items-center justify-center">
+            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span class="text-sm">Loading top customers…</span>
+            </div>
+          </div>
+          <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/4">Customer</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">Phone</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-16">Orders</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">LTV</th>
+              </tr>
+            </thead>
+            <tbody id="topLtvTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Low Balance Customers -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Low Balance Customers (Alert)</h3>
+            <span id="lowBalanceCount" class="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full">-</span>
+          </div>
+          <a id="download_low_balance" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors underline" href="#" title="See All" aria-label="See All">See All</a>
+        </div>
+        <div class="overflow-x-auto">
+          <div id="lowBalanceSpinner" class="w-full py-6 flex items-center justify-center">
+            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span class="text-sm">Loading low balance customers…</span>
+            </div>
+          </div>
+          <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-2/5">Customer</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-24">Balance</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-16">Orders</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">Last Order</th>
+              </tr>
+            </thead>
+            <tbody id="lowBalanceTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Cohorts -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Customer Cohorts (Monthly Retention)</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Track how groups of customers (by registration month) continue ordering over time.
+            <a href="/docs/CUSTOMER_COHORTS_GUIDE.md" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">Learn how to read this data →</a>
+          </p>
+        </div>
+        <a id="download_cohorts" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors underline" href="#" title="See All" aria-label="See All">See All</a>
+      </div>
+      <div class="overflow-x-auto">
+        <div id="cohortsSpinner" class="w-full py-6 flex items-center justify-center">
+          <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+            <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="text-sm">Loading cohorts…</span>
+          </div>
+        </div>
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cohort Month</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Size</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Month 0</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Month 1</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Month 2</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Month 3</th>
+            </tr>
+          </thead>
+          <tbody id="cohortsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Customers List -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Customers</h3>
+        <a id="download_recent_customers" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors underline" href="#" title="See All" aria-label="See All">See All</a>
+      </div>
+      <div class="overflow-x-auto">
+        <div id="recentCustomersSpinner" class="w-full py-6 flex items-center justify-center">
+          <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+            <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="text-sm">Loading recent customers…</span>
+          </div>
+        </div>
+        <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/3">Customer</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-24">Phone</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-20">Status</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-16">Orders</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">LTV</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-28">Joined</th>
+            </tr>
+          </thead>
+          <tbody id="recentCustomersTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- End Container -->
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  function formatDDMM(input) {
+    if (!input) return "";
+    // input like 'YYYY-MM-DD' or ISO
+    const parts = String(input).split("-");
+    if (parts.length === 3) {
+      const dd = parts[2].slice(0, 2);
+      const mm = parts[1].padStart(2, "0");
+      return `${dd}/${mm}`;
+    }
+    const d = new Date(input);
+    const day = String(d.getDate()).padStart(2, "0");
+    const mon = String(d.getMonth() + 1).padStart(2, "0");
+    return `${day}/${mon}`;
+  }
+  // Initialize dropdown from URL params
+  (function initDateRange() {
+    const params = new URLSearchParams(window.location.search);
+    const range = params.get("range");
+    const startDate = params.get("start");
+    const endDate = params.get("end");
+    const select = document.getElementById("dateRange");
+    const customInputs = document.getElementById("customDateInputs");
+    const startInput = document.getElementById("customStartDate");
+    const endInput = document.getElementById("customEndDate");
+
+    if (range) {
+      select.value = range;
+    } else {
+      select.value = "this_month";
+    }
+
+    if (range === "custom") {
+      customInputs.classList.remove("hidden");
+      customInputs.classList.add("flex");
+      if (startDate) startInput.value = startDate;
+      if (endDate) endInput.value = endDate;
+    }
+  })();
+
+  // Date range change handler
+  document.getElementById("dateRange").addEventListener("change", function () {
+    const range = this.value;
+    const customInputs = document.getElementById("customDateInputs");
+
+    if (range === "custom") {
+      customInputs.classList.remove("hidden");
+      customInputs.classList.add("flex");
+      return; // Don't navigate yet, wait for Apply
+    }
+
+    customInputs.classList.add("hidden");
+    customInputs.classList.remove("flex");
+    const url = new URL(window.location);
+    url.searchParams.set("range", range);
+    url.searchParams.delete("start");
+    url.searchParams.delete("end");
+    window.location.href = url.toString();
+  });
+
+  // Apply custom date range
+  document.getElementById("applyCustomRange").addEventListener("click", function () {
+    const startDate = document.getElementById("customStartDate").value;
+    const endDate = document.getElementById("customEndDate").value;
+    if (!startDate || !endDate) {
+      alert("Please select both start and end dates.");
+      return;
+    }
+    if (startDate > endDate) {
+      alert("Start date must be before end date.");
+      return;
+    }
+    const url = new URL(window.location);
+    url.searchParams.set("range", "custom");
+    url.searchParams.set("start", startDate);
+    url.searchParams.set("end", endDate);
+    window.location.href = url.toString();
+  });
+
+  // Helper to append custom date params to a URL
+  function appendCustomDateParams(url) {
+    const range = document.getElementById("dateRange").value;
+    if (range === "custom") {
+      const params = new URLSearchParams(window.location.search);
+      const start = params.get("start");
+      const end = params.get("end");
+      if (start) url.searchParams.set("start", start);
+      if (end) url.searchParams.set("end", end);
+    }
+  }
+
+  // Export functionality
+  document.getElementById("exportBtn").addEventListener("click", function () {
+    const range = document.getElementById("dateRange").value;
+    const url = new URL("/analytics/export/customers", window.location.origin);
+    url.searchParams.set("range", range);
+    appendCustomDateParams(url);
+    window.open(url.toString(), "_blank");
+  });
+
+  function bindSegmentDownload(id, segment) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      const range = document.getElementById("dateRange").value;
+      const url = new URL("/analytics/export/customers/segment", window.location.origin);
+      url.searchParams.set("range", range);
+      url.searchParams.set("segment", segment);
+      appendCustomDateParams(url);
+      window.open(url.toString(), "_blank");
+    });
+  }
+  bindSegmentDownload("download_total", "total");
+  bindSegmentDownload("download_active", "active");
+  bindSegmentDownload("download_inactive", "inactive");
+  bindSegmentDownload("download_discontinued", "discontinued");
+  bindSegmentDownload("download_at_risk", "at_risk");
+  bindSegmentDownload("download_new_prospect", "new_prospect");
+
+  const acqBtn = document.getElementById("download_acquisition");
+  if (acqBtn) {
+    acqBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const range = document.getElementById("dateRange").value;
+      const url = new URL("/analytics/export/customers/acquisition", window.location.origin);
+      url.searchParams.set("range", range);
+      appendCustomDateParams(url);
+      window.open(url.toString(), "_blank");
+    });
+  }
+
+  // Register plugins
+  if (window.ChartDataLabels) {
+    Chart.register(window.ChartDataLabels);
+  }
+
+  // Customer Acquisition Trend Chart - initialize empty, load via AJAX
+  const acquisitionTrendCtx = document.getElementById("acquisitionTrendChart").getContext("2d");
+  const acquisitionTrendChart = new Chart(acquisitionTrendCtx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "New Customers",
+        data: [],
+          borderColor: "rgb(59, 130, 246)",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
+          tension: 0.4,
+        },
+        {
+          label: "First-time Buyers",
+        data: [],
+          borderColor: "rgb(34, 197, 94)",
+          backgroundColor: "rgba(34, 197, 94, 0.1)",
+          tension: 0.4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        datalabels: {
+          color: document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151",
+          align: "top",
+          anchor: "end",
+          offset: 4,
+          font: { size: 10 },
+          formatter: (value) => value,
+        },
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151",
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151",
+          },
+          grid: {
+            color: document.documentElement.classList.contains("dark") ? "#374151" : "#e5e7eb",
+          },
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151",
+          },
+          grid: {
+            color: document.documentElement.classList.contains("dark") ? "#374151" : "#e5e7eb",
+          },
+        },
+      },
+    },
+  });
+
+  // Fetch acquisition trend asynchronously
+  (async function loadAcquisitionTrend() {
+    try {
+      const spinner = document.getElementById("acqSpinner");
+      if (spinner) spinner.classList.remove("hidden");
+      const ltvSpinner = document.getElementById("ltvSpinner");
+      if (ltvSpinner) ltvSpinner.classList.remove("hidden");
+      const lowBalanceSpinner = document.getElementById("lowBalanceSpinner");
+      if (lowBalanceSpinner) lowBalanceSpinner.classList.remove("hidden");
+      const cohortsSpinner = document.getElementById("cohortsSpinner");
+      if (cohortsSpinner) cohortsSpinner.classList.remove("hidden");
+      const recentCustomersSpinner = document.getElementById("recentCustomersSpinner");
+      if (recentCustomersSpinner) recentCustomersSpinner.classList.remove("hidden");
+      const range = document.getElementById("dateRange").value;
+      const url = new URL("/analytics/api/customers", window.location.origin);
+      url.searchParams.set("groupBy", "day");
+      url.searchParams.set("range", range);
+      if (range === "custom") {
+        const params = new URLSearchParams(window.location.search);
+        const start = params.get("start");
+        const end = params.get("end");
+        if (start) url.searchParams.set("start", start);
+        if (end) url.searchParams.set("end", end);
+      }
+      const resp = await fetch(url.toString(), { headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin" });
+      if (!resp.ok) return;
+      const json = await resp.json();
+      if (!json.success) return;
+      const data = Array.isArray(json.data?.acquisitionTrend) ? json.data.acquisitionTrend : [];
+      acquisitionTrendChart.data.labels = data.map((i) => formatDDMM(i.period));
+      acquisitionTrendChart.data.datasets[0].data = data.map((i) => i.new_customers);
+      acquisitionTrendChart.data.datasets[1].data = data.map((i) => i.first_time_buyers);
+      acquisitionTrendChart.update();
+
+      // Update metrics cards from AJAX response
+      if (json.data?.metrics) {
+        const m = json.data.metrics;
+        const metricsMap = {
+          total_customers: m.total_customers || 0,
+          active_customers: m.active_customers || 0,
+          inactive_customers: m.inactive_customers || 0,
+          discontinued_customers: m.discontinued_customers || 0,
+          at_risk_customers: m.at_risk_customers || 0,
+          new_prospect_customers: m.new_prospect_customers || 0,
+        };
+        document.querySelectorAll('[data-metric]').forEach(el => {
+          const key = el.getAttribute('data-metric');
+          if (metricsMap[key] !== undefined) el.textContent = metricsMap[key].toLocaleString();
+        });
+      }
+
+      // Render LTV chart from API payload
+      if (Array.isArray(json.data?.ltvDistribution)) {
+        renderLtvChart(json.data.ltvDistribution);
+        renderLtvTable(json.data.ltvDistribution);
+      }
+
+      // Render Top Customers by LTV
+      if (Array.isArray(json.data?.topCustomersLTV)) {
+        renderTopLtvTable(json.data.topCustomersLTV);
+      }
+
+      // Render Low Balance Customers
+      if (Array.isArray(json.data?.lowBalanceCustomers)) {
+        renderLowBalanceTable(json.data.lowBalanceCustomers);
+      }
+
+      // Render Customer Cohorts
+      if (Array.isArray(json.data?.customerCohorts)) {
+        renderCohortsTable(json.data.customerCohorts);
+      }
+
+      // Render Recent Customers
+      if (Array.isArray(json.data?.recentCustomers)) {
+        renderRecentCustomersTable(json.data.recentCustomers);
+      }
+    } catch (e) {
+      // swallow errors to avoid blocking page
+    } finally {
+      const spinner = document.getElementById("acqSpinner");
+      if (spinner) spinner.classList.add("hidden");
+      const ltvSpinner = document.getElementById("ltvSpinner");
+      if (ltvSpinner) ltvSpinner.classList.add("hidden");
+      const lowBalanceSpinner = document.getElementById("lowBalanceSpinner");
+      if (lowBalanceSpinner) lowBalanceSpinner.classList.add("hidden");
+      const cohortsSpinner = document.getElementById("cohortsSpinner");
+      if (cohortsSpinner) cohortsSpinner.classList.add("hidden");
+    }
+  })();
+
+  // LTV Distribution Chart (render after API fetch)
+  function renderLtvChart(ltvData) {
+    const chartSpinner = document.getElementById("ltvChartSpinner");
+    if (chartSpinner) chartSpinner.classList.add("hidden");
+
+    const ctx = document.getElementById("ltvDistributionChart").getContext("2d");
+    const isDark = document.documentElement.classList.contains("dark");
+    const textColor = isDark ? "#ffffff" : "#1f2937";
+    const bgColor = isDark ? "rgba(31, 41, 55, 0.9)" : "rgba(255, 255, 255, 0.9)";
+
+    new Chart(ctx, {
+      type: "doughnut",
+    data: {
+        labels: ltvData.map((item) => item.ltv_range),
+        datasets: [
+          {
+            data: ltvData.map((item) => item.customer_count),
+            backgroundColor: ["rgba(239, 68, 68, 0.8)", "rgba(245, 158, 11, 0.8)", "rgba(59, 130, 246, 0.8)", "rgba(34, 197, 94, 0.8)", "rgba(139, 92, 246, 0.8)", "rgba(236, 72, 153, 0.8)"],
+            borderColor: ["rgb(239, 68, 68)", "rgb(245, 158, 11)", "rgb(59, 130, 246)", "rgb(34, 197, 94)", "rgb(139, 92, 246)", "rgb(236, 72, 153)"],
+            borderWidth: 2,
+          },
+        ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+            position: "bottom",
+          labels: {
+              color: isDark ? "#e5e7eb" : "#374151",
+              font: {
+                size: 12,
+                weight: "500",
+              },
+              padding: 12,
+            },
+          },
+          datalabels: {
+            color: textColor,
+            font: {
+              size: 12,
+              weight: "600",
+            },
+            formatter: (value) => value.toLocaleString(),
+            anchor: "center",
+            align: "center",
+          },
+        },
+      },
+    });
+  }
+
+  function renderLtvTable(ltvData) {
+    const tbody = document.getElementById("ltvTableBody");
+    if (!tbody) return;
+    const fmtCurrency = (v) => `₹${Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+    const fmtPct = (v) => `${Number(v || 0).toFixed(1)}%`;
+    const rowsHtml = (ltvData || [])
+      .map((row, index) => {
+        const range = row.ltv_range || "";
+        const count = row.customer_count || 0;
+        const pct = fmtPct(row.percentage || 0);
+        const avg = fmtCurrency(row.avg_ltv || 0);
+        const total = fmtCurrency(row.total_ltv || 0);
+        const btnId = `download_ltv_${index}`;
+        return `
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${range}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${count}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${pct}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${avg}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${total}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <button id="${btnId}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors" title="Download CSV" aria-label="Download CSV" data-range="${range}">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+      })
+      .join("");
+    tbody.innerHTML = rowsHtml;
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+    // Bind download handlers for LTV range buttons
+    (ltvData || []).forEach((row, index) => {
+      const btnId = `download_ltv_${index}`;
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          const range = row.ltv_range || "";
+          const url = new URL("/analytics/export/customers/ltv-range", window.location.origin);
+          // URLSearchParams.set() automatically handles encoding, don't double-encode
+          url.searchParams.set("range", range);
+          window.open(url.toString(), "_blank");
+        });
+      }
+    });
+  }
+
+  function renderTopLtvTable(rows) {
+    const tbody = document.getElementById("topLtvTableBody");
+    const spinner = document.getElementById("topLtvSpinner");
+    if (!tbody) return;
+    if (spinner) spinner.classList.add("hidden");
+    const fmtCurrency = (v) => `₹${Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+    const fmtLakh = (v) => {
+      const n = Number(v || 0);
+      if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)} Cr`;
+      if (n >= 100000) return `₹${(n / 100000).toFixed(2)} L`;
+      return fmtCurrency(n);
+    };
+    const html = (rows || [])
+      .slice(0, 5)
+      .map(
+        (r) => `
+      <tr>
+        <td class="px-4 py-4 whitespace-nowrap max-w-[160px]">
+          <div class="text-sm font-medium text-gray-900 dark:text-white truncate">${r.name || ""}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 truncate">${r.email || ""}</div>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white w-28 truncate">${r.phone || ""}</td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white w-16">${r.total_orders || 0}</td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400 w-28 text-right">${fmtLakh(r.ltv || 0)}</td>
+      </tr>
+    `,
+      )
+      .join("");
+    tbody.innerHTML = html;
+  }
+
+  function renderLowBalanceTable(rows) {
+    const tbody = document.getElementById("lowBalanceTableBody");
+    const spinner = document.getElementById("lowBalanceSpinner");
+    const countBadge = document.getElementById("lowBalanceCount");
+    if (!tbody) return;
+    if (spinner) spinner.classList.add("hidden");
+
+    const totalCount = (rows || []).length;
+    if (countBadge) {
+      countBadge.textContent = totalCount;
+    }
+
+    const html = (rows || [])
+      .slice(0, 5)
+      .map((r) => {
+        const balance = Number(r.wallet_balance || 0);
+        const balanceClass = balance < 50 ? "text-red-600 dark:text-red-400" : "text-yellow-600 dark:text-yellow-400";
+        const lastOrder = r.last_order_date ? new Date(r.last_order_date).toLocaleDateString() : "Never";
+        return `
+      <tr>
+        <td class="px-4 py-4 whitespace-nowrap max-w-[200px]">
+          <div class="text-sm font-medium text-gray-900 dark:text-white truncate">${r.name || ""}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 truncate">${r.email || ""}</div>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap w-24">
+          <span class="text-sm font-medium ${balanceClass}">₹${balance.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white w-16">${r.total_orders || 0}</td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 w-28">${lastOrder}</td>
+      </tr>
+    `;
+      })
+      .join("");
+    tbody.innerHTML = html;
+  }
+
+  // Download Low Balance CSV
+  (function bindLowBalanceDownload() {
+    const btn = document.getElementById("download_low_balance");
+    if (!btn) return;
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const url = new URL("/analytics/export/customers/low-balance", window.location.origin);
+      url.searchParams.set("threshold", "200");
+      window.open(url.toString(), "_blank");
+    });
+  })();
+
+  function renderCohortsTable(cohorts) {
+    const tbody = document.getElementById("cohortsTableBody");
+    const spinner = document.getElementById("cohortsSpinner");
+    if (!tbody) return;
+    if (spinner) spinner.classList.add("hidden");
+
+    // Get current month for comparison
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+    // Helper to check if a month has occurred
+    const hasMonthOccurred = (monthStr) => {
+      return monthStr <= currentMonth;
+    };
+
+    // Helper to get month string for a given month offset
+    const getMonthForOffset = (cohortMonthStr, offset) => {
+      const [year, month] = cohortMonthStr.split("-").map(Number);
+      const date = new Date(year, month - 1 + offset, 1);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    };
+
+    const getColorClass = (pct, hasOccurred) => {
+      // If month hasn't occurred yet, use gray/disabled styling
+      if (!hasOccurred) {
+        return "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-60";
+      }
+      // Normal color coding for occurred months
+      const val = parseFloat(pct);
+      if (val >= 80) return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200";
+      if (val >= 50) return "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200";
+      if (val >= 25) return "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200";
+      return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200";
+    };
+
+    const html = (cohorts || [])
+      .map((cohort) => {
+        const cohortMonth = cohort.cohort_month || "";
+        const size = cohort.cohort_size || 0;
+        const pct0 = size > 0 ? (((cohort.month_0_customers || 0) / size) * 100).toFixed(1) : "0.0";
+        const pct1 = size > 0 ? (((cohort.month_1_customers || 0) / size) * 100).toFixed(1) : "0.0";
+        const pct2 = size > 0 ? (((cohort.month_2_customers || 0) / size) * 100).toFixed(1) : "0.0";
+        const pct3 = size > 0 ? (((cohort.month_3_customers || 0) / size) * 100).toFixed(1) : "0.0";
+
+        // Determine which months have occurred
+        const month0HasOccurred = hasMonthOccurred(getMonthForOffset(cohortMonth, 0));
+        const month1HasOccurred = hasMonthOccurred(getMonthForOffset(cohortMonth, 1));
+        const month2HasOccurred = hasMonthOccurred(getMonthForOffset(cohortMonth, 2));
+        const month3HasOccurred = hasMonthOccurred(getMonthForOffset(cohortMonth, 3));
+
+        return `
+      <tr>
+        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${cohortMonth}</td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${size.toLocaleString()}</td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
+          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getColorClass(pct0, month0HasOccurred)}" ${!month0HasOccurred ? 'title="Future month - not yet occurred"' : ""}>${pct0}%</span>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
+          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getColorClass(pct1, month1HasOccurred)}" ${!month1HasOccurred ? 'title="Future month - not yet occurred"' : ""}>${pct1}%</span>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
+          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getColorClass(pct2, month2HasOccurred)}" ${!month2HasOccurred ? 'title="Future month - not yet occurred"' : ""}>${pct2}%</span>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
+          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getColorClass(pct3, month3HasOccurred)}" ${!month3HasOccurred ? 'title="Future month - not yet occurred"' : ""}>${pct3}%</span>
+        </td>
+      </tr>
+    `;
+      })
+      .join("");
+    tbody.innerHTML = html;
+  }
+
+  // Download Cohorts CSV
+  (function bindCohortsDownload() {
+    const btn = document.getElementById("download_cohorts");
+    if (!btn) return;
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const range = document.getElementById("dateRange").value;
+      const url = new URL("/analytics/export/customers/cohorts", window.location.origin);
+      url.searchParams.set("range", range);
+      appendCustomDateParams(url);
+      window.open(url.toString(), "_blank");
+    });
+  })();
+
+  // Render Recent Customers Table
+  function renderRecentCustomersTable(customers) {
+    const tbody = document.getElementById("recentCustomersTableBody");
+    const spinner = document.getElementById("recentCustomersSpinner");
+    if (!tbody) return;
+    if (spinner) spinner.classList.add("hidden");
+
+    // Show only top 5 customers
+    const displayCustomers = (customers || []).slice(0, 5);
+
+    const getStatusColor = (status) => {
+      switch (status) {
+        case "Active":
+          return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        case "At Risk":
+          return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        case "Inactive":
+          return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+        case "New/Prospect":
+          return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        default:
+          return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+      }
+    };
+
+    const formatLTV = (ltv) => {
+      const num = parseFloat(ltv) || 0;
+      if (num >= 100000) {
+        return (num / 100000).toFixed(2) + "L";
+      }
+      return num.toLocaleString();
+    };
+
+    const html =
+      displayCustomers.length > 0
+        ? displayCustomers
+            .map((customer) => {
+              const ltv = formatLTV(customer.ltv);
+              const joinedDate = customer.created_at ? new Date(customer.created_at).toLocaleDateString() : "-";
+              const name = customer.name || "N/A";
+              const phone = customer.phone || "-";
+              const email = customer.email || "";
+              const status = customer.customer_status || "Unknown";
+              const orders = customer.total_orders || 0;
+
+              return `
+          <tr>
+            <td class="px-4 py-3 text-sm">
+              <div class="font-medium text-gray-900 dark:text-white truncate">${name}</div>
+              ${email ? `<div class="text-xs text-gray-500 dark:text-gray-400 truncate">${email}</div>` : ""}
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-900 dark:text-white truncate">${phone}</td>
+            <td class="px-4 py-3 text-sm text-center">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)}">${status}</span>
+            </td>
+            <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-white">${orders}</td>
+            <td class="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">₹${ltv}</td>
+            <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">${joinedDate}</td>
+          </tr>
+        `;
+            })
+            .join("")
+        : '<tr><td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">No recent customers found</td></tr>';
+
+    tbody.innerHTML = html;
+  }
+
+  // Download Recent Customers CSV
+  (function bindRecentCustomersDownload() {
+    const btn = document.getElementById("download_recent_customers");
+    if (!btn) return;
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const url = new URL("/analytics/export/customers/recent", window.location.origin);
+      url.searchParams.set("limit", "10000");
+      window.open(url.toString(), "_blank");
+    });
+  })();
+
+  // Download Top LTV CSV with spinner
+  (function bindTopLtvDownload() {
+    const btn = document.getElementById("download_top_ltv");
+    const spin = document.getElementById("download_top_ltv_spinner");
+    const menu = document.getElementById("download_top_ltv_menu");
+    if (!btn || !menu) return;
+
+    // Toggle menu
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      menu.classList.toggle("hidden");
+    });
+
+    // Close on outside click
+    document.addEventListener("click", function (e) {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add("hidden");
+      }
+    });
+
+    // Handle option clicks
+    menu.querySelectorAll("a[data-limit]").forEach((a) => {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        const limit = this.getAttribute("data-limit") || "100";
+        if (spin) spin.classList.remove("hidden");
+        const url = new URL("/analytics/export/customers/top-ltv", window.location.origin);
+        url.searchParams.set("limit", limit);
+        window.open(url.toString(), "_blank");
+        menu.classList.add("hidden");
+        setTimeout(() => {
+          if (spin) spin.classList.add("hidden");
+        }, 1200);
+      });
+    });
+  })();
+</script>
+
+<%- include('../../../partials/_footer') %>

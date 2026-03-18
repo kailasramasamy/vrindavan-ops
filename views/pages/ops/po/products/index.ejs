@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo: { title: 'Procurement Items - PO Management', description: 'Manage procurement items, variants, costs, and pricing' } }) %>
+  <link rel="stylesheet" href="/assets/css/po-dark-mode.css" />
+
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'Products' }) %>
+
+    <div class="min-h-screen pt-16">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="py-6">
+            <div class="md:flex md:items-center md:justify-between">
+              <div class="flex-1 min-w-0">
+                <h2 class="mt-2 text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">Procurement Items Management</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage products, variants, costs, and pricing for procurement</p>
+              </div>
+              <div class="mt-4 flex md:mt-0 md:ml-4">
+                <button type="button" onclick="openCreateItemModal()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+                  Add New Item
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="p-4 lg:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                    <i data-lucide="package" class="h-5 w-5 lg:h-6 lg:w-6 text-blue-600 dark:text-blue-400"></i>
+                  </div>
+                </div>
+                <div class="ml-3 lg:ml-4 flex-1">
+                  <dl>
+                    <dt class="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">Total Items</dt>
+                    <dd class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white" id="totalItems">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="p-4 lg:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <i data-lucide="check-circle" class="h-5 w-5 lg:h-6 lg:w-6 text-green-600 dark:text-green-400"></i>
+                  </div>
+                </div>
+                <div class="ml-3 lg:ml-4 flex-1">
+                  <dl>
+                    <dt class="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">Active Items</dt>
+                    <dd class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white" id="activeItems">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="p-4 lg:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 lg:w-12 lg:h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                    <i data-lucide="dollar-sign" class="h-5 w-5 lg:h-6 lg:w-6 text-yellow-600 dark:text-yellow-400"></i>
+                  </div>
+                </div>
+                <div class="ml-3 lg:ml-4 flex-1">
+                  <dl>
+                    <dt class="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">Avg. Cost</dt>
+                    <dd class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white" id="avgCost">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="p-4 lg:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                    <i data-lucide="trending-up" class="h-5 w-5 lg:h-6 lg:w-6 text-purple-600 dark:text-purple-400"></i>
+                  </div>
+                </div>
+                <div class="ml-3 lg:ml-4 flex-1">
+                  <dl>
+                    <dt class="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">Categories</dt>
+                    <dd class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white" id="totalCategories">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+          <div class="px-4 py-4 lg:px-6 lg:py-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 items-end w-full">
+              <div>
+                <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
+                <input type="text" id="searchInput" placeholder="Search by name, SKU, HSN..." class="block w-full border-2 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+              <div>
+                <label for="categoryFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                <select id="categoryFilter" class="block w-full border-2 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="">All Categories</option>
+                </select>
+              </div>
+              <div>
+                <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select id="statusFilter" class="block w-full border-2 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+          <div class="px-4 py-4 lg:px-6 lg:py-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">Procurement Items</h3>
+              <div class="flex space-x-2">
+                <button onclick="refreshItems()" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
+                  <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                  Refresh
+                </button>
+                <button onclick="exportItems()" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
+                  <i data-lucide="download" class="h-4 w-4 mr-2"></i>
+                  Download CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Table View (Hidden on mobile by default) -->
+            <div id="tableView" class="overflow-x-auto -mx-4 sm:mx-0 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600 table-fixed">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Item</th>
+                    <th class="px-3 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Base Unit</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Variants</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">Base Cost</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">GST %</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider profit-margin-header">Profit Margin</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="itemsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                  <!-- Items will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Card View (Mobile Only) -->
+            <div id="cardView" class="sm:hidden space-y-4">
+              <div id="itemsCardBody">
+                <!-- Cards will be loaded here -->
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-600 sm:px-6">
+              <div class="flex-1 flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-700 dark:text-gray-300">
+                    Showing
+                    <span id="showingStart">1</span>
+                    to
+                    <span id="showingEnd">10</span>
+                    of
+                    <span id="totalItemsCount">0</span>
+                    results
+                  </p>
+                </div>
+                <div>
+                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <button onclick="previousPage()" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <i data-lucide="chevron-left" class="h-5 w-5"></i>
+                    </button>
+                    <button onclick="nextPage()" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <i data-lucide="chevron-right" class="h-5 w-5"></i>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Item Modal -->
+    <div id="itemModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-4 sm:top-20 mx-auto p-4 sm:p-6 border w-11/12 sm:w-3/4 lg:w-2/5 xl:w-1/2 shadow-2xl rounded-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transform transition-all duration-300 ease-out scale-95 opacity-0">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="package" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="itemModalTitle">Add New Item</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Create a new procurement item</p>
+              </div>
+            </div>
+            <button onclick="closeItemModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <form id="itemForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="itemName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item Name *</label>
+                <input type="text" id="itemName" name="name" required placeholder="Enter item name" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+              <div>
+                <label for="itemCategory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
+                <select id="itemCategory" name="category_id" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="">Select Category</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="itemType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item Type *</label>
+                <select id="itemType" name="item_type" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="">Select Item Type</option>
+                  <option value="product">Product (with variants & MRP)</option>
+                  <option value="material">Material (simple items)</option>
+                </select>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Products support variants and MRP calculations. Materials are simple items without variants.</p>
+              </div>
+              <div>
+                <label for="itemSku" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SKU Code</label>
+                <input type="text" id="itemSku" name="sku_code" placeholder="Enter SKU code" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="itemHsn" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">HSN Code</label>
+                <input type="text" id="itemHsn" name="hsn_code" placeholder="Enter HSN code" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+              <div>
+                <label for="itemBaseUnit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Base Unit</label>
+                <select id="itemBaseUnit" name="base_unit" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="KG">KG - Kilogram</option>
+                  <option value="G">G - Grams</option>
+                  <option value="L">L - Liters</option>
+                  <option value="ML">ML - Milliliters</option>
+                  <option value="PC">PC - Pieces</option>
+                  <option value="BOX">BOX - Boxes</option>
+                  <option value="PACK">PACK - Packs</option>
+                  <option value="BAG">BAG - Bags</option>
+                  <option value="BOTTLE">BOTTLE - Bottles</option>
+                  <option value="TIN">TIN - Tins</option>
+                  <option value="JAR">JAR - Jars</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label for="itemGst" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">GST %</label>
+                <input type="number" id="itemGst" name="gst_percentage" step="0.01" min="0" max="100" placeholder="0.00" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+              <div id="profitMarginField" class="hidden">
+                <label for="itemProfitMargin" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default Profit Margin %</label>
+                <input type="number" id="itemProfitMargin" name="default_profit_margin" step="0.01" min="0" max="100" placeholder="20.00" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Default profit margin for all variants</p>
+              </div>
+              <div>
+                <label for="itemStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select id="itemStatus" name="status" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="itemDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea id="itemDescription" name="description" rows="3" placeholder="Enter item description (optional)" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <button type="button" onclick="closeItemModal()" class="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">Cancel</button>
+              <button type="submit" class="px-6 py-2.5 bg-blue-600 border-2 border-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                <span id="itemSubmitText">Create Item</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant Management Modal -->
+    <div id="variantModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-4 sm:top-20 mx-auto p-6 border border-gray-200 dark:border-gray-600 w-11/12 sm:w-3/4 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-xl bg-white dark:bg-gray-800 transform transition-all duration-300 ease-out scale-95 opacity-0">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="layers" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="variantModalTitle">Manage Variants</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400" id="variantModalSubtitle">Add and manage product variants</p>
+              </div>
+            </div>
+            <button onclick="closeVariantModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <!-- Add Variant Form -->
+          <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">Add New Variant</h4>
+            <form id="variantForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="variantName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Variant Size *</label>
+                  <input type="number" id="variantName" name="name" required step="0.001" min="0" placeholder="e.g., 1, 0.5, 0.25" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+                </div>
+                <div>
+                  <label for="variantUnit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit</label>
+                  <div id="variantUnitDisplay" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 sm:text-sm font-medium">KG</div>
+                  <input type="hidden" id="variantUnit" name="unit" value="KG" />
+                </div>
+              </div>
+              <div class="flex justify-end space-x-3">
+                <button type="button" onclick="resetVariantForm()" class="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Reset</button>
+                <button type="submit" class="px-4 py-2 bg-green-600 border-2 border-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 hover:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Add Variant</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Variants List -->
+          <div>
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">Existing Variants</h4>
+            <div id="variantsList" class="space-y-2">
+              <!-- Variants will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* Custom CSS to fix table overflow and column widths */
+      #tableView {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #tableView table {
+        min-width: 900px; /* Reduced minimum table width */
+      }
+
+      /* Column width controls */
+      #tableView th:nth-child(1),
+      #tableView td:nth-child(1) {
+        width: 22%;
+        min-width: 150px;
+      } /* Item */
+      #tableView th:nth-child(2),
+      #tableView td:nth-child(2) {
+        width: 7%;
+        min-width: 60px;
+      } /* Type */
+      #tableView th:nth-child(3),
+      #tableView td:nth-child(3) {
+        width: 8%;
+        min-width: 70px;
+      } /* Base Unit */
+      #tableView th:nth-child(4),
+      #tableView td:nth-child(4) {
+        width: 18%;
+        min-width: 120px;
+      } /* Variants */
+      #tableView th:nth-child(5),
+      #tableView td:nth-child(5) {
+        width: 8%;
+        min-width: 70px;
+      } /* Base Cost */
+      #tableView th:nth-child(6),
+      #tableView td:nth-child(6) {
+        width: 6%;
+        min-width: 50px;
+      } /* GST % */
+      #tableView th:nth-child(7),
+      #tableView td:nth-child(7) {
+        width: 10%;
+        min-width: 80px;
+      } /* Profit Margin */
+      #tableView th:nth-child(8),
+      #tableView td:nth-child(8) {
+        width: 7%;
+        min-width: 60px;
+      } /* Status */
+      #tableView th:nth-child(9),
+      #tableView td:nth-child(9) {
+        width: 9%;
+        min-width: 90px;
+      } /* Actions */
+
+      /* Allow full content display */
+      #tableView td {
+        overflow: visible;
+        white-space: normal;
+      }
+
+      /* Reduce padding for more compact table */
+      #tableView th,
+      #tableView td {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+
+      @media (min-width: 640px) {
+        #tableView th,
+        #tableView td {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+      }
+
+      /* Custom CSS to ensure variant modal width is properly controlled */
+      #variantModal .relative {
+        max-width: 500px !important;
+        width: 90% !important;
+      }
+
+      @media (min-width: 640px) {
+        #variantModal .relative {
+          max-width: 600px !important;
+          width: 75% !important;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        #variantModal .relative {
+          max-width: 500px !important;
+          width: 50% !important;
+        }
+      }
+
+      @media (min-width: 1280px) {
+        #variantModal .relative {
+          max-width: 600px !important;
+          width: 40% !important;
+        }
+      }
+    </style>
+
+    <script>
+      let items = [];
+      let filteredItems = [];
+      let categories = [];
+      let currentPage = 1;
+      let itemsPerPage = 10;
+      let currentItemId = null;
+
+      // Debounce function for search input
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
+      // Load data on page load
+      document.addEventListener("DOMContentLoaded", async function () {
+        await loadCategories();
+        loadItems();
+
+        // Add event listeners for automatic filtering
+        document.getElementById("searchInput").addEventListener("input", debounce(applyFilters, 300));
+        document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+        document.getElementById("statusFilter").addEventListener("change", applyFilters);
+
+        // Add event listener for item type change
+        document.getElementById("itemType").addEventListener("change", updateProfitMarginFieldVisibility);
+      });
+
+      // Handle window resize to re-render with appropriate view
+      window.addEventListener("resize", function () {
+        renderItems();
+      });
+
+      // Load categories
+      async function loadCategories() {
+        try {
+          const response = await fetch("/po/api/v1/categories");
+          const result = await response.json();
+          if (result.success) {
+            categories = result.data;
+            populateCategoryDropdowns();
+          }
+        } catch (error) {
+          console.error("Error loading categories:", error);
+        }
+      }
+
+      // Populate category dropdowns
+      function populateCategoryDropdowns() {
+        const categoryFilter = document.getElementById("categoryFilter");
+        const itemCategory = document.getElementById("itemCategory");
+
+        categories.forEach((category) => {
+          const option1 = new Option(category.name, category.id);
+          const option2 = new Option(category.name, category.id);
+          categoryFilter.add(option1);
+          itemCategory.add(option2);
+        });
+      }
+
+      // Load items
+      async function loadItems() {
+        try {
+          const response = await fetch("/po/api/v1/products");
+          const result = await response.json();
+          if (result.success) {
+            items = result.data;
+            filteredItems = [...items]; // Initialize filtered items
+            updateStats();
+            applyFilters(); // Apply current filters
+          }
+        } catch (error) {
+          console.error("Error loading items:", error);
+        }
+      }
+
+      // Update statistics
+      function updateStats() {
+        const totalItems = items.length;
+        const activeItems = items.filter((item) => item.status === "active").length;
+        const avgCost = items.length > 0 ? (items.reduce((sum, item) => sum + (item.base_cost || 0), 0) / items.length).toFixed(2) : 0;
+        const totalCategories = new Set(items.map((item) => item.category_id)).size;
+
+        document.getElementById("totalItems").textContent = totalItems;
+        document.getElementById("activeItems").textContent = activeItems;
+        document.getElementById("avgCost").textContent = `₹${avgCost}`;
+        document.getElementById("totalCategories").textContent = totalCategories;
+      }
+
+      // Render items table
+      function renderItems() {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageItems = filteredItems.slice(startIndex, endIndex);
+
+        // Automatically determine view based on screen size
+        const isMobile = window.innerWidth < 640; // sm breakpoint
+        if (isMobile) {
+          renderCardView(pageItems);
+        } else {
+          renderTableView(pageItems);
+        }
+
+        // Update pagination info
+        document.getElementById("showingStart").textContent = startIndex + 1;
+        document.getElementById("showingEnd").textContent = Math.min(endIndex, filteredItems.length);
+        document.getElementById("totalItemsCount").textContent = filteredItems.length;
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Render table view
+      function renderTableView(pageItems) {
+        const tbody = document.getElementById("itemsTableBody");
+        tbody.innerHTML = pageItems
+          .map(
+            (item) => `
+    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
+            <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <i data-lucide="package" class="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500"></i>
+            </div>
+          </div>
+          <div class="ml-3 sm:ml-4">
+            <div class="text-sm font-medium text-gray-900 dark:text-white">${item.name}</div>
+            <div class="mt-1">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                ${getCategoryName(item.category_id)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.item_type === "material" ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400" : "bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400"}">
+          ${item.item_type === "material" ? "Material" : "Product"}
+        </span>
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+          ${item.base_unit || "KG"}
+        </span>
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+        ${
+          item.variants
+            ? `<div class="space-y-1">
+            <div class="text-xs text-gray-400 dark:text-gray-500">${item.variants.split(",").length} variants:</div>
+            <div class="flex flex-wrap gap-1">
+              ${item.variants
+                .split(",")
+                .map((v) => `<span class="inline-block bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 px-2 py-1 rounded text-xs font-medium">${v.trim()}</span>`)
+                .join("")}
+            </div>
+          </div>`
+            : '<span class="text-gray-400 dark:text-gray-500 text-xs">No variants</span>'
+        }
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">
+        ₹${item.base_cost || "0.00"}
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+        ${item.gst_percentage || 0}%
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white profit-margin-cell">
+        ${
+          item.item_type === "product"
+            ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
+            ${item.default_profit_margin || 20}%
+          </span>`
+            : ""
+        }
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === "active" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"}">
+          ${item.status}
+        </span>
+      </td>
+      <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+        <div class="flex space-x-1 sm:space-x-2">
+          <button onclick="editItem(${item.id})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 p-1" title="Edit Item">
+            <i data-lucide="edit" class="h-4 w-4"></i>
+          </button>
+          ${
+            item.item_type === "product"
+              ? `
+          <button onclick="manageVariants(${item.id})" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1" title="Manage Variants">
+            <i data-lucide="layers" class="h-4 w-4"></i>
+          </button>
+          `
+              : ""
+          }
+          <button onclick="deleteItem(${item.id})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1" title="Delete Item">
+            <i data-lucide="trash-2" class="h-4 w-4"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+    `,
+          )
+          .join("");
+
+        // Hide/show Profit Margin column header based on item types
+        const profitMarginHeader = document.querySelector(".profit-margin-header");
+        const hasProductItems = pageItems.some((item) => item.item_type === "product");
+
+        if (profitMarginHeader) {
+          profitMarginHeader.style.display = hasProductItems ? "table-cell" : "none";
+        }
+      }
+
+      // Render card view
+      function renderCardView(pageItems) {
+        const cardBody = document.getElementById("itemsCardBody");
+        cardBody.innerHTML = pageItems
+          .map(
+            (item) => `
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div class="flex items-start space-x-3 flex-1">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <i data-lucide="package" class="h-6 w-6 text-gray-400 dark:text-gray-500"></i>
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white">${item.name}</h4>
+            <!-- Show variants prominently at the top -->
+            ${
+              item.variants
+                ? `<div class="mt-2">
+                  <div class="text-xs text-gray-400 dark:text-gray-500 mb-1">Available Variants:</div>
+                  <div class="flex flex-wrap gap-1">
+                    ${item.variants
+                      .split(",")
+                      .map((v) => `<span class="inline-block bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 py-1 rounded text-xs font-medium">${v.trim()}</span>`)
+                      .join("")}
+                  </div>
+                </div>`
+                : ""
+            }
+            <div class="mt-2 flex items-center flex-wrap gap-2 text-xs">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.item_type === "material" ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400" : "bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400"}">
+                ${item.item_type === "material" ? "Material" : "Product"}
+              </span>
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                ${getCategoryName(item.category_id)}
+              </span>
+              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                ${item.base_unit || "KG"}
+              </span>
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
+                ${item.variants ? item.variants.split(",").length : 0} variants
+              </span>
+              <span class="font-medium text-gray-900 dark:text-white">₹${item.base_cost || "0.00"}</span>
+              <span class="text-gray-500 dark:text-gray-400">${item.gst_percentage || 0}% GST</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col items-end space-y-2">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === "active" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"}">
+            ${item.status}
+          </span>
+          <div class="flex space-x-1">
+            <button onclick="editItem(${item.id})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 p-1 rounded" title="Edit Item">
+              <i data-lucide="edit" class="h-4 w-4"></i>
+            </button>
+            ${
+              item.item_type === "product"
+                ? `
+            <button onclick="manageVariants(${item.id})" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1 rounded" title="Manage Variants">
+              <i data-lucide="layers" class="h-4 w-4"></i>
+            </button>
+            `
+                : ""
+            }
+            <button onclick="deleteItem(${item.id})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded" title="Delete Item">
+              <i data-lucide="trash-2" class="h-4 w-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      // Get category name by ID
+      function getCategoryName(categoryId) {
+        const category = categories.find((c) => c.id === categoryId);
+        return category ? category.name : "Unknown";
+      }
+
+      // Modal functions
+      function updateProfitMarginFieldVisibility() {
+        const itemType = document.getElementById("itemType").value;
+        const profitMarginField = document.getElementById("profitMarginField");
+
+        if (itemType === "product") {
+          profitMarginField.classList.remove("hidden");
+        } else {
+          profitMarginField.classList.add("hidden");
+        }
+      }
+
+      function openCreateItemModal() {
+        currentItemId = null;
+        document.getElementById("itemModalTitle").textContent = "Add New Item";
+        document.getElementById("itemSubmitText").textContent = "Create Item";
+        document.getElementById("itemForm").reset();
+        document.getElementById("itemType").value = "product"; // Default to product
+        document.getElementById("itemStatus").value = "active"; // Default to active
+        document.getElementById("itemBaseUnit").value = "KG"; // Default to KG
+        document.getElementById("itemProfitMargin").value = "20.00"; // Default profit margin
+        updateProfitMarginFieldVisibility();
+
+        const modal = document.getElementById("itemModal");
+        modal.classList.remove("hidden");
+
+        // Add animation class
+        setTimeout(() => {
+          modal.querySelector(".transform").classList.add("scale-100", "opacity-100");
+        }, 10);
+      }
+
+      function closeItemModal() {
+        const modal = document.getElementById("itemModal");
+        modal.querySelector(".transform").classList.remove("scale-100", "opacity-100");
+
+        setTimeout(() => {
+          modal.classList.add("hidden");
+        }, 200);
+
+        currentItemId = null;
+      }
+
+      function editItem(id) {
+        const item = items.find((i) => i.id === id);
+        if (!item) return;
+
+        currentItemId = id;
+        document.getElementById("itemModalTitle").textContent = "Edit Item";
+        document.getElementById("itemSubmitText").textContent = "Update Item";
+
+        // Populate form
+        document.getElementById("itemName").value = item.name;
+        document.getElementById("itemType").value = item.item_type || "product";
+        document.getElementById("itemCategory").value = item.category_id;
+        document.getElementById("itemSku").value = item.sku_code || "";
+        document.getElementById("itemHsn").value = item.hsn_code || "";
+        document.getElementById("itemGst").value = item.gst_percentage || 0;
+        document.getElementById("itemBaseUnit").value = item.base_unit || "KG";
+        document.getElementById("itemStatus").value = item.status;
+        document.getElementById("itemDescription").value = item.description || "";
+        document.getElementById("itemProfitMargin").value = item.default_profit_margin || 20;
+
+        // Update profit margin field visibility
+        updateProfitMarginFieldVisibility();
+
+        const modal = document.getElementById("itemModal");
+        modal.classList.remove("hidden");
+
+        // Add animation class
+        setTimeout(() => {
+          modal.querySelector(".transform").classList.add("scale-100", "opacity-100");
+        }, 10);
+      }
+
+      async function deleteItem(id) {
+        if (confirm("Are you sure you want to delete this item?")) {
+          try {
+            const response = await fetch(`/po/api/v1/products/${id}`, {
+              method: "DELETE",
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              // Use direct toast function call
+              if (typeof showSuccessToast !== "undefined") {
+                showSuccessToast("Item deleted successfully");
+              } else if (typeof toastManager !== "undefined") {
+                toastManager.show("Item deleted successfully", "success");
+              } else {
+                console.log("SUCCESS: Item deleted successfully");
+              }
+              loadItems(); // Reload the items list
+            } else {
+              // Use direct toast function call
+              if (typeof showErrorToast !== "undefined") {
+                showErrorToast(result.error || "Error deleting item");
+              } else if (typeof toastManager !== "undefined") {
+                toastManager.show(result.error || "Error deleting item", "error");
+              } else {
+                console.log("ERROR:", result.error || "Error deleting item");
+              }
+            }
+          } catch (error) {
+            console.error("Error deleting item:", error);
+            // Use direct toast function call
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast("Error deleting item");
+            } else if (typeof toastManager !== "undefined") {
+              toastManager.show("Error deleting item", "error");
+            } else {
+              console.log("ERROR: Error deleting item");
+            }
+          }
+        }
+      }
+
+      // Form submission
+      document.getElementById("itemForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        // Only include profit margin for product type items
+        if (data.item_type !== "product") {
+          delete data.default_profit_margin;
+        }
+
+        try {
+          const url = currentItemId ? `/po/api/v1/products/${currentItemId}` : "/po/api/v1/products";
+          const method = currentItemId ? "PUT" : "POST";
+
+          const response = await fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            closeItemModal();
+            loadItems();
+            // Use direct toast function call
+            if (typeof showSuccessToast !== "undefined") {
+              showSuccessToast("Item saved successfully");
+            } else if (typeof toastManager !== "undefined") {
+              toastManager.show("Item saved successfully", "success");
+            } else {
+              console.log("SUCCESS: Item saved successfully");
+            }
+          } else {
+            // Use direct toast function call
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast(result.error || "Error saving item");
+            } else if (typeof toastManager !== "undefined") {
+              toastManager.show(result.error || "Error saving item", "error");
+            } else {
+              console.log("ERROR:", result.error || "Error saving item");
+            }
+          }
+        } catch (error) {
+          console.error("Error saving item:", error);
+          // Use direct toast function call
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Error saving item");
+          } else if (typeof toastManager !== "undefined") {
+            toastManager.show("Error saving item", "error");
+          } else {
+            console.log("ERROR: Error saving item");
+          }
+        }
+      });
+
+      // Filter functions
+      function applyFilters() {
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        const category = document.getElementById("categoryFilter").value;
+        const status = document.getElementById("statusFilter").value;
+
+        // Apply filters
+        filteredItems = items.filter((item) => {
+          // Search filter
+          const matchesSearch = !search || item.name.toLowerCase().includes(search) || (item.sku_code && item.sku_code.toLowerCase().includes(search)) || (item.hsn_code && item.hsn_code.toLowerCase().includes(search)) || (item.description && item.description.toLowerCase().includes(search));
+
+          // Category filter
+          const matchesCategory = !category || item.category_id == category;
+
+          // Status filter
+          const matchesStatus = !status || item.status === status;
+
+          return matchesSearch && matchesCategory && matchesStatus;
+        });
+
+        // Reset to first page when filtering
+        currentPage = 1;
+
+        // Re-render items with filtered results
+        renderItems();
+      }
+
+      function clearFilters() {
+        // Clear all filter inputs
+        document.getElementById("searchInput").value = "";
+        document.getElementById("categoryFilter").value = "";
+        document.getElementById("statusFilter").value = "";
+
+        // Reset filtered items to show all items
+        filteredItems = [...items];
+        currentPage = 1;
+        renderItems();
+      }
+
+      function refreshItems() {
+        loadItems();
+      }
+
+      function exportItems() {
+        if (!items || items.length === 0) {
+          showErrorToast("No items to export");
+          return;
+        }
+
+        try {
+          // Prepare CSV headers
+          const headers = ["Name", "Type", "Category", "SKU Code", "HSN Code", "Base Unit", "Base Cost", "GST %", "Profit Margin %", "Status", "Description", "Variants Count"];
+
+          // Prepare CSV data
+          const csvData = items.map((item) => [`"${(item.name || "").replace(/"/g, '""')}"`, `"${item.item_type || ""}"`, `"${getCategoryName(item.category_id)}"`, `"${item.sku_code || ""}"`, `"${item.hsn_code || ""}"`, `"${item.base_unit || ""}"`, item.base_cost || 0, item.gst_percentage || 0, item.default_profit_margin || 0, `"${item.status || ""}"`, `"${(item.description || "").replace(/"/g, '""')}"`, item.variants ? item.variants.split(",").length : 0]);
+
+          // Combine headers and data
+          const csvContent = [headers.join(","), ...csvData.map((row) => row.join(","))].join("\n");
+
+          // Create and download file
+          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", `procurement_items_${new Date().toISOString().split("T")[0]}.csv`);
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          showSuccessToast(`Exported ${items.length} items to CSV`);
+        } catch (error) {
+          console.error("Error exporting items:", error);
+          showErrorToast("Error exporting items to CSV");
+        }
+      }
+
+      // Pagination
+      function previousPage() {
+        if (currentPage > 1) {
+          currentPage--;
+          renderItems();
+        }
+      }
+
+      function nextPage() {
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderItems();
+        }
+      }
+
+      // Variant Management Functions
+      let currentProductId = null;
+      let currentProductBaseUnit = "KG";
+      let variants = [];
+
+      function manageVariants(productId) {
+        currentProductId = productId;
+        const product = items.find((item) => item.id === productId);
+        if (!product) return;
+
+        document.getElementById("variantModalTitle").textContent = `Manage Variants - ${product.name}`;
+        document.getElementById("variantModalSubtitle").textContent = `Add and manage variants for ${product.name}`;
+
+        // Store product's base unit for use in variant form
+        currentProductBaseUnit = product.base_unit || "KG";
+
+        // Sync variant unit with product's base unit when opening modal
+        syncVariantUnitWithBaseUnit(currentProductBaseUnit);
+
+        const modal = document.getElementById("variantModal");
+        modal.classList.remove("hidden");
+
+        // Add animation class
+        setTimeout(() => {
+          modal.querySelector(".transform").classList.add("scale-100", "opacity-100");
+        }, 10);
+
+        loadVariants(productId);
+      }
+
+      function closeVariantModal() {
+        const modal = document.getElementById("variantModal");
+        modal.querySelector(".transform").classList.remove("scale-100", "opacity-100");
+
+        setTimeout(() => {
+          modal.classList.add("hidden");
+        }, 200);
+
+        currentProductId = null;
+        currentProductBaseUnit = "KG";
+        variants = [];
+      }
+
+      async function loadVariants(productId) {
+        try {
+          const response = await fetch(`/po/api/v1/products/${productId}/variants`);
+          const result = await response.json();
+          if (result.success) {
+            variants = result.data || [];
+            renderVariants();
+          }
+        } catch (error) {
+          console.error("Error loading variants:", error);
+          variants = [];
+          renderVariants();
+        }
+      }
+
+      function renderVariants() {
+        const container = document.getElementById("variantsList");
+        if (variants.length === 0) {
+          container.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-4">No variants found. Add your first variant above.</div>';
+          return;
+        }
+
+        container.innerHTML = variants
+          .map(
+            (variant) => `
+          <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="layers" class="h-4 w-4 text-green-600 dark:text-green-400"></i>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900 dark:text-white">${variant.name}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Size: ${variant.name.split(" ")[0]} | Unit: ${variant.unit || "KG"}</div>
+              </div>
+            </div>
+            <button onclick="deleteVariant(${variant.id})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Delete Variant">
+              <i data-lucide="trash-2" class="h-4 w-4"></i>
+            </button>
+          </div>
+        `,
+          )
+          .join("");
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      function resetVariantForm() {
+        document.getElementById("variantForm").reset();
+        // Sync variant unit with product's base unit
+        syncVariantUnitWithBaseUnit(currentProductBaseUnit);
+      }
+
+      function syncVariantUnitWithBaseUnit(baseUnit) {
+        // If baseUnit is provided as parameter, use it; otherwise try to get from itemBaseUnit element
+        if (!baseUnit) {
+          const itemBaseUnitEl = document.getElementById("itemBaseUnit");
+          baseUnit = itemBaseUnitEl ? itemBaseUnitEl.value : "KG";
+        }
+        
+        const variantUnitDisplay = document.getElementById("variantUnitDisplay");
+        const variantUnitInput = document.getElementById("variantUnit");
+
+        if (variantUnitDisplay && variantUnitInput) {
+          // Normalize baseUnit to uppercase for display and input
+          const normalizedUnit = (baseUnit || "KG").toUpperCase();
+          
+          // Update display to show the base unit (uppercase for display)
+          variantUnitDisplay.textContent = normalizedUnit;
+          
+          // Update hidden input value (uppercase, backend will normalize)
+          variantUnitInput.value = normalizedUnit;
+        }
+      }
+
+      // Sync variant unit when base unit changes (for item edit modal)
+      const itemBaseUnitEl = document.getElementById("itemBaseUnit");
+      if (itemBaseUnitEl) {
+        itemBaseUnitEl.addEventListener("change", () => {
+          syncVariantUnitWithBaseUnit(itemBaseUnitEl.value);
+        });
+      }
+
+      // Variant form submission
+      document.getElementById("variantForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        if (!currentProductId) return;
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        // Format variant name as "size unit" (e.g., "1 KG", "0.5 G")
+        const variantSize = data.name;
+        const variantUnit = document.getElementById("variantUnit").value || "KG";
+        data.name = `${variantSize} ${variantUnit}`;
+
+        try {
+          const response = await fetch(`/po/api/v1/products/${currentProductId}/variants`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            if (typeof showSuccessToast !== "undefined") {
+              showSuccessToast("Variant added successfully");
+            } else {
+              console.log("SUCCESS: Variant added successfully");
+            }
+            resetVariantForm();
+            loadVariants(currentProductId);
+            // Also refresh the main items list to show updated variant counts
+            loadItems();
+          } else {
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast(result.error || "Error adding variant");
+            } else {
+              console.log("ERROR:", result.error || "Error adding variant");
+            }
+          }
+        } catch (error) {
+          console.error("Error adding variant:", error);
+          if (typeof showErrorToast !== "undefined") {
+            showErrorToast("Error adding variant");
+          } else {
+            console.log("ERROR: Error adding variant");
+          }
+        }
+      });
+
+      async function deleteVariant(variantId) {
+        if (confirm("Are you sure you want to delete this variant?")) {
+          try {
+            const response = await fetch(`/po/api/v1/variants/${variantId}`, {
+              method: "DELETE",
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              if (typeof showSuccessToast !== "undefined") {
+                showSuccessToast("Variant deleted successfully");
+              } else {
+                console.log("SUCCESS: Variant deleted successfully");
+              }
+              loadVariants(currentProductId);
+              // Also refresh the main items list to show updated variant counts
+              loadItems();
+            } else {
+              if (typeof showErrorToast !== "undefined") {
+                showErrorToast(result.error || "Error deleting variant");
+              } else {
+                console.log("ERROR:", result.error || "Error deleting variant");
+              }
+            }
+          } catch (error) {
+            console.error("Error deleting variant:", error);
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast("Error deleting variant");
+            } else {
+              console.log("ERROR: Error deleting variant");
+            }
+          }
+        }
+      }
+    </script>
+
+    <%- include('../../../../partials/_footer') %> <%- include('../../../../partials/_toast') %>
+
+    <script>
+      // Toast notification - defined after toast partial is loaded
+      function showToast(message, type = "info") {
+        // Use the global convenience functions directly
+        if (type === "success" && typeof showSuccessToast !== "undefined") {
+          showSuccessToast(message);
+        } else if (type === "error" && typeof showErrorToast !== "undefined") {
+          showErrorToast(message);
+        } else if (type === "warning" && typeof showWarningToast !== "undefined") {
+          showWarningToast(message);
+        } else if (type === "info" && typeof showInfoToast !== "undefined") {
+          showInfoToast(message);
+        } else if (typeof toastManager !== "undefined") {
+          toastManager.show(message, type);
+        } else {
+          console.log(`${type.toUpperCase()}: ${message}`);
+        }
+      }
+    </script>
+  </body>
+</html>

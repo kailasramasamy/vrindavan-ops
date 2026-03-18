@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-brand-bg dark:bg-gray-900 text-brand-ink dark:text-gray-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %>
+      <%- include('../../../partials/_subnav', { title: 'Admin · CPP', user, section, subsection }) %>
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <!-- Header Section -->
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+            <div>
+              <h1 class="text-3xl font-bold text-slate-900 dark:text-white">CPP Management</h1>
+              <p class="text-slate-600 dark:text-gray-300 mt-1">Manage Collection Point Partners and their salary configurations</p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <div class="relative flex-1 sm:w-80" style="position: relative !important;">
+                <input id="cppSearch" placeholder="Search CPPs..." 
+                       class="w-full pl-14 pr-4 py-2 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <i data-lucide="search" style="position: absolute !important; left: 12px !important; top: 50% !important; transform: translateY(-50%) !important; width: 16px !important; height: 16px !important; color: #94a3b8 !important; pointer-events: none !important; z-index: 10 !important;"></i>
+              </div>
+              <button type="button" class="btn btn-primary flex items-center gap-2" id="btnOpenAddCpp">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Add CPP
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 dark:text-gray-300">Total CPPs</p>
+                  <p class="text-2xl font-bold text-slate-900 dark:text-white"><%= (rows||[]).length %></p>
+                </div>
+                <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <i data-lucide="building-2" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 dark:text-gray-300">Active CPPs</p>
+                  <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400"><%= (rows||[]).filter(r => r.status === 'active').length %></p>
+                </div>
+                <div class="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                  <i data-lucide="check-circle" class="w-6 h-6 text-emerald-600 dark:text-emerald-400"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 dark:text-gray-300">Fixed Salary</p>
+                  <p class="text-2xl font-bold text-purple-600 dark:text-purple-400"><%= (rows||[]).filter(r => r.salary_type === 'fixed').length %></p>
+                </div>
+                <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <i data-lucide="dollar-sign" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 dark:text-gray-300">Commission</p>
+                  <p class="text-2xl font-bold text-orange-600 dark:text-orange-400"><%= (rows||[]).filter(r => r.salary_type === 'commission').length %></p>
+                </div>
+                <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                  <i data-lucide="trending-up" class="w-6 h-6 text-orange-600 dark:text-orange-400"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CPP Cards Grid -->
+          <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <% (rows||[]).forEach(row => { %>
+              <div class="cpp-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200" 
+                   data-name="<%- row.name %>" 
+                   data-rcc="<%- row.rcc_name || '' %>" 
+                   data-village="<%- row.village || '' %>" 
+                   data-phone="<%- row.phone || '' %>" 
+                   data-milk="<%- row.milk_type %>" 
+                   data-status="<%- row.status %>"
+                   data-salary-type="<%- row.salary_type || 'fixed' %>"
+                   data-salary-amount="<%- row.salary_amount || 0 %>"
+                   data-rate-type="<%- row.rate_type || 'flat' %>"
+                   data-flat-rate="<%- row.flat_rate || '' %>"
+                   data-rate-chart-id="<%- row.rate_chart_id || '' %>"
+                   data-rate-chart-name="<%- row.rate_chart_name || '' %>">
+                
+                <!-- Header -->
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <i data-lucide="building-2" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-slate-900 dark:text-white text-lg"><%= row.name %></h3>
+                      <p class="text-sm text-slate-500 dark:text-gray-400"><%= row.rcc_name || 'No RCC assigned' %></p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full <%= row.status==='active' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300' %>">
+                      <%= row.status %>
+                    </span>
+                    <button type="button" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 btn-edit transition-colors duration-200"
+                            aria-label="Edit CPP"
+                            data-id="<%= row.id %>"
+                            data-rcc-id="<%= row.rcc_id || '' %>"
+                            data-person="<%= row.person_name || '' %>"
+                            data-name="<%= row.name %>"
+                            data-village="<%= row.village || '' %>"
+                            data-phone="<%= row.phone || '' %>"
+                            data-milk-type="<%= row.milk_type %>"
+                            data-status="<%= row.status %>"
+                            data-salary-type="<%= row.salary_type || 'fixed' %>"
+                            data-salary-amount="<%= row.salary_amount || 0 %>"
+                            data-rate-type="<%= row.rate_type || 'flat' %>"
+                            data-flat-rate="<%= row.flat_rate || '' %>"
+                            data-rate-chart-id="<%= row.rate_chart_id || '' %>">
+                      <i data-lucide="edit-3" class="w-4 h-4 text-slate-600 dark:text-gray-400"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Details -->
+                <div class="space-y-3 mb-4">
+                  <% if (row.person_name) { %>
+                    <div class="flex items-center gap-2 text-sm">
+                      <i data-lucide="user" class="w-4 h-4 text-slate-400 dark:text-gray-500"></i>
+                      <span class="text-slate-600 dark:text-gray-300"><%= row.person_name %></span>
+                    </div>
+                  <% } %>
+                  <div class="flex items-center gap-2 text-sm">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 dark:text-gray-500"></i>
+                    <span class="text-slate-600 dark:text-gray-300"><%= row.village || 'No village specified' %></span>
+                  </div>
+                  <div class="flex items-center gap-2 text-sm">
+                    <i data-lucide="phone" class="w-4 h-4 text-slate-400 dark:text-gray-500"></i>
+                    <span class="text-slate-600 dark:text-gray-300"><%= row.phone || 'No phone specified' %></span>
+                  </div>
+                  <div class="flex items-center gap-2 text-sm">
+                    <i data-lucide="droplets" class="w-4 h-4 text-slate-400 dark:text-gray-500"></i>
+                    <span class="text-slate-600 dark:text-gray-300">Milk Type: <%= row.milk_type %></span>
+                  </div>
+                </div>
+
+                <!-- Salary Information -->
+                <div class="border-t border-slate-200 dark:border-gray-700 pt-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="<%= row.salary_type === 'fixed' ? 'dollar-sign' : 'trending-up' %>" 
+                         class="w-4 h-4 <%= row.salary_type === 'fixed' ? 'text-purple-500 dark:text-purple-400' : 'text-orange-500 dark:text-orange-400' %>"></i>
+                      <span class="text-sm font-medium text-slate-700 dark:text-gray-300 capitalize"><%= row.salary_type || 'fixed' %></span>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                        ₹<%= parseFloat(row.salary_amount || 0).toLocaleString() %>
+                      </p>
+                      <% if (row.salary_type === 'commission') { %>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">per litre</p>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Rate Information -->
+                <div class="border-t border-slate-200 dark:border-gray-700 pt-3 mt-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="<%= row.rate_type === 'flat' ? 'hash' : 'bar-chart-3' %>" 
+                         class="w-4 h-4 text-blue-500 dark:text-blue-400"></i>
+                      <span class="text-sm font-medium text-slate-700 dark:text-gray-300">Rate</span>
+                    </div>
+                    <div class="text-right">
+                      <% if (row.rate_type === 'flat') { %>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                          ₹<%= parseFloat(row.flat_rate || 0).toFixed(2) %>
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">flat rate</p>
+                      <% } else { %>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                          <%= row.rate_chart_name || 'No chart' %>
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">rate chart</p>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- Add CPP Modal -->
+          <div id="addCppModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4">
+            <div class="absolute inset-0 bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75 backdrop-blur-sm" data-close="modal"></div>
+            <div class="modal-container relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border dark:border-gray-700">
+              <!-- Modal Header -->
+              <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 px-6 py-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <i data-lucide="plus" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Add New CPP</h3>
+                  </div>
+                  <button type="button" class="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200" data-close="modal">
+                    <i data-lucide="x" class="w-5 h-5 text-slate-500 dark:text-gray-400"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Modal Body -->
+              <div class="modal-body flex-1 overflow-y-auto px-6 py-6" style="min-height: 0;">
+                <form id="addCppForm" method="post" action="/admin/cpp" class="space-y-6">
+                <!-- Basic Information -->
+                <div class="space-y-6">
+                  <div class="flex items-center gap-2 mb-4">
+                    <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                      <i data-lucide="info" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Basic Information</h4>
+                  </div>
+                  
+                  <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">RCC *</label>
+                        <select name="rcc_id" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700" required>
+                          <option value="">Select RCC</option>
+                          <% (rccs||[]).forEach(r => { %>
+                            <option value="<%= r.id %>"><%= r.name %></option>
+                          <% }) %>
+                        </select>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Milk Type</label>
+                        <select name="milk_type" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                          <option value="A1">A1</option>
+                          <option value="A2" selected>A2</option>
+                          <option value="Buffalo">Buffalo</option>
+                        </select>
+                      </div>
+                      <div class="md:col-span-2 space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">CPP Name *</label>
+                        <input name="name" placeholder="Enter CPP name" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" required />
+                      </div>
+                      <div class="md:col-span-2 space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Contact Person</label>
+                        <input name="person_name" placeholder="Enter contact person name" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                      </div>
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Village</label>
+                        <input name="village" placeholder="Enter village name" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                      </div>
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Phone</label>
+                        <input name="phone" placeholder="Enter phone number" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Salary Configuration -->
+                <div class="space-y-6">
+                  <div class="flex items-center gap-2 mb-4">
+                    <div class="p-1 bg-purple-100 dark:bg-purple-900/30 rounded">
+                      <i data-lucide="dollar-sign" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Salary Configuration</h4>
+                  </div>
+                  
+                  <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Salary Type</label>
+                        <select name="salary_type" id="addSalaryType" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                          <option value="fixed">Fixed Salary</option>
+                          <option value="commission">Commission Based</option>
+                        </select>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300" id="addSalaryLabel">Fixed Amount (₹)</label>
+                        <input name="salary_amount" type="number" step="0.01" min="0" placeholder="Enter salary amount" 
+                               class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                      </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                      <div class="flex items-start gap-3">
+                        <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                          <i data-lucide="info" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                          <p class="text-sm font-medium text-blue-800 dark:text-blue-300">Salary Information</p>
+                          <p class="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                            <span id="addSalaryInfo">Fixed salary: Enter the monthly fixed amount for this CPP.</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Rate Configuration -->
+                <div class="space-y-6">
+                  <div class="flex items-center gap-2 mb-4">
+                    <div class="p-1 bg-orange-100 dark:bg-orange-900/30 rounded">
+                      <i data-lucide="trending-up" class="w-4 h-4 text-orange-600 dark:text-orange-400"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Rate Configuration</h4>
+                  </div>
+                  
+                  <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Rate Type</label>
+                        <select name="rate_type" id="addRateType" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                          <option value="flat">Flat Rate</option>
+                          <option value="chart">Rate Chart</option>
+                        </select>
+                      </div>
+                      <div id="addRateField">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300" id="addRateLabel">Flat Rate (₹)</label>
+                        <input name="flat_rate" id="addFlatRate" type="number" step="0.01" min="0" placeholder="Enter flat rate" 
+                               class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                      </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                      <div class="flex items-start gap-3">
+                        <div class="p-1 bg-orange-100 dark:bg-orange-900/30 rounded">
+                          <i data-lucide="info" class="w-4 h-4 text-orange-600 dark:text-orange-400"></i>
+                        </div>
+                        <div>
+                          <p class="text-sm font-medium text-orange-800 dark:text-orange-300">Rate Information</p>
+                          <p class="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                            <span id="addRateInfo">Flat rate: Enter the fixed rate per litre of milk collected.</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+                </form>
+              </div>
+              
+              <!-- Modal Footer -->
+              <div class="sticky bottom-0 bg-slate-50 dark:bg-gray-700/50 border-t border-slate-200 dark:border-gray-700 px-6 py-4">
+                <div class="flex justify-end gap-3">
+                  <button type="button" class="px-4 py-2 text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200" data-close="modal">
+                    Cancel
+                  </button>
+                  <button type="submit" form="addCppForm" class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Create CPP
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+            <!-- Edit Modal -->
+            <div id="editModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4">
+              <div class="absolute inset-0 bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75 backdrop-blur-sm" data-close="modal"></div>
+              <div class="modal-container relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border dark:border-gray-700">
+                <!-- Modal Header -->
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 px-6 py-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                        <i data-lucide="edit-3" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                      </div>
+                      <h3 class="text-xl font-bold text-slate-900 dark:text-white">Edit CPP</h3>
+                    </div>
+                    <button type="button" class="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200" data-close="modal">
+                      <i data-lucide="x" class="w-5 h-5 text-slate-500 dark:text-gray-400"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body flex-1 overflow-y-auto px-6 py-6" style="min-height: 0;">
+                  <form id="editForm" method="post" class="space-y-6">
+                  <!-- Basic Information -->
+                  <div class="space-y-6">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                        <i data-lucide="info" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                      </div>
+                      <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Basic Information</h4>
+                    </div>
+                    
+                    <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">RCC</label>
+                          <select name="rcc_id" id="f_rcc" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                            <option value="">Select RCC</option>
+                            <% (rccs||[]).forEach(r => { %>
+                              <option value="<%= r.id %>"><%= r.name %></option>
+                            <% }) %>
+                          </select>
+                        </div>
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Milk Type</label>
+                          <select name="milk_type" id="f_milk_type" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                            <option value="A1">A1</option>
+                            <option value="A2">A2</option>
+                            <option value="Buffalo">Buffalo</option>
+                          </select>
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">CPP Name *</label>
+                          <input name="name" id="f_name" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" required />
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Contact Person</label>
+                          <input name="person_name" id="f_person_name" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                        </div>
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Village</label>
+                          <input name="village" id="f_village" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                        </div>
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Phone</label>
+                          <input name="phone" id="f_phone" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                        </div>
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Status</label>
+                          <select name="status" id="f_status" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Salary Configuration -->
+                  <div class="space-y-6">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div class="p-1 bg-purple-100 dark:bg-purple-900/30 rounded">
+                        <i data-lucide="dollar-sign" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
+                      </div>
+                      <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Salary Configuration</h4>
+                    </div>
+                    
+                    <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Salary Type</label>
+                          <select name="salary_type" id="f_salary_type" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                            <option value="fixed">Fixed Salary</option>
+                            <option value="commission">Commission Based</option>
+                          </select>
+                        </div>
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300" id="f_salary_label">Fixed Amount (₹)</label>
+                          <input name="salary_amount" id="f_salary_amount" type="number" step="0.01" min="0" placeholder="Enter salary amount" 
+                                 class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                        </div>
+                      </div>
+                      
+                      <div class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                          <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                            <i data-lucide="info" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                          </div>
+                          <div>
+                            <p class="text-sm font-medium text-blue-800 dark:text-blue-300">Salary Information</p>
+                            <p class="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                              <span id="f_salary_info">Fixed salary: Enter the monthly fixed amount for this CPP.</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Rate Configuration -->
+                  <div class="space-y-6">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div class="p-1 bg-orange-100 dark:bg-orange-900/30 rounded">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-orange-600 dark:text-orange-400"></i>
+                      </div>
+                      <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Rate Configuration</h4>
+                    </div>
+                    
+                    <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300">Rate Type</label>
+                          <select name="rate_type" id="f_rate_type" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                            <option value="flat">Flat Rate</option>
+                            <option value="chart">Rate Chart</option>
+                          </select>
+                        </div>
+                        <div id="f_rate_field">
+                          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300" id="f_rate_label">Flat Rate (₹)</label>
+                          <input name="flat_rate" id="f_flat_rate" type="number" step="0.01" min="0" placeholder="Enter flat rate" 
+                                 class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                        </div>
+                      </div>
+                      
+                      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                          <div class="p-1 bg-orange-100 dark:bg-orange-900/30 rounded">
+                            <i data-lucide="info" class="w-4 h-4 text-orange-600 dark:text-orange-400"></i>
+                          </div>
+                          <div>
+                            <p class="text-sm font-medium text-orange-800 dark:text-orange-300">Rate Information</p>
+                            <p class="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                              <span id="f_rate_info">Flat rate: Enter the fixed rate per litre of milk collected.</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  </form>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="sticky bottom-0 bg-slate-50 dark:bg-gray-700/50 border-t border-slate-200 dark:border-gray-700 px-6 py-4">
+                  <div class="flex justify-end gap-3">
+                    <button type="button" class="px-4 py-2 text-slate-600 dark:text-gray-300 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200" data-close="modal">
+                      Cancel
+                    </button>
+                    <button type="submit" form="editForm" class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                      <i data-lucide="save" class="w-4 h-4"></i>
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+  </main>
+  <%- include('../../../partials/_footer') %>
+</div>
+
+<style>
+  /* Ensure modal scrolling works properly */
+  .modal-body {
+    overflow-y: auto !important;
+    max-height: calc(85vh - 120px) !important;
+    min-height: 0 !important;
+  }
+  
+  /* Force rounded corners for modals */
+  .modal-container {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+  
+  /* Additional forced rounded corners */
+  #addCppModal .modal-container,
+  #editModal .modal-container {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+  
+  /* Force rounded corners on all modal elements */
+  .modal-container * {
+    border-radius: inherit !important;
+  }
+  
+  /* Force search icon positioning */
+  #cppSearch + i[data-lucide="search"] {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: #94a3b8 !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+  }
+  
+  /* Ensure search container positioning */
+  .relative.flex-1.sm\\:w-80 {
+    position: relative !important;
+    overflow: visible !important;
+  }
+  
+  /* Force search icon to stay inside */
+  .relative.flex-1.sm\\:w-80 i[data-lucide="search"] {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: #94a3b8 !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+  }
+  
+  /* Ultimate search icon positioning fix */
+  div.relative.flex-1.sm\\:w-80 > i[data-lucide="search"] {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: #94a3b8 !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+    display: block !important;
+  }
+  
+  /* Force placeholder text positioning - multiple selectors */
+  #cppSearch::placeholder,
+  input#cppSearch::placeholder,
+  .relative.flex-1.sm\\:w-80 input::placeholder,
+  input[placeholder="Search CPPs..."]::placeholder {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    text-indent: 0 !important;
+    transform: translateX(0) !important;
+  }
+  
+  /* Force input text positioning */
+  #cppSearch,
+  input#cppSearch {
+    text-indent: 0 !important;
+    padding-left: 56px !important;
+  }
+  
+  /* Override any conflicting styles */
+  .relative.flex-1.sm\\:w-80 input {
+    padding-left: 56px !important;
+  }
+  
+  /* Stats card icon background colors - Light mode only */
+  :not(.dark) .bg-purple-100 {
+    background-color: #f3e8ff !important;
+  }
+  
+  :not(.dark) .bg-orange-100 {
+    background-color: #fed7aa !important;
+  }
+  
+  /* Force icon colors - Light mode only */
+  :not(.dark) .text-purple-600 {
+    color: #9333ea !important;
+  }
+  
+  :not(.dark) .text-orange-600 {
+    color: #ea580c !important;
+  }
+  
+  /* Force specific icon box colors - Light mode only */
+  :not(.dark) div.p-3.bg-purple-100 {
+    background-color: #f3e8ff !important;
+  }
+  
+  :not(.dark) div.p-3.bg-orange-100 {
+    background-color: #fed7aa !important;
+  }
+  
+  /* Force icon colors in stats cards - Light mode only */
+  html:not(.dark) div.p-3.bg-purple-100 i[data-lucide="dollar-sign"] {
+    color: #9333ea !important;
+  }
+  
+  html:not(.dark) div.p-3.bg-orange-100 i[data-lucide="trending-up"] {
+    color: #ea580c !important;
+  }
+  
+  /* Force icon colors in stats cards - Dark mode */
+  html.dark div.p-3 i[data-lucide="dollar-sign"] {
+    color: #c084fc !important;
+  }
+  
+  html.dark div.p-3 i[data-lucide="trending-up"] {
+    color: #fb923c !important;
+  }
+  
+  /* Ensure dark mode backgrounds are applied */
+  html.dark div.p-3.bg-purple-100 {
+    background-color: rgba(88, 28, 135, 0.3) !important;
+  }
+  
+  html.dark div.p-3.bg-orange-100 {
+    background-color: rgba(124, 45, 18, 0.3) !important;
+  }
+  
+  /* Custom scrollbar styling - Light mode */
+  :not(.dark) .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  :not(.dark) .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  :not(.dark) .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  :not(.dark) .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  /* Custom scrollbar styling - Dark mode */
+  .dark .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .dark .modal-body::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 3px;
+  }
+  
+  .dark .modal-body::-webkit-scrollbar-thumb {
+    background: #6b7280;
+    border-radius: 3px;
+  }
+  
+  .dark .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+
+  /* Ensure Rate Information section gradient backgrounds work in dark mode */
+  .dark .bg-gradient-to-r.from-orange-50.to-yellow-50 {
+    background: linear-gradient(to right, rgba(234, 88, 12, 0.2), rgba(202, 138, 4, 0.2)) !important;
+  }
+
+  /* Ensure Rate Information section border works in dark mode */
+  .dark .from-orange-50.to-yellow-50.border-orange-200 {
+    border-color: rgba(234, 88, 12, 0.5) !important;
+  }
+
+  /* Ensure Rate Information text colors work in dark mode */
+  .dark .from-orange-50 .text-orange-800,
+  .dark .from-orange-50 .text-orange-700 {
+    color: #fdba74 !important;
+  }
+
+  /* Ensure Rate Information icon background and color in dark mode */
+  .dark .from-orange-50 .bg-orange-100 {
+    background-color: rgba(234, 88, 12, 0.3) !important;
+  }
+
+  .dark .from-orange-50 .text-orange-600 {
+    color: #fb923c !important;
+  }
+
+  /* Ensure Salary Information section gradient backgrounds work in dark mode */
+  .dark .bg-gradient-to-r.from-blue-50.to-purple-50 {
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2)) !important;
+  }
+
+  /* Ensure Salary Information section border works in dark mode */
+  .dark .from-blue-50.to-purple-50.border-blue-200 {
+    border-color: rgba(59, 130, 246, 0.5) !important;
+  }
+
+  /* Ensure Salary Information text colors work in dark mode */
+  .dark .from-blue-50 .text-blue-800,
+  .dark .from-blue-50 .text-blue-700 {
+    color: #93c5fd !important;
+  }
+
+  /* Ensure Salary Information icon background and color in dark mode */
+  .dark .from-blue-50 .bg-blue-100 {
+    background-color: rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .dark .from-blue-50 .text-blue-600 {
+    color: #60a5fa !important;
+  }
+</style>
+<script>
+  (function(){
+    const modal = document.getElementById('editModal');
+    const form = document.getElementById('editForm');
+    const f = {
+      rcc: document.getElementById('f_rcc'),
+      milk: document.getElementById('f_milk_type'),
+      name: document.getElementById('f_name'),
+      person: document.getElementById('f_person_name'),
+      village: document.getElementById('f_village'),
+      phone: document.getElementById('f_phone'),
+      status: document.getElementById('f_status'),
+      salaryType: document.getElementById('f_salary_type'),
+      salaryAmount: document.getElementById('f_salary_amount'),
+      salaryLabel: document.getElementById('f_salary_label'),
+      salaryInfo: document.getElementById('f_salary_info'),
+      rateType: document.getElementById('f_rate_type'),
+      flatRate: document.getElementById('f_flat_rate'),
+      rateChartId: document.getElementById('f_rate_chart_id'),
+      rateField: document.getElementById('f_rate_field'),
+      rateLabel: document.getElementById('f_rate_label'),
+      rateInfo: document.getElementById('f_rate_info'),
+    };
+    
+    function openModal(){ modal.classList.remove('hidden'); modal.classList.add('flex'); }
+    function closeModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    document.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', closeModal));
+    
+    // Add CPP modal
+    const addModal = document.getElementById('addCppModal');
+    const openAdd = document.getElementById('btnOpenAddCpp');
+    function openAddModal(){ addModal.classList.remove('hidden'); addModal.classList.add('flex'); }
+    function closeAddModal(){ addModal.classList.add('hidden'); addModal.classList.remove('flex'); }
+    openAdd?.addEventListener('click', openAddModal);
+    addModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', closeAddModal));
+
+    // Salary type change handlers
+    function updateSalaryFields(type, isAdd = false) {
+      const prefix = isAdd ? 'add' : 'f_';
+      const label = document.getElementById(prefix + 'salary_label');
+      const info = document.getElementById(prefix + 'salary_info');
+      
+      if (type === 'fixed') {
+        label.textContent = 'Fixed Amount (₹)';
+        info.textContent = 'Fixed salary: Enter the monthly fixed amount for this CPP.';
+      } else {
+        label.textContent = 'Commission Rate (₹/L)';
+        info.textContent = 'Commission: Enter the rate per litre of milk collected. Total salary = Volume × Rate.';
+      }
+    }
+
+    // Rate type change handlers
+    function updateRateFields(type, isAdd = false) {
+      const prefix = isAdd ? 'add' : 'f_';
+      const label = document.getElementById(prefix + 'rate_label');
+      const info = document.getElementById(prefix + 'rate_info');
+      const field = document.getElementById(prefix + 'rate_field');
+      
+      if (type === 'flat') {
+        label.textContent = 'Flat Rate (₹)';
+        info.textContent = 'Flat rate: Enter the fixed rate per litre of milk collected.';
+        field.innerHTML = `
+          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300" id="${prefix}rate_label">Flat Rate (₹)</label>
+          <input name="flat_rate" id="${prefix}flat_rate" type="number" step="0.01" min="0" placeholder="Enter flat rate" 
+                 class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+        `;
+      } else {
+        label.textContent = 'Rate Chart';
+        info.textContent = 'Rate chart: Select a predefined rate chart for variable pricing.';
+        field.innerHTML = `
+          <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300" id="${prefix}rate_label">Rate Chart</label>
+          <select name="rate_chart_id" id="${prefix}rate_chart_id" class="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+            <option value="">Select Rate Chart</option>
+            <% (rateCharts||[]).forEach(rc => { %>
+              <option value="<%= rc.id %>"><%= rc.name %></option>
+            <% }) %>
+          </select>
+        `;
+      }
+    }
+
+    // Add modal salary type handler
+    const addSalaryType = document.getElementById('addSalaryType');
+    addSalaryType?.addEventListener('change', (e) => {
+      updateSalaryFields(e.target.value, true);
+    });
+
+    // Add modal rate type handler
+    const addRateType = document.getElementById('addRateType');
+    addRateType?.addEventListener('change', (e) => {
+      updateRateFields(e.target.value, true);
+    });
+
+    // Edit modal salary type handler
+    f.salaryType?.addEventListener('change', (e) => {
+      updateSalaryFields(e.target.value, false);
+    });
+
+    // Edit modal rate type handler
+    f.rateType?.addEventListener('change', (e) => {
+      updateRateFields(e.target.value, false);
+    });
+
+    // Search filter
+    const search = document.getElementById('cppSearch');
+    const cards = Array.from(document.querySelectorAll('.cpp-card'));
+    function norm(s){ return (s||'').toString().toLowerCase(); }
+    function matches(card, q){
+      const txt = [
+        card.dataset.name, 
+        card.dataset.rcc, 
+        card.dataset.village, 
+        card.dataset.phone, 
+        card.dataset.milk, 
+        card.dataset.status,
+        card.dataset.salaryType,
+        card.dataset.rateType,
+        card.dataset.flatRate,
+        card.dataset.rateChartName
+      ].map(norm).join(' ');
+      return txt.includes(q);
+    }
+    search?.addEventListener('input', () => {
+      const q = norm(search.value);
+      cards.forEach(c => { c.style.display = q ? (matches(c, q) ? '' : 'none') : ''; });
+    });
+
+    // Edit button handlers
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const rccId = btn.getAttribute('data-rcc-id') || '';
+        const name = btn.getAttribute('data-name') || '';
+        const person = btn.getAttribute('data-person') || '';
+        const village = btn.getAttribute('data-village') || '';
+        const phone = btn.getAttribute('data-phone') || '';
+        const milk = btn.getAttribute('data-milk-type') || 'A2';
+        const status = btn.getAttribute('data-status') || 'active';
+        const salaryType = btn.getAttribute('data-salary-type') || 'fixed';
+        const salaryAmount = btn.getAttribute('data-salary-amount') || '0';
+        const rateType = btn.getAttribute('data-rate-type') || 'flat';
+        const flatRate = btn.getAttribute('data-flat-rate') || '';
+        const rateChartId = btn.getAttribute('data-rate-chart-id') || '';
+        
+        form.setAttribute('action', `/admin/cpp/${id}`);
+        f.rcc.value = rccId;
+        f.milk.value = milk;
+        f.name.value = name;
+        f.person.value = person;
+        f.village.value = village;
+        f.phone.value = phone;
+        f.status.value = status;
+        f.salaryType.value = salaryType;
+        f.salaryAmount.value = salaryAmount;
+        f.rateType.value = rateType;
+        
+        // Update salary field labels
+        updateSalaryFields(salaryType, false);
+        
+        // Update rate field labels and populate values
+        updateRateFields(rateType, false);
+        
+        // Set rate values after field is updated
+        setTimeout(() => {
+          if (rateType === 'flat') {
+            const flatRateField = document.getElementById('f_flat_rate');
+            if (flatRateField) flatRateField.value = flatRate;
+          } else {
+            const rateChartField = document.getElementById('f_rate_chart_id');
+            if (rateChartField) rateChartField.value = rateChartId;
+          }
+        }, 100);
+        
+        openModal();
+      });
+    });
+
+    // Initialize salary and rate fields on page load
+    updateSalaryFields('fixed', true);
+    updateSalaryFields('fixed', false);
+    updateRateFields('flat', true);
+    updateRateFields('flat', false);
+  })();
+  </script>
+  <script src="/assets/js/main.js" defer></script>
+</body>
+</html>

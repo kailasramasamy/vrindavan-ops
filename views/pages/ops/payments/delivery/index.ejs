@@ -1,0 +1,162 @@
+<%- include('../../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<style>
+  /* Dark mode support for month input and its native picker modal */
+  .dark input[type="month"] {
+    color-scheme: dark;
+  }
+  
+  /* Style the calendar picker indicator icon */
+  input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  
+  input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  
+  /* Dark mode: ensure icon is visible */
+  .dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) invert(1);
+  }
+</style>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../../partials/_subnav', { user, section: 'Payments', subsection: 'Delivery Payments' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Delivery Payments</h1>
+          <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            Calculate, review, and track monthly payments for delivery partners.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+            <label for="deliveryPaymentsMonth" class="text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
+            <input type="month" id="deliveryPaymentsMonth" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+          </div>
+        </div>
+      </div>
+
+      <section id="deliveryPaymentsSummary" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Active Delivery Partners</p>
+          <p id="cycleDeliveryBoyCount" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">-</p>
+          <p id="cycleDeliveryBoySubtext" class="text-sm text-gray-500 dark:text-gray-400 mt-1"></p>
+          <p id="cycleDates" class="text-xs text-gray-400 dark:text-gray-500 mt-2">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Commission-Based Partners</p>
+          <p id="cycleCommissionCount" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Fixed Salary Partners</p>
+          <p id="cycleFixedCount" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Gross Payout</p>
+          <p id="cycleGrossPay" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">₹0.00</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Before deductions</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Net Payout</p>
+          <p id="cycleNetPay" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">₹0.00</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">After deductions</p>
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Delivery Partner Payments</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Review calculated payouts and track status.</p>
+            <p id="deliveryPaymentsHeaderRange" class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden"></p>
+          </div>
+          <div class="flex flex-wrap gap-3 items-center">
+            <select id="deliveryPaymentsStatusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="ready">Ready</option>
+              <option value="paid">Paid</option>
+              <option value="on_hold">On Hold</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <select id="deliveryPaymentsTypeFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100">
+              <option value="">All Types</option>
+              <option value="commission">Commission</option>
+              <option value="fixed">Fixed</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+            <div class="relative">
+              <input type="search" id="deliveryPaymentsSearch" placeholder="Search by name or phone…" class="pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500">
+              <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </header>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" id="deliveryPaymentsTable">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-56">Delivery Partner</th>
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Payment Type</th>
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Orders</th>
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Base Pay (₹)</th>
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Commission (₹)</th>
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Allowances (₹)</th>
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Deductions (₹)</th>
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Net Pay (₹)</th>
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="deliveryPaymentsTbody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr id="deliveryPaymentsLoadingRow" class="hidden">
+                <td colspan="10" class="px-4 py-12 text-center">
+                  <div class="flex flex-col items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
+                    <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="10" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">Select a month and click "Recalculate" to load delivery payments.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <%- include('../../../../partials/_toast') %>
+
+  <script src="/assets/js/indian-number-format.js"></script>
+  <script>
+    window.DELIVERY_PAYMENTS_DEFAULT_MONTH = "<%= defaultMonth %>";
+  </script>
+  <script src="/assets/js/payments-delivery.js?v=<%= Date.now() %>"></script>
+</body>
+</html>
+

@@ -1,0 +1,237 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Tailwind Typography for styled HTML content -->
+<link href="https://unpkg.com/@tailwindcss/typography@0.5.x/dist/typography.min.css" rel="stylesheet">
+
+<!-- Quill.js WYSIWYG Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<style>
+  /* Table styling for Quill editor */
+  .ql-editor table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .ql-editor table td,
+  .ql-editor table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 100px;
+    vertical-align: top;
+  }
+  
+  .ql-editor table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
+  .ql-editor table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .ql-editor table tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Table button styling */
+  .ql-toolbar button[title="Insert Table"] {
+    font-size: 16px;
+    padding: 5px 8px;
+  }
+
+  /* Make Quill toolbar buttons in the Edit Machine modal clearly visible
+     Use a light gray color for icons and labels to ensure contrast against dark backgrounds */
+  #edit-description-editor .ql-toolbar .ql-formats button,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label {
+    color: #d1d5db !important; /* light gray */
+    background-color: transparent !important;
+    border: none !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button svg,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label svg {
+    color: #d1d5db !important;
+    fill: currentColor !important;
+  }
+
+  /* Slight hover feedback without changing icon color */
+  #edit-description-editor .ql-toolbar .ql-formats button:hover {
+    background-color: rgba(209,213,219,0.08) !important;
+  }
+
+  /* Dark mode: make toolbar background dark and buttons white/light-gray for better contrast */
+  .dark #edit-description-editor .ql-toolbar {
+    background-color: #111827 !important; /* very dark */
+    border-color: #374151 !important;
+  }
+
+  .dark #edit-description-editor .ql-toolbar .ql-formats button,
+  .dark #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label {
+    color: #f8fafc !important; /* almost white */
+  }
+
+  .dark #edit-description-editor .ql-toolbar .ql-formats button svg,
+  .dark #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label svg {
+    color: #f8fafc !important;
+    fill: currentColor !important;
+  }
+
+  /* Active/selected state - keep icons visible */
+  .dark #edit-description-editor .ql-toolbar .ql-active,
+  .dark #edit-description-editor .ql-toolbar .ql-formats button.ql-active {
+    color: #ffffff !important;
+    background-color: rgba(255,255,255,0.06) !important;
+  }
+</style>
+
+<style>
+  /* FORCE rules to ensure Quill toolbar icons are visible in dark mode */
+  .dark #edit-description-editor .ql-toolbar,
+  #edit-description-editor .ql-toolbar {
+    background-color: #0b1220 !important;
+    border-color: #374151 !important;
+    box-shadow: none !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label,
+  #edit-description-editor .ql-toolbar .ql-formats button *,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label *,
+  #edit-description-editor .ql-toolbar .ql-formats svg,
+  #edit-description-editor .ql-toolbar .ql-formats svg * {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats svg path,
+  #edit-description-editor .ql-toolbar .ql-formats svg circle,
+  #edit-description-editor .ql-toolbar .ql-formats svg rect {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button:hover,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label:hover {
+    background-color: rgba(255,255,255,0.06) !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button.ql-active,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label.ql-active {
+    background-color: rgba(255,255,255,0.12) !important;
+    color: #ffffff !important;
+  }
+</style>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <%- include('../../../partials/ops/_subnav', { user, section: 'Machinery', subsection: 'Machines' }) %>
+
+  <div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-2">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          <li><a href="/ops" class="hover:text-gray-900 dark:text-white dark:hover:text-gray-700 dark:text-gray-300">Ops</a></li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/ops/machinery" class="hover:text-gray-900 dark:text-white dark:hover:text-gray-700 dark:text-gray-300">Machinery</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/ops/machinery/machines" class="hover:text-gray-900 dark:text-white dark:hover:text-gray-700 dark:text-gray-300">Machines</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-900 dark:text-white font-medium"><%= machine.name %></span>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="mb-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2"><%= machine.name %></h1>
+            <p class="text-gray-600 dark:text-gray-400">Machine Details & Management</p>
+          </div>
+          <div class="mt-4 sm:mt-0 flex flex-wrap gap-2">
+            <button onclick="openEditMachineModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Machine
+            </button>
+            <button onclick="showDeleteMachineDialog()" class="inline-flex items-center px-4 py-2 bg-red-500 dark:bg-red-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete Machine
+            </button>
+            <a href="/ops/machinery/machines" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Machines
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Machine Overview Section -->
+      <div class="mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Machine Image - Left Side -->
+            <div class="lg:w-1/3 relative p-4 lg:p-6">
+              <div class="h-48 lg:h-64 bg-gradient-to-br from-gray-50 dark:from-gray-700 to-gray-100 dark:to-gray-600 relative rounded-lg overflow-hidden">
+                <% if (machine.images) { %>
+                  <% try { %>
+                  <% try { %>
+                  <% try { %>
+                    <% const images = JSON.parse(machine.images); %>
+                    <% if (images && images.length > 0 && images[0].path) { %>
+                      <img src="<%= images[0].path %>" alt="<%= machine.name %>" class="w-full h-full object-contain bg-white dark:bg-gray-800 p-2 rounded-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                      <div class="h-full flex items-center justify-center p-4 rounded-lg" style="display: none;">
+                        <div class="text-center">
+                          <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                          </div>
+                          <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Image Not Found</p>
+                        </div>
+                <% } catch (e) { %>
+                    <div class="h-full flex items-center justify-center p-4 rounded-lg">
+                      <div class="text-center">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No Image</p>
+                      </div>
+                    </div>
+                  <% } %>
+                      </div>
+                    </div>
+                  

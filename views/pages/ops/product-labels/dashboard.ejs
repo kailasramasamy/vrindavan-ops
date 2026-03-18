@@ -1,0 +1,243 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<style>
+  .dark input[type="text"],
+  .dark input[type="number"],
+  .dark input[type="date"],
+  .dark textarea,
+  .dark select {
+    color-scheme: dark;
+  }
+</style>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Product Labels', subsection: 'Dashboard' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Product Labels Dashboard</h1>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+          Overview of product labels, orders, and vendors
+        </p>
+      </div>
+
+      <!-- Status Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <!-- Number of Labels -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Labels</h3>
+            <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.totalLabels || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Active label profiles</p>
+        </div>
+
+        <!-- Total Orders -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Orders</h3>
+            <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.totalOrders || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">All time orders</p>
+        </div>
+
+        <!-- Pending Orders -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Orders</h3>
+            <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.pendingOrders || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">In progress</p>
+        </div>
+
+        <!-- Active Vendors -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Vendors</h3>
+            <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.activeVendors || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Printing vendors</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Setup Label Profile -->
+          <a href="/product-labels/labels" class="group bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
+            <div class="flex items-center">
+              <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 rounded-lg flex items-center justify-center mr-4 transition-colors flex-shrink-0">
+                <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Setup Label Profile</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Create and manage product labels</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+
+          <!-- Vendor Management -->
+          <a href="/product-labels/vendors" class="group bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
+            <div class="flex items-center">
+              <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-lg flex items-center justify-center mr-4 transition-colors flex-shrink-0">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Vendor Management</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Manage printing vendors</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+
+          <!-- Create Order -->
+          <a href="/product-labels/orders" class="group bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-500 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
+            <div class="flex items-center">
+              <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 rounded-lg flex items-center justify-center mr-4 transition-colors flex-shrink-0">
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Create Order</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Generate new label order</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
+          <a href="/product-labels/orders" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+            View All →
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order Number</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vendor</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Expected Delivery</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Number of Items</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invoice Amount</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (stats.recentOrders && stats.recentOrders.length > 0) { %>
+                <% stats.recentOrders.forEach((order) => { %>
+                  <% 
+                    const statusColors = {
+                      draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+                      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+                      confirmed: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+                      in_production: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+                      completed: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+                      cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+                    };
+                    const statusText = {
+                      draft: "Draft",
+                      pending: "Pending",
+                      confirmed: "Confirmed",
+                      in_production: "In Production",
+                      completed: "Completed",
+                      cancelled: "Cancelled",
+                    };
+                    function formatDate(dateString) {
+                      if (!dateString) return "—";
+                      const date = new Date(dateString);
+                      return date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+                    }
+                  %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white"><%= order.order_number || "—" %></div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <%= order.vendor_name || "—" %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <%= formatDate(order.order_date) %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <%= formatDate(order.expected_delivery_date) %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <%= order.item_count || 0 %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      ₹<%= (order.total_cost || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 py-1 text-xs font-medium rounded-full <%= statusColors[order.status] || statusColors.draft %>">
+                        <%= statusText[order.status] || "Draft" %>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <a href="/product-labels/orders/<%= order.order_number %>" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                        View
+                      </a>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="8" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    No orders found. <a href="/product-labels/orders" class="text-blue-600 dark:text-blue-400 hover:underline">Create your first order</a>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+

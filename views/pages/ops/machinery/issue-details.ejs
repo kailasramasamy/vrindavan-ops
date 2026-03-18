@@ -1,0 +1,488 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Sub Navigation -->
+  <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Issues', page: 'Issue Details' }) %>
+
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-8">
+
+    <!-- Issue Header with Details -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+      <!-- Header Section -->
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex-1">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"><%= issue.title %></h1>
+            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <span>Issue #<%= issue.id %></span>
+              <span>•</span>
+              <span>Reported on <%= new Date(issue.created_at).toLocaleDateString() %></span>
+              <span>•</span>
+              <span>
+                Machine:
+                <a href="/machinery/machines/<%= issue.machine_id %>" class="text-blue-600 dark:text-blue-400 hover:underline"><%= issue.machine_name %></a>
+              </span>
+            </div>
+          </div>
+          <div class="mt-4 sm:mt-0 flex flex-wrap gap-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <% if (issue.status === 'resolved' || issue.status === 'closed') { %> bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 <% } else if (issue.status === 'in_progress' || issue.status === 'pending') { %> bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 <% } else if (issue.status === 'open' || issue.status === 'new') { %> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 <% } else { %> bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 <% } %>"><%= issue.status ? issue.status.charAt(0).toUpperCase() + issue.status.slice(1) : 'Unknown' %></span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <% if (issue.priority === 'urgent') { %> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 <% } else if (issue.priority === 'high') { %> bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 <% } else if (issue.priority === 'medium') { %> bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 <% } else { %> bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 <% } %>"><%= issue.priority ? issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1) : 'Unknown' %> Priority</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Left Side - 3/4 width -->
+      <div class="lg:w-3/4 space-y-6">
+        <!-- Issue Details -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Issue Details</h3>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Type</label>
+                <p class="text-gray-900 dark:text-gray-100 capitalize"><%= issue.issue_type || 'Not specified' %></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Reported By</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= issue.reported_by || 'Unknown' %></p>
+              </div>
+              <% if (issue.assigned_to) { %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Assigned To</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= issue.assigned_to %></p>
+              </div>
+              <% } %>
+              <% if (issue.estimated_resolution_date) { %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Estimated Resolution</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= new Date(issue.estimated_resolution_date).toLocaleDateString() %></p>
+              </div>
+              <% } %>
+              <% if (issue.actual_resolution_date) { %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Resolved On</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= new Date(issue.actual_resolution_date).toLocaleDateString() %></p>
+              </div>
+              <% } %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Created</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= new Date(issue.created_at).toLocaleString() %></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Last Updated</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= new Date(issue.updated_at).toLocaleString() %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Issue Description -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Description</h2>
+          </div>
+          <div class="p-6">
+            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"><%= issue.description || 'No description provided' %></p>
+          </div>
+        </div>
+
+        <!-- Issue History -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Issue History</h2>
+          </div>
+          <div class="p-6">
+            <div class="flow-root">
+              <ul class="-mb-8">
+                <% 
+                  // Show resolution notes as a special history entry if issue is resolved and has resolution notes
+                  let hasResolutionNotes = false;
+                  if ((issue.status === 'resolved' || issue.status === 'closed') && issue.resolution_notes) {
+                    hasResolutionNotes = true;
+                %>
+                <li>
+                  <div class="relative pb-8">
+                    <% if (history && history.length > 0) { %>
+                    <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-600" aria-hidden="true"></span>
+                    <% } %>
+                    <div class="relative flex space-x-3">
+                      <div>
+                        <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                          </svg>
+                        </span>
+                      </div>
+                      <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                        <div>
+                          <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="font-medium text-gray-900 dark:text-gray-100">Issue Resolved</span>
+                            <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              <%= issue.status.charAt(0).toUpperCase() + issue.status.slice(1) %>
+                            </span>
+                          </p>
+                          <div class="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800">
+                            <p class="text-sm text-green-800 dark:text-green-200 font-medium mb-1">
+                              Resolution Notes:
+                            </p>
+                            <p class="text-sm text-green-700 dark:text-green-300 whitespace-pre-wrap"><%= issue.resolution_notes %></p>
+                          </div>
+                        </div>
+                        <div class="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          <% if (issue.actual_resolution_date) { %>
+                            <%= new Date(issue.actual_resolution_date).toLocaleString() %>
+                          <% } else { %>
+                            <%= new Date(issue.updated_at).toLocaleString() %>
+                          <% } %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <% } %>
+                
+                <% if (history && history.length > 0) { %>
+                  <% history.forEach((entry, index) => { %>
+                  <li>
+                    <div class="relative pb-8">
+                      <% if (index !== history.length - 1 || hasResolutionNotes) { %>
+                      <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-600" aria-hidden="true"></span>
+                      <% } %>
+                      <div class="relative flex space-x-3">
+                        <div>
+                          <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                          </span>
+                        </div>
+                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                          <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                              <span class="font-medium text-gray-900 dark:text-gray-100"><%= entry.changed_by %></span>
+                              <%= entry.new_value %>
+                            </p>
+                            <% if (entry.change_reason) { %>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                              <span class="font-medium">Reason:</span> <%= entry.change_reason %>
+                            </p>
+                            <% } %>
+                            <% if (entry.resolution_notes) { %>
+                            <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                              <p class="text-xs text-gray-600 dark:text-gray-300">
+                                <span class="font-medium">Resolution Notes:</span>
+                              </p>
+                              <p class="text-xs text-gray-700 dark:text-gray-200 mt-1 whitespace-pre-wrap"><%= entry.resolution_notes %></p>
+                            </div>
+                            <% } %>
+                          </div>
+                          <div class="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400"><%= new Date(entry.created_at).toLocaleString() %></div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <% }); %>
+                <% } else if (!hasResolutionNotes) { %>
+                <li>
+                  <div class="text-center py-8">
+                    <p class="text-gray-500 dark:text-gray-400">No history available for this issue.</p>
+                  </div>
+                </li>
+                <% } %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side - 1/4 width -->
+      <div class="lg:w-1/4 space-y-6">
+        <!-- Machine Information -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Machine Information</h3>
+          </div>
+          <div class="p-6">
+            <!-- Machine Image -->
+            <div class="mb-6">
+              <div class="h-48 bg-gradient-to-br from-gray-50 dark:from-gray-700 to-gray-100 dark:to-gray-600 relative rounded-lg overflow-hidden">
+                <% 
+                  let hasImage = false;
+                  let imagePath = null;
+                  
+                  if (issue.machine_images) {
+                    try {
+                      const images = JSON.parse(issue.machine_images);
+                      if (images && images.length > 0 && images[0].path) {
+                        hasImage = true;
+                        imagePath = images[0].path;
+                      }
+                    } catch (e) {
+                      // JSON parse error, no image
+                    }
+                  }
+                %>
+                
+                <% if (hasImage) { %>
+                  <img src="<%= imagePath %>" 
+                       alt="<%= issue.machine_name %>" 
+                       class="w-full h-full object-contain bg-white dark:bg-gray-800 pt-2 pr-2 pb-2 rounded-lg" 
+                       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                  <div class="h-full flex items-center justify-center p-4 rounded-lg" style="display: none;">
+                    <div class="text-center">
+                      <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                      </div>
+                      <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Image Not Found</p>
+                    </div>
+                  </div>
+                <% } else { %>
+                  <div class="h-full flex items-center justify-center p-4 rounded-lg">
+                    <div class="text-center">
+                      <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                      </div>
+                      <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No Image Available</p>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Machine Details -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Machine Name</label>
+                <p class="text-gray-900 dark:text-gray-100 font-medium">
+                  <a href="/machinery/machines/<%= issue.machine_id %>" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    <%= issue.machine_name %>
+                  </a>
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Model</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= issue.machine_model || 'Not specified' %></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Location</label>
+                <p class="text-gray-900 dark:text-gray-100"><%= issue.machine_location || 'Not specified' %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Actions</h3>
+          </div>
+          <div class="p-6 space-y-3">
+            <button onclick="openUpdateIssueModal()" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Update Issue
+            </button>
+            <a href="/machinery/machines/<%= issue.machine_id %>" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              View Machine
+            </a>
+            <a href="/machinery/issues" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              All Issues
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Update Issue Modal -->
+  <div id="updateIssueModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div class="mt-3">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Update Issue</h3>
+          <button onclick="closeUpdateIssueModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="updateIssueForm" class="mt-6 space-y-4">
+          <div>
+            <label for="updateTitle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+            <input type="text" id="updateTitle" name="title" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" value="<%= issue.title %>">
+          </div>
+
+          <div>
+            <label for="updateDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+            <textarea id="updateDescription" name="description" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"><%= issue.description %></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="updateStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <select id="updateStatus" name="status" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100">
+                <option value="open" <% if (issue.status === 'open') { %>selected<% } %>>Open</option>
+                <option value="in_progress" <% if (issue.status === 'in_progress') { %>selected<% } %>>In Progress</option>
+                <option value="resolved" <% if (issue.status === 'resolved') { %>selected<% } %>>Resolved</option>
+                <option value="closed" <% if (issue.status === 'closed') { %>selected<% } %>>Closed</option>
+                <option value="cancelled" <% if (issue.status === 'cancelled') { %>selected<% } %>>Cancelled</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="updatePriority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+              <select id="updatePriority" name="priority" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100">
+                <option value="low" <% if (issue.priority === 'low') { %>selected<% } %>>Low</option>
+                <option value="medium" <% if (issue.priority === 'medium') { %>selected<% } %>>Medium</option>
+                <option value="high" <% if (issue.priority === 'high') { %>selected<% } %>>High</option>
+                <option value="urgent" <% if (issue.priority === 'urgent') { %>selected<% } %>>Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="updateIssueType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Type</label>
+              <select id="updateIssueType" name="issue_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100">
+                <option value="mechanical" <% if (issue.issue_type === 'mechanical') { %>selected<% } %>>Mechanical</option>
+                <option value="electrical" <% if (issue.issue_type === 'electrical') { %>selected<% } %>>Electrical</option>
+                <option value="hydraulic" <% if (issue.issue_type === 'hydraulic') { %>selected<% } %>>Hydraulic</option>
+                <option value="pneumatic" <% if (issue.issue_type === 'pneumatic') { %>selected<% } %>>Pneumatic</option>
+                <option value="software" <% if (issue.issue_type === 'software') { %>selected<% } %>>Software</option>
+                <option value="maintenance" <% if (issue.issue_type === 'maintenance') { %>selected<% } %>>Maintenance</option>
+                <option value="other" <% if (issue.issue_type === 'other') { %>selected<% } %>>Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="updateAssignedTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned To</label>
+              <input type="text" id="updateAssignedTo" name="assigned_to" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" value="<%= issue.assigned_to || '' %>">
+            </div>
+          </div>
+
+          <div>
+            <label for="updateEstimatedResolution" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estimated Resolution Date</label>
+            <input type="date" id="updateEstimatedResolution" name="estimated_resolution_date" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" value="<%= issue.estimated_resolution_date ? new Date(issue.estimated_resolution_date).toISOString().split('T')[0] : '' %>">
+          </div>
+
+          <div id="resolutionNotesField" class="hidden">
+            <label for="updateResolutionNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resolution Notes</label>
+            <textarea id="updateResolutionNotes" name="resolution_notes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"><%= issue.resolution_notes || '' %></textarea>
+          </div>
+
+          <div>
+            <label for="updateChangeReason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason for Update</label>
+            <textarea id="updateChangeReason" name="change_reason" rows="2" placeholder="Explain why you're updating this issue..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button type="button" onclick="closeUpdateIssueModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Update Issue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <script>
+    // Update Issue Modal Functions
+    function openUpdateIssueModal() {
+      document.getElementById('updateIssueModal').classList.remove('hidden');
+      // Initialize resolution notes field visibility based on current status
+      toggleResolutionNotesField();
+    }
+
+    function closeUpdateIssueModal() {
+      document.getElementById('updateIssueModal').classList.add('hidden');
+    }
+
+    // Toggle resolution notes field visibility based on status
+    function toggleResolutionNotesField() {
+      const statusSelect = document.getElementById('updateStatus');
+      const resolutionNotesField = document.getElementById('resolutionNotesField');
+      
+      if (statusSelect && resolutionNotesField) {
+        if (statusSelect.value === 'resolved') {
+          resolutionNotesField.classList.remove('hidden');
+        } else {
+          resolutionNotesField.classList.add('hidden');
+        }
+      }
+    }
+
+    // Handle Update Issue Form Submission
+    document.getElementById('updateIssueForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const updateData = Object.fromEntries(formData.entries());
+      
+      try {
+        const response = await fetch(`/machinery/issues/<%= issue.id %>`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+          // Close modal and reload page to show updated data
+          closeUpdateIssueModal();
+          window.location.reload();
+        } else {
+          const errorData = await response.json();
+          alert('Error updating issue: ' + (errorData.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error updating issue:', error);
+        alert('Error updating issue: ' + error.message);
+      }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('updateIssueModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeUpdateIssueModal();
+      }
+    });
+
+    // Add event listener for status change to toggle resolution notes field
+    document.addEventListener('DOMContentLoaded', function() {
+      const statusSelect = document.getElementById('updateStatus');
+      if (statusSelect) {
+        statusSelect.addEventListener('change', toggleResolutionNotesField);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,461 @@
+<%- include('../../../partials/_head', { seo }) %>
+
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
+  <div class="min-h-dvh flex flex-col">
+    <%- include('../../../partials/_subnav', { user, section: 'Product Margin', subsection: 'Add Seller Override' }) %>
+
+    <main class="flex-1 bg-white dark:bg-gray-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Page Header -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Add Seller Margin Override</h1>
+              <p class="text-gray-600 dark:text-gray-300">Create a seller-specific pricing override for a product.</p>
+            </div>
+            <a href="/product-margin" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Dashboard
+            </a>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+          <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Loading form data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden text-center py-12 text-red-600 dark:text-red-400">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Failed to Load Data</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4" id="errorMessage"></p>
+          <button onclick="window.location.reload()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Retry</button>
+        </div>
+
+        <!-- Add Override Form -->
+        <form id="sellerOverrideForm" onsubmit="saveSellerOverride(event)">
+          <div id="overrideForm" class="hidden">
+            
+            <!-- Seller & Product Selection -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Seller & Product Selection</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Seller *</label>
+                  <select id="sellerId" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                    <option value="">Select Seller</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product *</label>
+                  <select id="productId" required onchange="loadProductDefaults()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                    <option value="">Select Product</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pricing Information -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Pricing Information (Override)</h3>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cost Price (₹) *</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">From product cost price (set via product edit or COGM)</p>
+                  <input type="number" id="costPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MRP (₹) *</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Maximum Retail Price - the final selling price to customers</p>
+                  <input type="number" id="mrp" step="0.01" oninput="calculatePricing();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seller Margin % *</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Seller margin percentage on MRP</p>
+                  <input type="number" id="marginPercentage" step="0.01" oninput="calculatePricing();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST % *</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Goods and Services Tax percentage applicable</p>
+                  <input type="number" id="gstPercentage" step="0.01" oninput="calculatePricing();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seller Commission (₹)</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Commission amount (Auto-calculated from MRP and Seller Margin %)</p>
+                  <input type="number" id="sellerCommission" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Landing Price (₹)</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">MRP minus Seller Margin (Auto-calculated)</p>
+                  <input type="number" id="landingPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Basic Price (₹)</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Base price before GST (Calculated from Landing Price)</p>
+                  <input type="number" id="basicPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST Value (₹)</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Calculated GST amount (Auto-calculated)</p>
+                  <input type="number" id="gstValue" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Net Profit (₹)</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Net profit indicator (MRP - Cost - Commission)</p>
+                  <div id="profitIndicator" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold text-lg">
+                    ₹0.00
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Effective Dates & Status -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Effective Dates & Status</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Effective From *</label>
+                  <input type="date" id="effectiveFrom" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Effective To</label>
+                  <input type="date" id="effectiveTo" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                  <label class="flex items-center mt-2">
+                    <input type="checkbox" id="isActive" checked class="rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Notes</h3>
+              <textarea id="notes" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500"></textarea>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-2">
+              <a href="/product-margin" class="px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</a>
+              <button type="submit" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">Save Override</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = '/product-margin/api/v1';
+    let sellers = [];
+    let products = [];
+
+    // Show toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${
+        type === 'error' ? 'bg-red-500 text-white' :
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'warning' ? 'bg-yellow-500 text-black' :
+        'bg-blue-500 text-white'
+      }`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Load sellers and products
+    async function loadFormData() {
+      try {
+        const [sellersRes, productsRes] = await Promise.all([
+          fetch(`${API_BASE}/sellers`),
+          fetch(`${API_BASE}/products`)
+        ]);
+
+        const sellersData = await sellersRes.json();
+        const productsData = await productsRes.json();
+
+        if (!sellersData.success || !productsData.success) {
+          throw new Error('Failed to load form data');
+        }
+
+        sellers = sellersData.data || sellersData.rows || [];
+        products = productsData.data || productsData.rows || [];
+
+        // Populate seller dropdown
+        const sellerSelect = document.getElementById('sellerId');
+        sellerSelect.innerHTML = '<option value="">Select Seller</option>' +
+          sellers.map(s => `<option value="${s.id}" data-seller='${JSON.stringify(s)}'>${s.partner_name || s.name || 'Unknown'} ${s.partner_code ? `(${s.partner_code})` : ''}</option>`).join('');
+
+        // Populate product dropdown
+        const productSelect = document.getElementById('productId');
+        productSelect.innerHTML = '<option value="">Select Product</option>' +
+          products.map(p => `<option value="${p.id}" data-product='${JSON.stringify(p)}'>${p.name || 'Unknown'} ${p.grammage ? `(${p.grammage})` : ''}</option>`).join('');
+
+        // Pre-select product from URL query parameter if provided
+        const urlParams = new URLSearchParams(window.location.search);
+        const productIdParam = urlParams.get('product_id');
+        if (productIdParam && productSelect.querySelector(`option[value="${productIdParam}"]`)) {
+          productSelect.value = productIdParam;
+          await loadProductDefaults();
+        }
+
+        // Set default effective from date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('effectiveFrom').value = today;
+
+        // Hide loading, show form
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('overrideForm').classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Error loading form data:', error);
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = error.message || 'Failed to load form data';
+      }
+    }
+
+    // Load product defaults when product is selected
+    async function loadProductDefaults() {
+      const productSelect = document.getElementById('productId');
+      if (!productSelect || !productSelect.value) return;
+
+      const productId = productSelect.value;
+
+      try {
+        // Fetch full product details with pricing from product-margin API
+        const response = await fetch(`${API_BASE}/products/${productId}`);
+        const result = await response.json();
+
+        if (!result.success || !result.product) {
+          console.error('Failed to fetch product details:', result.error);
+          return;
+        }
+
+        const product = result.product;
+
+        // Set defaults for pricing fields
+        const costPriceInput = document.getElementById('costPrice');
+        const mrpInput = document.getElementById('mrp');
+        const marginInput = document.getElementById('marginPercentage');
+        const gstInput = document.getElementById('gstPercentage');
+
+        // Use product.cost_price (the single source of truth, updated by both manual edits and COGM saves)
+        if (costPriceInput) {
+          const costPrice = parseFloat(product.cost_price) || 0;
+          if (costPrice > 0) {
+            costPriceInput.value = costPrice.toFixed(2);
+          } else {
+            costPriceInput.value = '';
+            showToast('Product has no cost price set. Please update the product cost price or COGM.', 'warning');
+          }
+        }
+
+        // Set MRP from product defaults
+        if (mrpInput && product.mrp) {
+          mrpInput.value = product.mrp;
+        }
+
+        // Set margin percentage from product defaults
+        if (marginInput && product.margin_percentage) {
+          marginInput.value = product.margin_percentage;
+        }
+
+        // Set GST percentage from product defaults
+        if (gstInput && product.gst_percentage) {
+          gstInput.value = product.gst_percentage;
+        }
+        
+        // Recalculate pricing
+        calculatePricing();
+      } catch (error) {
+        console.error('Error loading product defaults:', error);
+        showToast('Failed to load product pricing information. Please enter values manually.', 'error');
+      }
+    }
+
+    // Calculate pricing from MRP, Seller Margin, and GST%
+    function calculatePricing() {
+      const mrp = parseFloat(document.getElementById('mrp').value) || 0;
+      const gstPercentage = parseFloat(document.getElementById('gstPercentage').value) || 0;
+      const marginPercentage = parseFloat(document.getElementById('marginPercentage').value) || 0;
+
+      // Calculate Seller Commission (Seller Margin Value)
+      const sellerCommission = mrp > 0 && marginPercentage >= 0 ? mrp * (marginPercentage / 100) : 0;
+      const sellerCommissionRounded = Math.round(sellerCommission * 100) / 100;
+
+      // Landing Price = MRP - Seller Margin Value
+      const landingPrice = mrp - sellerCommissionRounded;
+      const landingPriceRounded = Math.round(landingPrice * 100) / 100;
+
+      // Calculate Basic Price from Landing Price
+      let basicPrice = 0;
+      if (landingPriceRounded > 0 && gstPercentage >= 0) {
+        basicPrice = landingPriceRounded / (1 + gstPercentage / 100);
+        basicPrice = Math.round(basicPrice * 100) / 100;
+      }
+
+      // Calculate GST Value from Basic Price
+      const gstValue = Math.round((basicPrice * gstPercentage / 100) * 100) / 100;
+
+      // Update calculated fields
+      document.getElementById('sellerCommission').value = sellerCommissionRounded.toFixed(2);
+      document.getElementById('landingPrice').value = landingPriceRounded.toFixed(2);
+      document.getElementById('basicPrice').value = basicPrice.toFixed(2);
+      document.getElementById('gstValue').value = gstValue.toFixed(2);
+
+      // Calculate and update Net Profit
+      updateProfit();
+    }
+
+    // Update Net Profit indicator
+    function updateProfit() {
+      const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+      const mrp = parseFloat(document.getElementById('mrp').value) || 0;
+      const sellerCommission = parseFloat(document.getElementById('sellerCommission').value) || 0;
+      
+      // Net Profit = MRP - Cost Price - Seller Commission
+      const netProfit = mrp - costPrice - sellerCommission;
+      
+      const profitIndicator = document.getElementById('profitIndicator');
+      const profitAmount = netProfit.toFixed(2);
+      
+      if (netProfit > 0) {
+        profitIndicator.className = 'w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      } else if (netProfit < 0) {
+        profitIndicator.className = 'w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      } else {
+        profitIndicator.className = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      }
+    }
+
+    // Save seller override
+    async function saveSellerOverride(event) {
+      event.preventDefault();
+
+      const sellerId = parseInt(document.getElementById('sellerId').value);
+      const productId = parseInt(document.getElementById('productId').value);
+      const costPrice = document.getElementById('costPrice').value;
+      const mrp = document.getElementById('mrp').value;
+      const marginPercentage = document.getElementById('marginPercentage').value;
+      const gstPercentage = document.getElementById('gstPercentage').value;
+      const sellerCommission = document.getElementById('sellerCommission').value;
+      const landingPrice = document.getElementById('landingPrice').value;
+      const basicPrice = document.getElementById('basicPrice').value;
+      const gstValue = document.getElementById('gstValue').value;
+      const effectiveFrom = document.getElementById('effectiveFrom').value;
+      const effectiveTo = document.getElementById('effectiveTo').value;
+      const isActive = document.getElementById('isActive').checked;
+      const notes = document.getElementById('notes').value;
+
+      // Validation
+      if (!sellerId) {
+        showToast('Please select a seller', 'error');
+        return;
+      }
+
+      if (!productId) {
+        showToast('Please select a product', 'error');
+        return;
+      }
+
+      if (!costPrice || parseFloat(costPrice) <= 0) {
+        showToast('Cost Price is required and must be greater than 0', 'error');
+        return;
+      }
+
+      if (!mrp || parseFloat(mrp) <= 0) {
+        showToast('MRP is required and must be greater than 0', 'error');
+        return;
+      }
+
+      if (!marginPercentage || parseFloat(marginPercentage) < 0 || parseFloat(marginPercentage) > 100) {
+        showToast('Seller Margin % is required and must be between 0 and 100', 'error');
+        return;
+      }
+
+      if (!gstPercentage || parseFloat(gstPercentage) < 0) {
+        showToast('GST % is required', 'error');
+        return;
+      }
+
+      if (!effectiveFrom) {
+        showToast('Effective From date is required', 'error');
+        return;
+      }
+
+      // Validate effective_to is after effective_from if provided
+      if (effectiveTo) {
+        const fromDate = new Date(effectiveFrom);
+        const toDate = new Date(effectiveTo);
+        if (toDate < fromDate) {
+          showToast('Effective to date must be after effective from date', 'error');
+          return;
+        }
+      }
+
+      try {
+        const data = {
+          seller_id: sellerId,
+          product_id: productId,
+          cost_price: parseFloat(costPrice),
+          mrp: parseFloat(mrp),
+          margin_percentage: parseFloat(marginPercentage),
+          gst_percentage: parseFloat(gstPercentage),
+          seller_margin_value: sellerCommission ? parseFloat(sellerCommission) : null,
+          landing_price: landingPrice ? parseFloat(landingPrice) : null,
+          basic_price: basicPrice ? parseFloat(basicPrice) : null,
+          gst_value: gstValue ? parseFloat(gstValue) : null,
+          effective_from: effectiveFrom,
+          effective_to: effectiveTo || null,
+          is_active: isActive,
+          notes: notes || null,
+        };
+
+        const response = await fetch(`${API_BASE}/seller-product-margins`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showToast('Seller override created successfully!', 'success');
+          // Redirect back to dashboard with Seller Overrides tab active
+          window.location.href = '/product-margin#seller-overrides';
+        } else {
+          showToast(result.error || 'Failed to create seller override', 'error');
+        }
+      } catch (error) {
+        console.error('Error saving seller override:', error);
+        showToast('An error occurred while saving: ' + error.message, 'error');
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFormData();
+    });
+  </script>
+</body>
+</html>
+
+

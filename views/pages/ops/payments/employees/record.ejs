@@ -1,0 +1,249 @@
+<%- include('../../../../partials/_head', { seo, pageKey }) %>
+
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../../partials/_subnav', { user, section: 'Payments', subsection: 'Employee Payments' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <a href="/payments/employees<%= selectedMonth ? `?month=${selectedMonth}` : "" %>" class="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Employee Payments
+          </a>
+        </div>
+        <div>
+          <% const statusClassMap = {
+                pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800",
+                ready: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
+                paid: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800",
+                on_hold: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800",
+                cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800",
+              };
+              const statusText = (record.payment_status || "").replace(/_/g, " ") || "pending";
+              const statusKey = (record.payment_status || "pending").toLowerCase();
+              const statusClass = statusClassMap[statusKey] || statusClassMap.pending;
+          %>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold <%= statusClass %>" data-field="status-badge">
+            <%= statusText.charAt(0).toUpperCase() + statusText.slice(1) %>
+          </span>
+        </div>
+      </div>
+
+      <header class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white" data-field="employee-name"><%= record.employee_name || "Employee" %></h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" data-field="employee-meta">
+              Employee ID: <%= record.employee_id %>
+            </p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div class="space-y-1">
+              <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Cycle</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white" data-field="cycle-range">
+                <% if (cycle) { %>
+                  <%= new Date(cycle.start_date).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) %>
+                <% } else { %>
+                  —
+                <% } %>
+              </p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Payment Date</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white" data-field="payment-date">
+                <%= record.payment_date ? new Date(record.payment_date).toLocaleDateString("en-IN") : "—" %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Base Salary</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="base-salary">₹<%= (Number(record.base_salary) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Food Allowance</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="food-allowance">₹<%= (Number(record.food_allowance) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Fuel Allowance</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="fuel-allowance">₹<%= (Number(record.fuel_allowance) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Credits (+)</p>
+          <p class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-2" data-field="credits">₹<%= (Number(record.total_additions) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Deductions (-)</p>
+          <p class="text-xl font-bold text-red-600 dark:text-red-400 mt-2" data-field="deductions">₹<%= (Number(record.total_deductions) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Net Pay</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="net">₹<%= (Number(record.net_pay) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Payment Status</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Update payment status and add a reason for audit trail.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <select data-field="status-select" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+              <option value="pending" <%= record.payment_status === 'pending' ? 'selected' : '' %>>Pending</option>
+              <option value="ready" <%= record.payment_status === 'ready' ? 'selected' : '' %>>Ready</option>
+              <option value="paid" <%= record.payment_status === 'paid' ? 'selected' : '' %>>Paid</option>
+              <option value="on_hold" <%= record.payment_status === 'on_hold' ? 'selected' : '' %>>On Hold</option>
+              <option value="cancelled" <%= record.payment_status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+            </select>
+            <button data-action="update-status" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
+              Update Status
+            </button>
+          </div>
+          <input type="date" data-field="payment-date-input" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Payment Date (optional)" value="<%= record.payment_date || new Date().toISOString().slice(0, 10) %>">
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Internal Remarks</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Add notes for finance reviews or payment follow-ups.</p>
+          </div>
+          <textarea data-field="remarks" rows="4" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"><%= record.remarks || "" %></textarea>
+          <div class="flex justify-end">
+            <button data-action="update-remarks" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors">
+              Save Remarks
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Loan Balances Section -->
+      <% if (loans && loans.length > 0) { %>
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Active Loans</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Current loan balances. Click "Deduct Payment" to create a loan repayment entry.</p>
+        </div>
+        <div class="p-5 space-y-3">
+          <% loans.forEach((loan) => { %>
+            <% const remainingBalance = Number(loan.remaining_balance || loan.loan_amount || 0); %>
+            <% if (remainingBalance > 0) { %>
+            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div class="flex-1">
+                <div class="flex items-center gap-3">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                      Loan #<%= loan.id %> - <%= loan.purpose || 'General Loan' %>
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Original: ₹<%= (Number(loan.loan_amount) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> | 
+                      Repaid: ₹<%= (Number(loan.total_repaid) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="text-right">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Outstanding Balance</p>
+                  <p class="text-lg font-bold text-red-600 dark:text-red-400">₹<%= remainingBalance.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+                </div>
+                <button 
+                  data-action="deduct-loan-payment" 
+                  data-loan-id="<%= loan.id %>"
+                  data-loan-balance="<%= remainingBalance %>"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  Deduct Payment
+                </button>
+              </div>
+            </div>
+            <% } %>
+          <% }); %>
+        </div>
+      </section>
+      <% } %>
+
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Adjustments & Allowances</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Add adjustments, allowances, bonuses, advances, or deductions.</p>
+          </div>
+          <button data-action="add-entry" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Entry
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="entriesTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (entries && entries.length > 0) { %>
+                <% entries.forEach((entry) => { %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white capitalize"><%= entry.entry_type %></td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <%= entry.entry_date ? new Date(entry.entry_date).toLocaleDateString("en-IN") : "—" %>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"><%= (entry.description || "—").replace(/\[REPAYMENT_ID:\d+\]/g, '').trim() || "—" %></td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium <%= Number(entry.amount) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' %> text-right">
+                      <%= Number(entry.amount) >= 0 ? '+' : '' %>₹<%= Math.abs(Number(entry.amount) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">
+                      <button data-action="delete-entry" data-entry-id="<%= entry.id %>" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No entries yet. Click "Add Entry" to add adjustments or allowances.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <%- include('../../../../partials/_toast') %>
+
+  <script>
+    window.EMPLOYEE_PAYMENT_RECORD_ID = <%= record.id %>;
+    window.EMPLOYEE_PAYMENT_SELECTED_MONTH = "<%= selectedMonth || '' %>";
+  </script>
+  <script src="/assets/js/payments-employees-record.js?v=<%= Date.now() %>"></script>
+</body>
+</html>
+

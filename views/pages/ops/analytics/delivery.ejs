@@ -1,0 +1,1993 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<style>
+  /* Dark mode support for date inputs */
+  .dark input[type="month"],
+  .dark input[type="date"] {
+    color-scheme: dark;
+  }
+
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+
+  input[type="month"]::-webkit-calendar-picker-indicator:hover,
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+
+  .dark input[type="month"]::-webkit-calendar-picker-indicator,
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) invert(1);
+  }
+</style>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Analytics', subsection: 'Delivery Analytics', page: 'Delivery Analytics' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Delivery Analytics</h1>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+          Analyze delivery issues and delivery boy performance metrics.
+        </p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="mb-0">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              id="tabIssues"
+              class="tab-button border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 whitespace-nowrap py-4 px-1 text-sm font-medium"
+              onclick="switchTab('issues')"
+            >
+              Delivery Issues
+            </button>
+            <button
+              id="tabPerformance"
+              class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium"
+              onclick="switchTab('performance')"
+            >
+              Delivery Boy Performance
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content: Delivery Issues -->
+        <div id="tabContentIssues" class="tab-content">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 mt-6">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delivery Issues</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Track and analyze delivery issues by type and delivery boy.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col gap-2">
+              <label for="deliveryIssuesDateRange" class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+                <select id="deliveryIssuesDateRange" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0 cursor-pointer">
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+            </div>
+            <div id="customDateRangeContainer" class="hidden flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+              <input type="date" id="deliveryIssuesStartDate" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+              <span class="text-sm text-gray-500 dark:text-gray-400">to</span>
+              <input type="date" id="deliveryIssuesEndDate" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Issue Type Counts Stats -->
+        <div class="mb-8">
+          <div id="issueTypeCountsContainer" class="p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+            <div id="issueTypeCountsLoading" class="flex flex-col items-center justify-center gap-3 py-12">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Loading type counts...</p>
+            </div>
+            <div id="issueTypeCountsEmpty" class="hidden text-center py-12">
+              <p class="text-sm text-gray-500 dark:text-gray-400">No issue types with counts found for the selected date range.</p>
+            </div>
+            <div id="issueTypeCountsGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <!-- Issue type cards will be rendered here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 5 Issues Chart -->
+        <div class="mb-8">
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+            <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Top 5 Issues</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Most common delivery issues for the selected date range</p>
+            </header>
+            <div class="p-6">
+              <div id="top5IssuesChart" class="h-96">
+                <div class="flex items-center justify-center h-full">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Loading chart data...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 5 Delivery Boys Chart -->
+        <div class="mb-8">
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+            <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Top 5 Delivery Boys with Issues</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Delivery boys with the most issues for the selected filters</p>
+            </header>
+            <div class="p-6">
+              <div id="top5DeliveryBoysChart" class="h-96">
+                <div class="flex items-center justify-center h-full">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Loading chart data...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- All Issues Table -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+          <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Issues</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">List of all issues with filters</p>
+              </div>
+              <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex flex-col gap-2">
+                  <label for="issuesFilterType" class="text-sm font-medium text-gray-700 dark:text-gray-300">Issue Type</label>
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-2">
+                    <select id="issuesFilterType" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0 cursor-pointer">
+                      <option value="">All Types</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <label for="issuesFilterStatus" class="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-2">
+                    <select id="issuesFilterStatus" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0 cursor-pointer">
+                      <option value="">All Statuses</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <label for="issuesFilterDeliveryBoy" class="text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Boy</label>
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-2">
+                    <select id="issuesFilterDeliveryBoy" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0 cursor-pointer">
+                      <option value="">All Delivery Boys</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Issue Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Delivery Boy</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created At</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allIssuesTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr id="allIssuesLoadingRow">
+                  <td colspan="7" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center gap-3">
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Loading issues data...</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="allIssuesEmptyRow" class="hidden">
+                  <td colspan="7" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    <div class="flex flex-col items-center gap-2">
+                      <p>No issues found for the selected filters.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div id="allIssuesPagination" class="hidden px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+              <span id="allIssuesPaginationInfo">Showing 0 to 0 of 0 entries</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button 
+                id="allIssuesPaginationPrev" 
+                class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+                Previous
+              </button>
+              <div id="allIssuesPaginationPages" class="flex items-center gap-1">
+                <!-- Page numbers will be inserted here -->
+              </div>
+              <button 
+                id="allIssuesPaginationNext" 
+                class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Boy Issue Counts Table -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm mt-8">
+          <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Issues by Delivery Boy</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Count of issues for each delivery boy (based on current filters)</p>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="issueTypeFilter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Issue Type</label>
+                <select id="issueTypeFilter" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer min-w-[200px]">
+                  <option value="">All Issue Types</option>
+                </select>
+              </div>
+            </div>
+          </header>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Delivery Boy</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Issue Count</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="deliveryBoyCountsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr id="deliveryBoyCountsLoadingRow">
+                  <td colspan="3" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center gap-3">
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Loading delivery boy counts...</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="deliveryBoyCountsEmptyRow" class="hidden">
+                  <td colspan="2" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    <div class="flex flex-col items-center gap-2">
+                      <p>No delivery boys with issues found for the selected filters.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+        </div>
+
+        <!-- Tab Content: Delivery Boy Performance -->
+        <div id="tabContentPerformance" class="tab-content hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 mt-6">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delivery Boy Performance</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Analyze delivery boy performance, profit vs salary comparison, and order metrics.
+            </p>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex flex-col gap-2">
+              <label for="perfDateRange" class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+                <select id="perfDateRange" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0 cursor-pointer">
+                  <option value="this_month">This Month</option>
+                  <option value="last_month" selected>Last Month</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+            </div>
+            <div id="perfMonthlySelection" class="hidden flex flex-col gap-2">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Select Month</label>
+              <div id="perfMonthlyButtons" class="flex flex-wrap gap-2 max-w-xl"></div>
+            </div>
+            <div id="perfCustomRangeSelection" class="hidden flex items-center gap-2">
+              <div class="flex flex-col gap-2">
+                <label for="perfCustomStartDate" class="text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+                  <input type="date" id="perfCustomStartDate" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="perfCustomEndDate" class="text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+                  <input type="date" id="perfCustomEndDate" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-transparent">Apply</label>
+                <button id="perfCustomApplyBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <!-- Good Profit Making -->
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Good Profit Making</p>
+                <p id="goodProfitCount" class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">-</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Profit &gt; 20% above salary</p>
+              </div>
+              <div class="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Profit Making -->
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Average Profit Making</p>
+                <p id="averageProfitCount" class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">-</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Profit just above salary</p>
+              </div>
+              <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loss Making -->
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Loss Making</p>
+                <p id="lossMakingCount" class="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">-</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Profit &lt; salary</p>
+              </div>
+              <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bar Chart Section -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm mb-8">
+          <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Profit vs Salary Comparison</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">20% of revenue (profit) compared against delivery boy salary</p>
+          </header>
+          <div class="p-6">
+            <div id="profitVsSalaryChart" class="h-96">
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Loading chart data...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Table Section -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+          <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Delivery Boy Performance</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Order count, revenue, profit, and salary details for each delivery boy</p>
+              </div>
+              <button id="perfExportCsvBtn" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Export CSV
+              </button>
+            </div>
+          </header>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Delivery Boy</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Revenue</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Profit (20%)</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Salary</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody id="deliveryPerformanceTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr id="deliveryPerformanceLoadingRow">
+                  <td colspan="8" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center gap-3">
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Loading performance data...</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="deliveryPerformanceEmptyRow" class="hidden">
+                  <td colspan="8" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    <div class="flex flex-col items-center gap-2">
+                      <p>No delivery performance data found for the selected date range.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+      </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+  <script>
+    // Tab switching function
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.getElementById('tabContentIssues').classList.add('hidden');
+      document.getElementById('tabContentPerformance').classList.add('hidden');
+      
+      // Remove active class from all tabs
+      document.getElementById('tabIssues').classList.remove('active', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+      document.getElementById('tabIssues').classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+      document.getElementById('tabPerformance').classList.remove('active', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+      document.getElementById('tabPerformance').classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+      
+      // Show selected tab content and activate tab button
+      if (tabName === 'issues') {
+        document.getElementById('tabContentIssues').classList.remove('hidden');
+        document.getElementById('tabIssues').classList.add('active', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+        document.getElementById('tabIssues').classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+      } else if (tabName === 'performance') {
+        document.getElementById('tabContentPerformance').classList.remove('hidden');
+        document.getElementById('tabPerformance').classList.add('active', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+        document.getElementById('tabPerformance').classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+      }
+    }
+
+    // Initialize tabs on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      switchTab('issues'); // Default to Issues tab
+    });
+  </script>
+
+  <script>
+    (function() {
+      const API_BASE = "/analytics/api/delivery";
+      const STORAGE_KEY = "deliveryAnalyticsState";
+
+      const state = {
+        range: "last_month",
+        startDate: null,
+        endDate: null,
+        selectedMonth: null, // { start, end, label } for monthly selection
+        performance: [],
+        stats: null,
+        chart: null,
+      };
+
+      const elements = {
+        dateRangeSelect: document.getElementById("perfDateRange"),
+        monthlySelection: document.getElementById("perfMonthlySelection"),
+        monthlyButtons: document.getElementById("perfMonthlyButtons"),
+        customRangeSelection: document.getElementById("perfCustomRangeSelection"),
+        customStartDate: document.getElementById("perfCustomStartDate"),
+        customEndDate: document.getElementById("perfCustomEndDate"),
+        customApplyBtn: document.getElementById("perfCustomApplyBtn"),
+        tableBody: document.getElementById("deliveryPerformanceTableBody"),
+        loadingRow: document.getElementById("deliveryPerformanceLoadingRow"),
+        emptyRow: document.getElementById("deliveryPerformanceEmptyRow"),
+        goodProfitCount: document.getElementById("goodProfitCount"),
+        averageProfitCount: document.getElementById("averageProfitCount"),
+        lossMakingCount: document.getElementById("lossMakingCount"),
+        chartContainer: document.getElementById("profitVsSalaryChart"),
+        exportCsvBtn: document.getElementById("perfExportCsvBtn"),
+      };
+
+      function loadStateFromStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            if (saved && typeof saved === "object") {
+              if (saved.range) state.range = saved.range;
+              if (saved.startDate) state.startDate = saved.startDate;
+              if (saved.endDate) state.endDate = saved.endDate;
+              if (saved.selectedMonth) state.selectedMonth = saved.selectedMonth;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load delivery analytics state", error);
+        }
+      }
+
+      function saveStateToStorage() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            range: state.range,
+            startDate: state.startDate,
+            endDate: state.endDate,
+            selectedMonth: state.selectedMonth,
+          }));
+        } catch (error) {
+          console.error("Failed to save delivery analytics state", error);
+        }
+      }
+
+      function getMonthDateRange(yearMonth) {
+        const [year, month] = yearMonth.split("-").map(Number);
+        const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+        return { start: startDate, end: endDate };
+      }
+
+      function getThisMonthRange() {
+        const now = new Date();
+        return getMonthDateRange(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
+      }
+
+      function getLastMonthRange() {
+        const now = new Date();
+        const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return getMonthDateRange(`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`);
+      }
+
+      function generateMonthButtons() {
+        if (!elements.monthlyButtons) return;
+        const now = new Date();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        let html = "";
+        for (let i = 0; i < 18; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const label = monthNames[d.getMonth()] + " " + d.getFullYear();
+          const startStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-01";
+          const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+          const endStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(lastDay).padStart(2, "0");
+          const isSelected = state.selectedMonth && state.selectedMonth.start === startStr && state.selectedMonth.end === endStr;
+          html += `<button type="button" data-start="${startStr}" data-end="${endStr}" data-label="${label}"
+            class="perf-month-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              isSelected
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }">${label}</button>`;
+        }
+        elements.monthlyButtons.innerHTML = html;
+
+        // Add click handlers
+        elements.monthlyButtons.querySelectorAll(".perf-month-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.selectedMonth = {
+              start: btn.dataset.start,
+              end: btn.dataset.end,
+              label: btn.dataset.label,
+            };
+            // Update button styles
+            elements.monthlyButtons.querySelectorAll(".perf-month-btn").forEach(b => {
+              b.className = "perf-month-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700";
+            });
+            btn.className = "perf-month-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors bg-blue-600 text-white border-blue-600";
+            saveStateToStorage();
+            loadData();
+          });
+        });
+      }
+
+      function hideAllSelections() {
+        if (elements.monthlySelection) elements.monthlySelection.classList.add("hidden");
+        if (elements.customRangeSelection) elements.customRangeSelection.classList.add("hidden");
+      }
+
+      function handleRangeChange() {
+        hideAllSelections();
+
+        if (state.range === "monthly") {
+          if (elements.monthlySelection) elements.monthlySelection.classList.remove("hidden");
+          generateMonthButtons();
+          // If a month was already selected, use it; otherwise don't auto-load
+          if (state.selectedMonth) {
+            loadData();
+          }
+          return;
+        }
+
+        if (state.range === "custom") {
+          if (elements.customRangeSelection) elements.customRangeSelection.classList.remove("hidden");
+          if (!state.startDate || !state.endDate) {
+            const lastMonth = getLastMonthRange();
+            state.startDate = lastMonth.start;
+            state.endDate = lastMonth.end;
+          }
+          if (elements.customStartDate) elements.customStartDate.value = state.startDate;
+          if (elements.customEndDate) elements.customEndDate.value = state.endDate;
+          // Don't auto-load for custom; wait for Apply click
+          return;
+        }
+
+        // For this_month and last_month, load immediately
+        state.selectedMonth = null;
+        loadData();
+      }
+
+      function init() {
+        loadStateFromStorage();
+
+        if (elements.dateRangeSelect) {
+          elements.dateRangeSelect.value = state.range;
+          elements.dateRangeSelect.addEventListener("change", (e) => {
+            state.range = e.target.value;
+            saveStateToStorage();
+            handleRangeChange();
+          });
+        }
+
+        if (elements.exportCsvBtn) {
+          elements.exportCsvBtn.addEventListener("click", exportCsv);
+        }
+
+        if (elements.customApplyBtn) {
+          elements.customApplyBtn.addEventListener("click", () => {
+            if (elements.customStartDate) state.startDate = elements.customStartDate.value;
+            if (elements.customEndDate) state.endDate = elements.customEndDate.value;
+            if (state.startDate && state.endDate) {
+              saveStateToStorage();
+              loadData();
+            }
+          });
+        }
+
+        // Trigger initial view
+        handleRangeChange();
+      }
+
+      function buildApiUrl() {
+        if (state.range === "monthly" && state.selectedMonth) {
+          return `${API_BASE}?range=monthly&start=${encodeURIComponent(state.selectedMonth.start)}&end=${encodeURIComponent(state.selectedMonth.end)}`;
+        }
+        if (state.range === "custom" && state.startDate && state.endDate) {
+          return `${API_BASE}?range=custom&start=${encodeURIComponent(state.startDate)}&end=${encodeURIComponent(state.endDate)}`;
+        }
+        if (state.range === "this_month") {
+          const r = getThisMonthRange();
+          return `${API_BASE}?range=monthly&start=${encodeURIComponent(r.start)}&end=${encodeURIComponent(r.end)}`;
+        }
+        // Default: last_month
+        const r = getLastMonthRange();
+        return `${API_BASE}?range=monthly&start=${encodeURIComponent(r.start)}&end=${encodeURIComponent(r.end)}`;
+      }
+
+      async function loadData() {
+        // Show loading state
+        if (elements.loadingRow) {
+          elements.loadingRow.classList.remove("hidden");
+        }
+        if (elements.emptyRow) {
+          elements.emptyRow.classList.add("hidden");
+        }
+
+        // Show spinner on chart
+        if (elements.chartContainer) {
+          elements.chartContainer.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Loading chart data...</p>
+              </div>
+            </div>
+          `;
+        }
+
+        try {
+          const response = await fetch(buildApiUrl());
+          const data = await response.json();
+
+          if (data && data.success && data.data) {
+            state.performance = data.data.performance || [];
+            state.stats = data.data.stats || { good: 0, average: 0, loss: 0, total: 0 };
+            
+            updateStats();
+            renderChart();
+            renderTable();
+          } else {
+            showError("Failed to load delivery analytics data");
+          }
+        } catch (error) {
+          console.error("Error loading delivery analytics:", error);
+          showError("Failed to load delivery analytics data");
+        } finally {
+          if (elements.loadingRow) {
+            elements.loadingRow.classList.add("hidden");
+          }
+        }
+      }
+
+      function updateStats() {
+        if (state.stats) {
+          if (elements.goodProfitCount) {
+            elements.goodProfitCount.textContent = state.stats.good || 0;
+          }
+          if (elements.averageProfitCount) {
+            elements.averageProfitCount.textContent = state.stats.average || 0;
+          }
+          if (elements.lossMakingCount) {
+            elements.lossMakingCount.textContent = state.stats.loss || 0;
+          }
+        }
+      }
+
+      function renderChart() {
+        if (!elements.chartContainer) return;
+
+        // Destroy existing chart
+        if (state.chart) {
+          state.chart.destroy();
+        }
+
+        if (state.performance.length === 0) {
+          elements.chartContainer.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+              <p class="text-sm text-gray-500 dark:text-gray-400">No data available for chart</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Sort by profit descending
+        const sorted = [...state.performance].sort((a, b) => b.profit - a.profit);
+        const labels = sorted.map(p => p.name || "Unknown");
+        const profitData = sorted.map(p => p.profit);
+        const salaryData = sorted.map(p => p.salary);
+        
+        // Create color arrays for Salary bars: red for loss-making (profit < salary), blue otherwise
+        const salaryBackgroundColors = sorted.map(p => 
+          p.profit < p.salary ? "rgba(239, 68, 68, 0.6)" : "rgba(59, 130, 246, 0.6)"
+        );
+        const salaryBorderColors = sorted.map(p => 
+          p.profit < p.salary ? "rgba(239, 68, 68, 1)" : "rgba(59, 130, 246, 1)"
+        );
+
+        const ctx = document.createElement("canvas");
+        elements.chartContainer.innerHTML = "";
+        elements.chartContainer.appendChild(ctx);
+
+        state.chart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Profit (20% of Revenue)",
+                data: profitData,
+                backgroundColor: "rgba(34, 197, 94, 0.6)",
+                borderColor: "rgba(34, 197, 94, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Salary",
+                data: salaryData,
+                backgroundColor: salaryBackgroundColors,
+                borderColor: salaryBorderColors,
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  color: window.matchMedia("(prefers-color-scheme: dark)").matches || document.documentElement.classList.contains("dark") 
+                    ? "#e5e7eb" : "#374151",
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ₹${formatNumber(context.parsed.y)}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return "₹" + formatNumber(value);
+                  },
+                  color: window.matchMedia("(prefers-color-scheme: dark)").matches || document.documentElement.classList.contains("dark") 
+                    ? "#9ca3af" : "#6b7280",
+                },
+                grid: {
+                  color: window.matchMedia("(prefers-color-scheme: dark)").matches || document.documentElement.classList.contains("dark") 
+                    ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                },
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45,
+                  color: window.matchMedia("(prefers-color-scheme: dark)").matches || document.documentElement.classList.contains("dark") 
+                    ? "#9ca3af" : "#6b7280",
+                },
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function renderTable() {
+        if (!elements.tableBody) return;
+
+        // Remove existing rows (except loading and empty rows)
+        const existingRows = Array.from(elements.tableBody.querySelectorAll("tr:not(#deliveryPerformanceLoadingRow):not(#deliveryPerformanceEmptyRow)"));
+        existingRows.forEach(row => row.remove());
+
+        if (state.performance.length === 0) {
+          if (elements.emptyRow) {
+            elements.emptyRow.classList.remove("hidden");
+          }
+          return;
+        }
+
+        if (elements.emptyRow) {
+          elements.emptyRow.classList.add("hidden");
+        }
+
+        // Sort by profit descending
+        const sorted = [...state.performance].sort((a, b) => b.profit - a.profit);
+
+        sorted.forEach((perf) => {
+          const row = document.createElement("tr");
+          row.className = "hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors";
+
+          const net = perf.profit - perf.salary;
+          const netClass = net >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400";
+          
+          let statusBadge = "";
+          if (perf.category === "good") {
+            statusBadge = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">Good</span>';
+          } else if (perf.category === "average") {
+            statusBadge = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Average</span>';
+          } else {
+            statusBadge = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Loss</span>';
+          }
+
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(perf.name)}</div>
+              ${perf.phone ? `<div class="text-xs text-gray-500 dark:text-gray-400">${escapeHtml(perf.phone)}</div>` : ''}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              ${perf.order_count || 0}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+              ₹${formatNumber(perf.revenue)}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              ₹${formatNumber(perf.profit)}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400">
+              ₹${formatNumber(perf.salary)}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 capitalize">
+              ${escapeHtml((perf.payment_type || "commission").replace(/_/g, " "))}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${netClass}">
+              ${net >= 0 ? '+' : ''}₹${formatNumber(Math.abs(net))}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              ${statusBadge}
+            </td>
+          `;
+
+          elements.tableBody.appendChild(row);
+        });
+      }
+
+      function formatNumber(num) {
+        return new Intl.NumberFormat("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(num || 0);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function exportCsv() {
+        if (!state.performance || state.performance.length === 0) return;
+
+        const sorted = [...state.performance].sort((a, b) => b.profit - a.profit);
+        const headers = ["Delivery Boy", "Phone", "Orders", "Revenue", "Profit (20%)", "Salary", "Payment Type", "Net", "Status"];
+        const rows = sorted.map(p => {
+          const net = p.profit - p.salary;
+          return [
+            p.name || "Unknown",
+            p.phone || "",
+            p.order_count || 0,
+            (p.revenue || 0).toFixed(2),
+            (p.profit || 0).toFixed(2),
+            (p.salary || 0).toFixed(2),
+            (p.payment_type || "commission").replace(/_/g, " "),
+            net.toFixed(2),
+            p.category === "good" ? "Good" : p.category === "average" ? "Average" : "Loss",
+          ];
+        });
+
+        // Escape CSV fields
+        function csvEscape(val) {
+          const str = String(val);
+          if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+            return '"' + str.replace(/"/g, '""') + '"';
+          }
+          return str;
+        }
+
+        const csvContent = [headers.map(csvEscape).join(",")]
+          .concat(rows.map(row => row.map(csvEscape).join(",")))
+          .join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "delivery-boy-performance.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function showError(message) {
+        if (elements.emptyRow) {
+          elements.emptyRow.innerHTML = `
+            <td colspan="8" class="px-6 py-6 text-center text-red-500 dark:text-red-400 text-sm">
+              ${escapeHtml(message)}
+            </td>
+          `;
+          elements.emptyRow.classList.remove("hidden");
+        }
+      }
+
+      // ===== Delivery Issues Section =====
+      const ISSUES_API_BASE = "/analytics/api/delivery/issues";
+      const ISSUES_STORAGE_KEY = "deliveryIssuesState";
+
+      const issuesState = {
+        dateRange: "7d",
+        startDate: null,
+        endDate: null,
+        statusCounts: [],
+        typeCounts: [],
+        issues: [],
+        issueTypes: [],
+        statuses: [],
+        filters: {
+          // Filters for "Issues by Delivery Boy" section
+          deliveryBoySection: {
+            issueType: "",
+          },
+          // Filters for "All Issues" table
+          allIssuesTable: {
+            issueType: "",
+            status: "",
+            deliveryBoy: "",
+          },
+        },
+        pagination: {
+          currentPage: 1,
+          itemsPerPage: 10,
+        },
+        top5Chart: null,
+        top5DeliveryBoysChart: null,
+      };
+
+      const issuesElements = {
+        dateRangeSelect: document.getElementById("deliveryIssuesDateRange"),
+        customDateRangeContainer: document.getElementById("customDateRangeContainer"),
+        startDateInput: document.getElementById("deliveryIssuesStartDate"),
+        endDateInput: document.getElementById("deliveryIssuesEndDate"),
+        issueTypeFilter: document.getElementById("issueTypeFilter"),
+        issueTypeCountsContainer: document.getElementById("issueTypeCountsContainer"),
+        issueTypeCountsLoading: document.getElementById("issueTypeCountsLoading"),
+        issueTypeCountsEmpty: document.getElementById("issueTypeCountsEmpty"),
+        issueTypeCountsGrid: document.getElementById("issueTypeCountsGrid"),
+        top5IssuesChart: document.getElementById("top5IssuesChart"),
+        top5DeliveryBoysChart: document.getElementById("top5DeliveryBoysChart"),
+        issuesFilterType: document.getElementById("issuesFilterType"),
+        issuesFilterStatus: document.getElementById("issuesFilterStatus"),
+        issuesFilterDeliveryBoy: document.getElementById("issuesFilterDeliveryBoy"),
+        deliveryBoyCountsTableBody: document.getElementById("deliveryBoyCountsTableBody"),
+        deliveryBoyCountsLoadingRow: document.getElementById("deliveryBoyCountsLoadingRow"),
+        deliveryBoyCountsEmptyRow: document.getElementById("deliveryBoyCountsEmptyRow"),
+        allIssuesTableBody: document.getElementById("allIssuesTableBody"),
+        allIssuesLoadingRow: document.getElementById("allIssuesLoadingRow"),
+        allIssuesEmptyRow: document.getElementById("allIssuesEmptyRow"),
+        allIssuesPagination: document.getElementById("allIssuesPagination"),
+        allIssuesPaginationInfo: document.getElementById("allIssuesPaginationInfo"),
+        allIssuesPaginationPrev: document.getElementById("allIssuesPaginationPrev"),
+        allIssuesPaginationNext: document.getElementById("allIssuesPaginationNext"),
+        allIssuesPaginationPages: document.getElementById("allIssuesPaginationPages"),
+      };
+
+      function loadIssuesStateFromStorage() {
+        try {
+          const raw = localStorage.getItem(ISSUES_STORAGE_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            if (saved && typeof saved === "object") {
+              if (saved.dateRange) issuesState.dateRange = saved.dateRange;
+              if (saved.startDate) issuesState.startDate = saved.startDate;
+              if (saved.endDate) issuesState.endDate = saved.endDate;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load delivery issues state", error);
+        }
+      }
+
+      function saveIssuesStateToStorage() {
+        try {
+          localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify({
+            dateRange: issuesState.dateRange,
+            startDate: issuesState.startDate,
+            endDate: issuesState.endDate,
+          }));
+        } catch (error) {
+          console.error("Failed to save delivery issues state", error);
+        }
+      }
+
+      function initIssuesFilters() {
+        loadIssuesStateFromStorage();
+
+        // Initialize pagination event listeners
+        if (issuesElements.allIssuesPaginationPrev) {
+          issuesElements.allIssuesPaginationPrev.addEventListener("click", () => {
+            if (issuesState.pagination.currentPage > 1) {
+              issuesState.pagination.currentPage--;
+              renderAllIssuesTable();
+            }
+          });
+        }
+
+        if (issuesElements.allIssuesPaginationNext) {
+          issuesElements.allIssuesPaginationNext.addEventListener("click", () => {
+            const totalItems = issuesState.issues.filter(issue => {
+              if (issuesState.filters.allIssuesTable.issueType && issue.issue_type_name !== issuesState.filters.allIssuesTable.issueType) return false;
+              if (issuesState.filters.allIssuesTable.status && issue.current_status_name !== issuesState.filters.allIssuesTable.status) return false;
+              if (issuesState.filters.allIssuesTable.deliveryBoy && issue.delivery_boy_name !== issuesState.filters.allIssuesTable.deliveryBoy) return false;
+              return true;
+            }).length;
+            const totalPages = Math.ceil(totalItems / issuesState.pagination.itemsPerPage);
+            if (issuesState.pagination.currentPage < totalPages) {
+              issuesState.pagination.currentPage++;
+              renderAllIssuesTable();
+            }
+          });
+        }
+
+        if (issuesElements.dateRangeSelect) {
+          issuesElements.dateRangeSelect.value = issuesState.dateRange || "7d";
+          
+          issuesElements.dateRangeSelect.addEventListener("change", (e) => {
+            issuesState.dateRange = e.target.value;
+            if (issuesState.dateRange === "custom") {
+              if (issuesElements.customDateRangeContainer) {
+                issuesElements.customDateRangeContainer.classList.remove("hidden");
+              }
+              // Set default dates if not set
+              if (!issuesState.startDate || !issuesState.endDate) {
+                const now = new Date();
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(now.getDate() - 7);
+                issuesState.startDate = sevenDaysAgo.toISOString().split("T")[0];
+                issuesState.endDate = now.toISOString().split("T")[0];
+              }
+              if (issuesElements.startDateInput) {
+                issuesElements.startDateInput.value = issuesState.startDate;
+              }
+              if (issuesElements.endDateInput) {
+                issuesElements.endDateInput.value = issuesState.endDate;
+              }
+            } else {
+              if (issuesElements.customDateRangeContainer) {
+                issuesElements.customDateRangeContainer.classList.add("hidden");
+              }
+            }
+            saveIssuesStateToStorage();
+            loadIssuesData();
+          });
+        }
+
+        if (issuesElements.startDateInput && issuesElements.endDateInput) {
+          issuesElements.startDateInput.addEventListener("change", (e) => {
+            issuesState.startDate = e.target.value;
+            saveIssuesStateToStorage();
+            if (issuesState.dateRange === "custom") {
+              loadIssuesData();
+            }
+          });
+
+          issuesElements.endDateInput.addEventListener("change", (e) => {
+            issuesState.endDate = e.target.value;
+            saveIssuesStateToStorage();
+            if (issuesState.dateRange === "custom") {
+              loadIssuesData();
+            }
+          });
+        }
+
+        // Show custom date range if needed
+        if (issuesState.dateRange === "custom" && issuesElements.customDateRangeContainer) {
+          issuesElements.customDateRangeContainer.classList.remove("hidden");
+        }
+      }
+
+      async function loadIssuesData() {
+        // Show loading state
+        if (issuesElements.issueTypeCountsLoading) {
+          issuesElements.issueTypeCountsLoading.classList.remove("hidden");
+        }
+        if (issuesElements.issueTypeCountsEmpty) {
+          issuesElements.issueTypeCountsEmpty.classList.add("hidden");
+        }
+        if (issuesElements.issueTypeCountsGrid) {
+          issuesElements.issueTypeCountsGrid.classList.add("hidden");
+        }
+        if (issuesElements.allIssuesLoadingRow) {
+          issuesElements.allIssuesLoadingRow.classList.remove("hidden");
+        }
+        if (issuesElements.allIssuesEmptyRow) {
+          issuesElements.allIssuesEmptyRow.classList.add("hidden");
+        }
+        if (issuesElements.deliveryBoyCountsLoadingRow) {
+          issuesElements.deliveryBoyCountsLoadingRow.classList.remove("hidden");
+        }
+        if (issuesElements.deliveryBoyCountsEmptyRow) {
+          issuesElements.deliveryBoyCountsEmptyRow.classList.add("hidden");
+        }
+
+        try {
+          let url = `${ISSUES_API_BASE}?range=${encodeURIComponent(issuesState.dateRange)}`;
+          if (issuesState.dateRange === "custom" && issuesState.startDate && issuesState.endDate) {
+            url += `&startDate=${encodeURIComponent(issuesState.startDate)}&endDate=${encodeURIComponent(issuesState.endDate)}`;
+          }
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data && data.success && data.data) {
+            issuesState.statusCounts = data.data.statusCounts || [];
+            issuesState.typeCounts = data.data.typeCounts || [];
+            issuesState.issues = data.data.issues || [];
+            issuesState.issueTypes = data.data.issueTypes || [];
+            issuesState.statuses = data.data.statuses || [];
+            issuesState.startDate = data.data.startDate;
+            issuesState.endDate = data.data.endDate;
+
+            initIssueTypeFilter();
+            renderIssueTypeCounts();
+            renderTop5IssuesChart();
+            renderTop5DeliveryBoysChart();
+            initFilters();
+            renderDeliveryBoyCounts();
+            renderAllIssuesTable();
+          } else {
+            showIssuesError("Failed to load delivery issues data");
+          }
+        } catch (error) {
+          console.error("Error loading delivery issues:", error);
+          showIssuesError("Failed to load delivery issues data");
+        } finally {
+          if (issuesElements.issueTypeCountsLoading) {
+            issuesElements.issueTypeCountsLoading.classList.add("hidden");
+          }
+          if (issuesElements.allIssuesLoadingRow) {
+            issuesElements.allIssuesLoadingRow.classList.add("hidden");
+          }
+          if (issuesElements.deliveryBoyCountsLoadingRow) {
+            issuesElements.deliveryBoyCountsLoadingRow.classList.add("hidden");
+          }
+        }
+      }
+
+
+      function renderIssueTypeCounts() {
+        if (!issuesElements.issueTypeCountsGrid) return;
+
+        // Show all types with positive counts (don't apply filter to cards)
+        const filteredTypes = (issuesState.typeCounts || [])
+          .filter(item => item.count > 0)
+          .sort((a, b) => b.count - a.count);
+
+        if (filteredTypes.length === 0) {
+          if (issuesElements.issueTypeCountsEmpty) {
+            issuesElements.issueTypeCountsEmpty.classList.remove("hidden");
+          }
+          if (issuesElements.issueTypeCountsGrid) {
+            issuesElements.issueTypeCountsGrid.classList.add("hidden");
+          }
+          return;
+        }
+
+        if (issuesElements.issueTypeCountsEmpty) {
+          issuesElements.issueTypeCountsEmpty.classList.add("hidden");
+        }
+        if (issuesElements.issueTypeCountsGrid) {
+          issuesElements.issueTypeCountsGrid.classList.remove("hidden");
+        }
+
+        issuesElements.issueTypeCountsGrid.innerHTML = filteredTypes.map((item) => {
+          const typeName = item.name || "Unknown";
+          const escapedTypeName = escapeHtml(typeName);
+          // Use data attribute and event delegation instead of inline onclick
+          return `
+            <a href="#" 
+               class="issue-type-card block bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+               data-issue-type="${escapedTypeName}">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">${escapedTypeName}</p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">${item.count || 0}</p>
+                </div>
+              </div>
+            </a>
+          `;
+        }).join("");
+
+        // Add click handlers to cards using event delegation
+        const cards = issuesElements.issueTypeCountsGrid.querySelectorAll('.issue-type-card');
+        cards.forEach(card => {
+          card.addEventListener('click', (e) => {
+            e.preventDefault();
+            const typeName = card.getAttribute('data-issue-type');
+            if (typeName) {
+              filterByIssueType(typeName);
+            }
+          });
+        });
+      }
+
+      function renderTop5IssuesChart() {
+        if (!issuesElements.top5IssuesChart) return;
+
+        // Destroy existing chart
+        if (issuesState.top5Chart) {
+          issuesState.top5Chart.destroy();
+          issuesState.top5Chart = null;
+        }
+
+        // Get top 5 issues
+        const top5 = (issuesState.typeCounts || [])
+          .filter(item => item.count > 0)
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+
+        if (top5.length === 0) {
+          issuesElements.top5IssuesChart.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+              <p class="text-sm text-gray-500 dark:text-gray-400">No data available for chart</p>
+            </div>
+          `;
+          return;
+        }
+
+        const labels = top5.map(item => item.name || "Unknown");
+        const data = top5.map(item => item.count || 0);
+
+        // Color palette for bars
+        const colors = [
+          { bg: "rgba(239, 68, 68, 0.6)", border: "rgba(239, 68, 68, 1)" },      // red
+          { bg: "rgba(249, 115, 22, 0.6)", border: "rgba(249, 115, 22, 1)" },    // orange
+          { bg: "rgba(234, 179, 8, 0.6)", border: "rgba(234, 179, 8, 1)" },      // yellow
+          { bg: "rgba(59, 130, 246, 0.6)", border: "rgba(59, 130, 246, 1)" },    // blue
+          { bg: "rgba(139, 92, 246, 0.6)", border: "rgba(139, 92, 246, 1)" },    // purple
+        ];
+
+        const backgroundColors = top5.map((_, idx) => colors[idx]?.bg || colors[0].bg);
+        const borderColors = top5.map((_, idx) => colors[idx]?.border || colors[0].border);
+
+        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches || 
+                       document.documentElement.classList.contains("dark");
+
+        const ctx = document.createElement("canvas");
+        issuesElements.top5IssuesChart.innerHTML = "";
+        issuesElements.top5IssuesChart.appendChild(ctx);
+
+        issuesState.top5Chart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "Number of Issues",
+              data: data,
+              backgroundColor: backgroundColors,
+              borderColor: borderColors,
+              borderWidth: 2,
+            }],
+          },
+          plugins: [ChartDataLabels],
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            layout: {
+              padding: {
+                right: 50,
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `Issues: ${context.parsed.x}`;
+                  },
+                },
+              },
+              datalabels: {
+                anchor: 'end',
+                align: 'start',
+                color: isDark ? '#f3f4f6' : '#111827',
+                font: {
+                  weight: 'bold',
+                  size: 14,
+                },
+                formatter: function(value) {
+                  return value;
+                },
+                offset: 4,
+              },
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1,
+                  color: isDark ? "#9ca3af" : "#6b7280",
+                },
+                grid: {
+                  color: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                },
+              },
+              y: {
+                ticks: {
+                  color: isDark ? "#9ca3af" : "#6b7280",
+                  font: {
+                    size: 12,
+                  },
+                },
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function renderTop5DeliveryBoysChart() {
+        if (!issuesElements.top5DeliveryBoysChart) return;
+
+        // Destroy existing chart
+        if (issuesState.top5DeliveryBoysChart) {
+          issuesState.top5DeliveryBoysChart.destroy();
+          issuesState.top5DeliveryBoysChart = null;
+        }
+
+        // Count issues by delivery boy
+        const deliveryBoyCounts = {};
+        (issuesState.issues || []).forEach(issue => {
+          if (issue.delivery_boy_name) {
+            if (!deliveryBoyCounts[issue.delivery_boy_name]) {
+              deliveryBoyCounts[issue.delivery_boy_name] = 0;
+            }
+            deliveryBoyCounts[issue.delivery_boy_name]++;
+          }
+        });
+
+        // Convert to array and get top 5
+        const top5 = Object.entries(deliveryBoyCounts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+
+        if (top5.length === 0) {
+          issuesElements.top5DeliveryBoysChart.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+              <p class="text-sm text-gray-500 dark:text-gray-400">No data available for chart</p>
+            </div>
+          `;
+          return;
+        }
+
+        const labels = top5.map(item => item.name);
+        const data = top5.map(item => item.count);
+
+        // Color palette for bars
+        const colors = [
+          { bg: "rgba(239, 68, 68, 0.6)", border: "rgba(239, 68, 68, 1)" },      // red
+          { bg: "rgba(249, 115, 22, 0.6)", border: "rgba(249, 115, 22, 1)" },    // orange
+          { bg: "rgba(234, 179, 8, 0.6)", border: "rgba(234, 179, 8, 1)" },      // yellow
+          { bg: "rgba(59, 130, 246, 0.6)", border: "rgba(59, 130, 246, 1)" },    // blue
+          { bg: "rgba(139, 92, 246, 0.6)", border: "rgba(139, 92, 246, 1)" },    // purple
+        ];
+
+        const backgroundColors = top5.map((_, idx) => colors[idx]?.bg || colors[0].bg);
+        const borderColors = top5.map((_, idx) => colors[idx]?.border || colors[0].border);
+
+        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches || 
+                       document.documentElement.classList.contains("dark");
+
+        const ctx = document.createElement("canvas");
+        issuesElements.top5DeliveryBoysChart.innerHTML = "";
+        issuesElements.top5DeliveryBoysChart.appendChild(ctx);
+
+        issuesState.top5DeliveryBoysChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "Number of Issues",
+              data: data,
+              backgroundColor: backgroundColors,
+              borderColor: borderColors,
+              borderWidth: 2,
+            }],
+          },
+          plugins: [ChartDataLabels],
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            layout: {
+              padding: {
+                right: 50,
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `Issues: ${context.parsed.x}`;
+                  },
+                },
+              },
+              datalabels: {
+                anchor: 'end',
+                align: 'start',
+                color: isDark ? '#f3f4f6' : '#111827',
+                font: {
+                  weight: 'bold',
+                  size: 14,
+                },
+                formatter: function(value) {
+                  return value;
+                },
+                offset: 4,
+              },
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1,
+                  color: isDark ? "#9ca3af" : "#6b7280",
+                },
+                grid: {
+                  color: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                },
+              },
+              y: {
+                ticks: {
+                  color: isDark ? "#9ca3af" : "#6b7280",
+                  font: {
+                    size: 12,
+                  },
+                },
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function filterByIssueType(issueTypeName) {
+        // When clicking a card, update both filters
+        // Update Issues by Delivery Boy filter
+        issuesState.filters.deliveryBoySection.issueType = issueTypeName;
+        if (issuesElements.issueTypeFilter) {
+          issuesElements.issueTypeFilter.value = issueTypeName;
+        }
+        // Update All Issues table filter
+        issuesState.filters.allIssuesTable.issueType = issueTypeName;
+        if (issuesElements.issuesFilterType) {
+          issuesElements.issuesFilterType.value = issueTypeName;
+        }
+        // Update both tables
+        renderDeliveryBoyCounts();
+        renderAllIssuesTable();
+      }
+
+      function initIssueTypeFilter() {
+        // Populate the issue type filter dropdown (in Issues by Delivery Boy section)
+        if (issuesElements.issueTypeFilter) {
+          const typeOptions = issuesState.issueTypes.map(type => 
+            `<option value="${escapeHtml(type.name)}">${escapeHtml(type.name)}</option>`
+          ).join("");
+          issuesElements.issueTypeFilter.innerHTML = '<option value="">All Issue Types</option>' + typeOptions;
+          
+          // Set default to "Delivered less quantity" if it exists
+          const defaultType = "Delivered less quantity";
+          const defaultTypeExists = issuesState.issueTypes.some(type => type.name === defaultType);
+          if (defaultTypeExists) {
+            issuesElements.issueTypeFilter.value = defaultType;
+            issuesState.filters.deliveryBoySection.issueType = defaultType;
+          }
+
+          issuesElements.issueTypeFilter.addEventListener("change", (e) => {
+            issuesState.filters.deliveryBoySection.issueType = e.target.value;
+            // Only update the Issues by Delivery Boy table
+            renderDeliveryBoyCounts();
+          });
+        }
+      }
+
+      function initFilters() {
+        // Populate issue type filter in the All Issues table
+        if (issuesElements.issuesFilterType) {
+          const typeOptions = issuesState.issueTypes.map(type => 
+            `<option value="${escapeHtml(type.name)}">${escapeHtml(type.name)}</option>`
+          ).join("");
+          issuesElements.issuesFilterType.innerHTML = '<option value="">All Types</option>' + typeOptions;
+          
+          // Set default to "All Types" (empty value) for All Issues table
+          issuesElements.issuesFilterType.value = "";
+          issuesState.filters.allIssuesTable.issueType = "";
+
+          issuesElements.issuesFilterType.addEventListener("change", (e) => {
+            issuesState.filters.allIssuesTable.issueType = e.target.value;
+            issuesState.pagination.currentPage = 1; // Reset to first page
+            // Only update the All Issues table
+            renderAllIssuesTable();
+          });
+        }
+
+        // Populate status filter
+        if (issuesElements.issuesFilterStatus) {
+          const statusOptions = issuesState.statuses.map(status => 
+            `<option value="${escapeHtml(status.name)}">${escapeHtml(status.name)}</option>`
+          ).join("");
+          issuesElements.issuesFilterStatus.innerHTML = '<option value="">All Statuses</option>' + statusOptions;
+          
+          // Set default to empty
+          issuesElements.issuesFilterStatus.value = "";
+          issuesState.filters.allIssuesTable.status = "";
+
+          issuesElements.issuesFilterStatus.addEventListener("change", (e) => {
+            issuesState.filters.allIssuesTable.status = e.target.value;
+            issuesState.pagination.currentPage = 1; // Reset to first page
+            renderAllIssuesTable();
+          });
+        }
+
+        // Populate delivery boy filter
+        if (issuesElements.issuesFilterDeliveryBoy) {
+          // Get unique delivery boys from issues
+          const deliveryBoys = [...new Set(issuesState.issues
+            .filter(issue => issue.delivery_boy_name)
+            .map(issue => issue.delivery_boy_name)
+            .sort())];
+          
+          const deliveryBoyOptions = deliveryBoys.map(db => 
+            `<option value="${escapeHtml(db)}">${escapeHtml(db)}</option>`
+          ).join("");
+          issuesElements.issuesFilterDeliveryBoy.innerHTML = '<option value="">All Delivery Boys</option>' + deliveryBoyOptions;
+          
+          // Set default to empty
+          issuesElements.issuesFilterDeliveryBoy.value = "";
+          issuesState.filters.allIssuesTable.deliveryBoy = "";
+
+          issuesElements.issuesFilterDeliveryBoy.addEventListener("change", (e) => {
+            issuesState.filters.allIssuesTable.deliveryBoy = e.target.value;
+            issuesState.pagination.currentPage = 1; // Reset to first page
+            renderAllIssuesTable();
+          });
+        }
+      }
+
+      function renderDeliveryBoyCounts() {
+        if (!issuesElements.deliveryBoyCountsTableBody) return;
+
+        // Apply filters to get filtered issues (only use deliveryBoySection filters)
+        let filteredIssues = [...(issuesState.issues || [])];
+
+        if (issuesState.filters.deliveryBoySection.issueType) {
+          filteredIssues = filteredIssues.filter(issue => 
+            issue.issue_type_name === issuesState.filters.deliveryBoySection.issueType
+          );
+        }
+
+        // Count issues by delivery boy
+        const deliveryBoyCounts = {};
+        filteredIssues.forEach(issue => {
+          if (issue.delivery_boy_name) {
+            if (!deliveryBoyCounts[issue.delivery_boy_name]) {
+              deliveryBoyCounts[issue.delivery_boy_name] = 0;
+            }
+            deliveryBoyCounts[issue.delivery_boy_name]++;
+          }
+        });
+
+        // Convert to array, filter positive counts, and sort by count descending
+        const deliveryBoyList = Object.entries(deliveryBoyCounts)
+          .filter(([name, count]) => count > 0)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count);
+
+        if (deliveryBoyList.length === 0) {
+          // Clear table body and show empty state
+          issuesElements.deliveryBoyCountsTableBody.innerHTML = "";
+          
+          // Create and show empty row
+          const emptyRow = document.createElement("tr");
+          emptyRow.id = "deliveryBoyCountsEmptyRow";
+          const hasFilter = issuesState.filters.deliveryBoySection.issueType;
+          emptyRow.innerHTML = `
+            <td colspan="3" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">${hasFilter ? "No delivery boys with issues found for the selected issue type." : "No delivery boys with issues found for the selected date range."}</p>
+              </div>
+            </td>
+          `;
+          issuesElements.deliveryBoyCountsTableBody.appendChild(emptyRow);
+          
+          if (issuesElements.deliveryBoyCountsLoadingRow) {
+            issuesElements.deliveryBoyCountsLoadingRow.classList.add("hidden");
+          }
+          return;
+        }
+
+        if (issuesElements.deliveryBoyCountsLoadingRow) {
+          issuesElements.deliveryBoyCountsLoadingRow.classList.add("hidden");
+        }
+
+        issuesElements.deliveryBoyCountsTableBody.innerHTML = deliveryBoyList.map(item => {
+          // Build URL with delivery boy name and current filters
+          const params = new URLSearchParams();
+          params.set("deliveryBoy", item.name);
+          if (issuesState.filters.deliveryBoySection.issueType) {
+            params.set("issueType", issuesState.filters.deliveryBoySection.issueType);
+          }
+          if (issuesState.dateRange) {
+            params.set("range", issuesState.dateRange);
+          }
+          if (issuesState.startDate && issuesState.endDate) {
+            params.set("startDate", issuesState.startDate);
+            params.set("endDate", issuesState.endDate);
+          }
+          const viewUrl = `/analytics/delivery/issues?${params.toString()}`;
+          
+          return `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(item.name)}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-semibold">${item.count}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <a href="${viewUrl}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+                  View
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function renderAllIssuesTable() {
+        if (!issuesElements.allIssuesTableBody) return;
+
+        // Apply filters (only use allIssuesTable filters)
+        let filteredIssues = [...(issuesState.issues || [])];
+
+        if (issuesState.filters.allIssuesTable.issueType) {
+          filteredIssues = filteredIssues.filter(issue => 
+            issue.issue_type_name === issuesState.filters.allIssuesTable.issueType
+          );
+        }
+
+        if (issuesState.filters.allIssuesTable.status) {
+          filteredIssues = filteredIssues.filter(issue => 
+            issue.current_status_name === issuesState.filters.allIssuesTable.status
+          );
+        }
+
+        if (issuesState.filters.allIssuesTable.deliveryBoy) {
+          filteredIssues = filteredIssues.filter(issue => 
+            issue.delivery_boy_name === issuesState.filters.allIssuesTable.deliveryBoy
+          );
+        }
+
+        // Calculate pagination
+        const totalItems = filteredIssues.length;
+        const totalPages = Math.ceil(totalItems / issuesState.pagination.itemsPerPage);
+        
+        // Reset to page 1 if current page is out of bounds
+        if (issuesState.pagination.currentPage > totalPages && totalPages > 0) {
+          issuesState.pagination.currentPage = 1;
+        }
+        
+        // Get current page items
+        const startIndex = (issuesState.pagination.currentPage - 1) * issuesState.pagination.itemsPerPage;
+        const endIndex = startIndex + issuesState.pagination.itemsPerPage;
+        const currentPageItems = filteredIssues.slice(startIndex, endIndex);
+
+        if (filteredIssues.length === 0) {
+          // Clear table body and show empty state
+          issuesElements.allIssuesTableBody.innerHTML = "";
+          
+          // Create and show empty row
+          const emptyRow = document.createElement("tr");
+          emptyRow.id = "allIssuesEmptyRow";
+          const hasFilters = issuesState.filters.allIssuesTable.issueType || issuesState.filters.allIssuesTable.status || issuesState.filters.allIssuesTable.deliveryBoy;
+          emptyRow.innerHTML = `
+            <td colspan="7" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">${hasFilters ? "No issues found for the selected filters." : "No issues found for the selected date range."}</p>
+              </div>
+            </td>
+          `;
+          issuesElements.allIssuesTableBody.appendChild(emptyRow);
+          
+          // Hide pagination
+          if (issuesElements.allIssuesPagination) {
+            issuesElements.allIssuesPagination.classList.add("hidden");
+          }
+          return;
+        }
+
+        // Show pagination
+        if (issuesElements.allIssuesPagination) {
+          issuesElements.allIssuesPagination.classList.remove("hidden");
+        }
+
+        // Format date helper
+        function formatDate(dateStr) {
+          if (!dateStr) return "—";
+          try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString("en-US", { 
+              year: "numeric", 
+              month: "short", 
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit"
+            });
+          } catch (e) {
+            return dateStr;
+          }
+        }
+
+        // Render current page items
+        issuesElements.allIssuesTableBody.innerHTML = currentPageItems.map(issue => {
+          return `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${issue.id || "—"}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${escapeHtml(issue.issue_type_name || "Unknown")}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${escapeHtml(issue.current_status_name || "Unknown")}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${escapeHtml(issue.delivery_boy_name || "—")}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${issue.order_id || "—"}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${formatDate(issue.created_at)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button 
+                  onclick="viewIssueDetails(${issue.id})"
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+                  View
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+
+        // Render pagination controls
+        renderAllIssuesPagination(totalItems, totalPages);
+      }
+
+      function renderAllIssuesPagination(totalItems, totalPages) {
+        if (!issuesElements.allIssuesPaginationInfo || !issuesElements.allIssuesPaginationPages) return;
+
+        const currentPage = issuesState.pagination.currentPage;
+        const itemsPerPage = issuesState.pagination.itemsPerPage;
+        const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+        const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+        // Update pagination info
+        issuesElements.allIssuesPaginationInfo.textContent = 
+          `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+
+        // Update Previous/Next buttons
+        if (issuesElements.allIssuesPaginationPrev) {
+          issuesElements.allIssuesPaginationPrev.disabled = currentPage === 1;
+        }
+        if (issuesElements.allIssuesPaginationNext) {
+          issuesElements.allIssuesPaginationNext.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        // Render page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust start page if we're near the end
+        if (endPage - startPage < maxVisiblePages - 1) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        let pageButtonsHTML = "";
+        
+        // First page
+        if (startPage > 1) {
+          pageButtonsHTML += `
+            <button 
+              onclick="goToAllIssuesPage(1)"
+              class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+              1
+            </button>
+          `;
+          if (startPage > 2) {
+            pageButtonsHTML += `<span class="px-2 text-gray-500 dark:text-gray-400">...</span>`;
+          }
+        }
+
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+          pageButtonsHTML += `
+            <button 
+              onclick="goToAllIssuesPage(${i})"
+              class="px-3 py-1.5 text-sm font-medium rounded-md ${
+                i === currentPage
+                  ? "bg-blue-600 text-white border border-blue-600"
+                  : "text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }">
+              ${i}
+            </button>
+          `;
+        }
+
+        // Last page
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            pageButtonsHTML += `<span class="px-2 text-gray-500 dark:text-gray-400">...</span>`;
+          }
+          pageButtonsHTML += `
+            <button 
+              onclick="goToAllIssuesPage(${totalPages})"
+              class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+              ${totalPages}
+            </button>
+          `;
+        }
+
+        issuesElements.allIssuesPaginationPages.innerHTML = pageButtonsHTML;
+      }
+
+      function goToAllIssuesPage(page) {
+        issuesState.pagination.currentPage = page;
+        renderAllIssuesTable();
+      }
+      
+      // Make function globally accessible for onclick handlers
+      window.goToAllIssuesPage = goToAllIssuesPage;
+
+      function showIssuesError(message) {
+        if (issuesElements.allIssuesEmptyRow) {
+          issuesElements.allIssuesEmptyRow.innerHTML = `
+            <td colspan="7" class="px-6 py-6 text-center text-red-500 dark:text-red-400 text-sm">
+              ${escapeHtml(message)}
+            </td>
+          `;
+          issuesElements.allIssuesEmptyRow.classList.remove("hidden");
+        }
+      }
+
+
+
+      // Make functions globally accessible
+      // window.viewIssueDetails = viewIssueDetails; // Now provided by shared script
+      // window.closeIssueDetailsModal = closeIssueDetailsModal; // Now provided by shared script
+
+      function initIssues() {
+        initIssuesFilters();
+        loadIssuesData();
+      }
+
+      // Initialize on DOM ready
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          init();
+          initIssues();
+        });
+      } else {
+        init();
+        initIssues();
+      }
+    })();
+  </script>
+  <script src="/assets/js/delivery-issue-modal.js"></script>
+</body>
+</html>
+

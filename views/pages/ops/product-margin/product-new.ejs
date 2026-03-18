@@ -1,0 +1,483 @@
+<%- include('../../../partials/_head', { seo }) %>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Product Margin', subsection: 'Add Product' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <a href="/product-margin" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+              </a>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Add New Product</h1>
+            </div>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Create a new product with all details</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading form data...</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div class="text-center">
+          <div class="text-red-500 mb-4">
+            <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Failed to Load Form Data</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4" id="errorMessage"></p>
+          <button onclick="window.location.reload()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Retry</button>
+        </div>
+      </div>
+
+      <!-- Add Product Form -->
+      <form id="productForm" onsubmit="saveProductDetails(event)">
+        <div id="productFormContent" class="hidden">
+          <!-- Product Identification -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Product Identification</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Name *</label>
+                <input type="text" id="editProductName" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand Name</label>
+                <input type="text" id="editBrandName" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Type</label>
+                <input type="text" id="editProductType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
+                <select id="editCategoryId" required onchange="updateSubcategoryOptions()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Category</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory</label>
+                <select id="editSubcategoryId" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Subcategory</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing Information -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Pricing Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cost Price (₹) *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">The actual cost price paid to acquire the product</p>
+                <input type="number" id="editCostPrice" step="0.01" oninput="updateProfit()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Basic Price (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Base price before GST (Calculated from Landing Price)</p>
+                <input type="number" id="editBasicPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST % *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Goods and Services Tax percentage applicable</p>
+                <input type="number" id="editGstPercentage" step="0.01" oninput="calculatePricing()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST Value (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Calculated GST amount (Auto-calculated)</p>
+                <input type="number" id="editGstValue" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Landing Price (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">MRP minus Seller Margin (Auto-calculated)</p>
+                <input type="number" id="editLandingPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MRP (₹) *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Maximum Retail Price - the final selling price to customers</p>
+                <input type="number" id="editMrp" step="0.01" oninput="calculatePricing()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seller Margin % *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Seller margin percentage on MRP</p>
+                <input type="number" id="editMarginPercentage" step="0.01" oninput="calculateSellerCommission()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seller Commission (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Commission amount (Auto-calculated from MRP and Seller Margin %)</p>
+                <input type="number" id="editSellerCommission" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Net Profit (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Net profit after seller commission (MRP - Cost - Commission)</p>
+                <div id="profitIndicator" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold text-lg">
+                  ₹0.00
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Physical Properties -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Physical Properties</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grammage</label>
+                <input type="text" id="editGrammage" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Packing Type</label>
+                <input type="text" id="editPackingType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milk Type</label>
+                <select id="editMilkType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Milk Type</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="Buffalo">Buffalo</option>
+                  <option value="Mixed">Mixed</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Storage Type</label>
+                <input type="text" id="editStorageType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Codes & Identification -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Codes & Identification</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">EAN Code</label>
+                <input type="text" id="editEanCode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">HSN Code</label>
+                <input type="text" id="editHsnCode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Packaging & Logistics -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Packaging & Logistics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vendor Pack Size</label>
+                <input type="text" id="editVendorPackSize" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Packaging Dimensions</label>
+                <input type="text" id="editPackagingDimensions" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temperature</label>
+                <input type="text" id="editTemperature" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cut-off Time</label>
+                <input type="time" id="editCutoffTime" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Lifecycle -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Product Lifecycle</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shelf Life (Days)</label>
+                <input type="number" id="editShelfLifeDays" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RTV Status</label>
+                <select id="editRtvStatus" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select RTV Status</option>
+                  <option value="RTV">RTV</option>
+                  <option value="Non RTV">Non RTV</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Description</h3>
+            <textarea id="editDescription" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Status</h3>
+            <div class="flex items-center">
+              <input type="checkbox" id="editIsActive" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <label for="editIsActive" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</label>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-end gap-2">
+            <a href="/product-margin" class="px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Create Product</button>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    // Force clear all caches and service workers (for development)
+    (function() {
+      'use strict';
+      console.log('[Product New] Page loaded, clearing caches...');
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var i = 0; i < registrations.length; i++) {
+            if (registrations[i].scope.includes('/ops')) {
+              registrations[i].unregister();
+            }
+          }
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(function(cacheNames) {
+          for (var i = 0; i < cacheNames.length; i++) {
+            if (cacheNames[i].includes('ops-cache')) {
+              caches.delete(cacheNames[i]);
+            }
+          }
+        });
+      }
+    })();
+
+    const API_BASE = '/product-margin/api/v1';
+    let categories = [];
+    let subcategories = [];
+
+    // Show toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      let bgClass = 'bg-blue-500 text-white';
+      if (type === 'error') bgClass = 'bg-red-500 text-white';
+      else if (type === 'success') bgClass = 'bg-green-500 text-white';
+      else if (type === 'warning') bgClass = 'bg-yellow-500 text-black';
+      toast.className = 'fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ' + bgClass;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Load categories and subcategories
+    async function loadCategories() {
+      try {
+        const [catRes, subcatRes] = await Promise.all([
+          fetch(`${API_BASE}/product-categories`),
+          fetch(`${API_BASE}/product-subcategories`)
+        ]);
+
+        const catData = await catRes.json();
+        const subcatData = await subcatRes.json();
+
+        if (catData.success) categories = catData.data || [];
+        if (subcatData.success) subcategories = subcatData.data || [];
+
+        // Populate category dropdown
+        const categorySelect = document.getElementById('editCategoryId');
+        categorySelect.innerHTML = '<option value="">Select Category</option>' +
+          categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+
+    // Update subcategory options based on selected category
+    function updateSubcategoryOptions() {
+      const categoryId = document.getElementById('editCategoryId').value;
+      const subcategorySelect = document.getElementById('editSubcategoryId');
+      
+      if (!categoryId) {
+        subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+        return;
+      }
+      
+      const filtered = subcategories.filter(sc => sc.category_id == categoryId);
+      subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>' +
+        filtered.map(sc => `<option value="${sc.id}">${sc.name}</option>`).join('');
+    }
+
+    // Calculate pricing from MRP, Seller Margin, and GST%
+    function calculatePricing() {
+      const mrp = parseFloat(document.getElementById('editMrp').value) || 0;
+      const gstPercentage = parseFloat(document.getElementById('editGstPercentage').value) || 0;
+      const marginPercentage = parseFloat(document.getElementById('editMarginPercentage').value) || 0;
+
+      // Calculate Seller Commission (Seller Margin Value)
+      const sellerCommission = mrp > 0 && marginPercentage >= 0 ? mrp * (marginPercentage / 100) : 0;
+      const sellerCommissionRounded = Math.round(sellerCommission * 100) / 100;
+
+      // Landing Price = MRP - Seller Margin Value
+      const landingPrice = mrp - sellerCommissionRounded;
+      const landingPriceRounded = Math.round(landingPrice * 100) / 100;
+
+      // Calculate Basic Price from Landing Price
+      let basicPrice = 0;
+      if (landingPriceRounded > 0 && gstPercentage >= 0) {
+        basicPrice = landingPriceRounded / (1 + gstPercentage / 100);
+        basicPrice = Math.round(basicPrice * 100) / 100;
+      }
+
+      // Calculate GST Value from Basic Price
+      const gstValue = Math.round((basicPrice * gstPercentage / 100) * 100) / 100;
+
+      // Update calculated fields
+      document.getElementById('editBasicPrice').value = basicPrice.toFixed(2);
+      document.getElementById('editGstValue').value = gstValue.toFixed(2);
+      document.getElementById('editLandingPrice').value = landingPriceRounded.toFixed(2);
+      document.getElementById('editSellerCommission').value = sellerCommissionRounded.toFixed(2);
+
+      // Calculate and update Net Profit
+      updateProfit();
+    }
+
+    // Calculate Seller Commission from Seller Margin % and MRP
+    function calculateSellerCommission() {
+      calculatePricing();
+    }
+
+    // Update Net Profit indicator
+    function updateProfit() {
+      const costPrice = parseFloat(document.getElementById('editCostPrice').value) || 0;
+      const mrp = parseFloat(document.getElementById('editMrp').value) || 0;
+      const sellerCommission = parseFloat(document.getElementById('editSellerCommission').value) || 0;
+      
+      // Net Profit = MRP - Cost Price - Seller Commission
+      const netProfit = mrp - costPrice - sellerCommission;
+      
+      const profitIndicator = document.getElementById('profitIndicator');
+      const profitAmount = netProfit.toFixed(2);
+      
+      if (netProfit > 0) {
+        profitIndicator.className = 'w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      } else if (netProfit < 0) {
+        profitIndicator.className = 'w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      } else {
+        profitIndicator.className = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      }
+    }
+
+    // Save product details
+    async function saveProductDetails(event) {
+      event.preventDefault();
+
+      const productData = {
+        name: document.getElementById('editProductName').value,
+        brand_name: document.getElementById('editBrandName').value || null,
+        product_type: document.getElementById('editProductType').value || null,
+        category_id: document.getElementById('editCategoryId').value || null,
+        subcategory_id: document.getElementById('editSubcategoryId').value || null,
+        grammage: document.getElementById('editGrammage').value || null,
+        packing_type: document.getElementById('editPackingType').value || null,
+        milk_type: document.getElementById('editMilkType').value || null,
+        storage_type: document.getElementById('editStorageType').value || null,
+        description: document.getElementById('editDescription').value || null,
+        ean_code: document.getElementById('editEanCode').value || null,
+        hsn_code: document.getElementById('editHsnCode').value || null,
+        cost_price: document.getElementById('editCostPrice').value || null,
+        mrp: document.getElementById('editMrp').value || null,
+        margin_percentage: document.getElementById('editMarginPercentage').value || null,
+        gst_percentage: document.getElementById('editGstPercentage').value || null,
+        basic_price: document.getElementById('editBasicPrice').value || null,
+        gst_value: document.getElementById('editGstValue').value || null,
+        landing_price: document.getElementById('editLandingPrice').value || null,
+        seller_commission: document.getElementById('editSellerCommission').value || null,
+        shelf_life_days: document.getElementById('editShelfLifeDays').value || null,
+        rtv_status: document.getElementById('editRtvStatus').value || null,
+        vendor_pack_size: document.getElementById('editVendorPackSize').value || null,
+        packaging_dimensions: document.getElementById('editPackagingDimensions').value || null,
+        temperature: document.getElementById('editTemperature').value || null,
+        cutoff_time: document.getElementById('editCutoffTime').value || null,
+        is_active: document.getElementById('editIsActive').checked ? 1 : 0,
+      };
+
+      // Validation
+      if (!productData.name) {
+        showToast('Product name is required', 'error');
+        return;
+      }
+
+      if (!productData.category_id) {
+        showToast('Category is required', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/products`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productData),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showToast('Product created successfully!', 'success');
+          // Redirect to product edit page or dashboard
+          if (result.data && result.data.id) {
+            window.location.href = `/product-margin/products/${result.data.id}`;
+          } else {
+            window.location.href = '/product-margin';
+          }
+        } else {
+          showToast(result.error || 'Failed to create product', 'error');
+        }
+      } catch (error) {
+        console.error('Error creating product:', error);
+        showToast('An error occurred while creating product: ' + error.message, 'error');
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await loadCategories();
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('productFormContent').classList.remove('hidden');
+      } catch (error) {
+        console.error('Error loading form data:', error);
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = error.message || 'Failed to load form data';
+      }
+    });
+  </script>
+</body>
+</html>
+

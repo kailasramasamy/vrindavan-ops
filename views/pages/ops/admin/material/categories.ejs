@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../../partials/_subnav', { section: section, subsection: subsection, page: 'Material Categories', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <!-- Header -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="py-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Material Categories</h1>
+                      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage material categories and their attribute templates</p>
+                    </div>
+                    <button onclick="openAddCategoryModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                      <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                      Add Category
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <!-- Categories Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesGrid">
+                <% if (categories && categories.length > 0) { %> <% categories.forEach(category => { %>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2"><%= category.name %></h3>
+                      <% if (category.description) { %>
+                      <p class="text-sm text-gray-600 dark:text-gray-300 mb-3"><%= category.description %></p>
+                      <% } %>
+                      <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                        <span class="flex items-center">
+                          <i data-lucide="package" class="w-4 h-4 mr-1"></i>
+                          <%= category.material_count %> materials
+                        </span>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <button onclick="openEditCategoryModal(<%= category.id %>)" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                      </button>
+                      <button onclick="openTemplatesModal(<%= category.id %>)" class="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                      </button>
+                      <button onclick="deleteCategory(<%= category.id %>)" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <a href="/admin/material/materials?category_id=<%= category.id %>" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">View materials →</a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Active</span>
+                  </div>
+                </div>
+                <% }) %> <% } else { %>
+                <div class="col-span-full text-center py-12">
+                  <i data-lucide="folder-plus" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"></i>
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No categories yet</h3>
+                  <p class="text-gray-600 dark:text-gray-400 mb-6">Get started by creating your first material category.</p>
+                  <button onclick="openAddCategoryModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                    Add Category
+                  </button>
+                </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Category Modal -->
+          <div id="categoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 id="categoryModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Add Category</h3>
+                  <button onclick="closeCategoryModal()" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <form id="categoryForm">
+                  <input type="hidden" id="categoryId" name="id" />
+
+                  <div class="space-y-4">
+                    <div>
+                      <label for="categoryName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category Name</label>
+                      <input type="text" id="categoryName" name="name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter category name" />
+                    </div>
+
+                    <div>
+                      <label for="categoryDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                      <textarea id="categoryDescription" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter category description"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                      <span id="categorySubmitText">Add Category</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attribute Templates Modal -->
+          <div id="templatesModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 id="templatesModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Attribute Templates</h3>
+                  <button onclick="closeTemplatesModal()" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <div class="mb-6">
+                  <button onclick="openAddTemplateModal()" class="inline-flex items-center px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                    Add Attribute Template
+                  </button>
+                </div>
+
+                <div id="templatesList" class="space-y-4">
+                  <!-- Templates will be loaded here -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Template Modal -->
+          <div id="templateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 id="templateModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Add Attribute Template</h3>
+                  <button onclick="closeTemplateModal()" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <form id="templateForm">
+                  <input type="hidden" id="templateId" name="id" />
+                  <input type="hidden" id="templateCategoryId" name="category_id" />
+
+                  <div class="space-y-4">
+                    <div>
+                      <label for="fieldKey" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Key</label>
+                      <input type="text" id="fieldKey" name="field_key" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., width_mm" />
+                    </div>
+
+                    <div>
+                      <label for="fieldLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Label</label>
+                      <input type="text" id="fieldLabel" name="field_label" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Width (mm)" />
+                    </div>
+
+                    <div>
+                      <label for="dataType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data Type</label>
+                      <select id="dataType" name="data_type" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select data type</option>
+                        <option value="string">Text</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Yes/No</option>
+                        <option value="date">Date</option>
+                        <option value="enum">Dropdown</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="flex items-center">
+                        <input type="checkbox" id="isRequired" name="is_required" class="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500" />
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Required field</span>
+                      </label>
+                    </div>
+
+                    <div id="enumOptionsContainer" class="hidden">
+                      <label for="enumOptions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dropdown Options</label>
+                      <textarea id="enumOptions" name="enum_options" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter options separated by commas"></textarea>
+                    </div>
+
+                    <div>
+                      <label for="displayOrder" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Display Order</label>
+                      <input type="number" id="displayOrder" name="display_order" value="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeTemplateModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
+                      <span id="templateSubmitText">Add Template</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <script>
+                        // Initialize Lucide icons
+                        if (typeof lucide !== 'undefined') {
+                          lucide.createIcons();
+                        }
+
+                        // Categories data from server
+                        const categories = <%- JSON.stringify(categories) %>;
+                        let currentCategoryId = null;
+
+                        // Category Modal Functions
+                        function openAddCategoryModal() {
+                          document.getElementById('categoryModalTitle').textContent = 'Add Category';
+                          document.getElementById('categorySubmitText').textContent = 'Add Category';
+                          document.getElementById('categoryForm').reset();
+                          document.getElementById('categoryId').value = '';
+                          document.getElementById('categoryModal').classList.remove('hidden');
+                        }
+
+                        function openEditCategoryModal(categoryId) {
+                          // Find category data
+                          const category = categories.find(c => c.id === categoryId);
+                          if (!category) return;
+
+                          document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+                          document.getElementById('categorySubmitText').textContent = 'Update Category';
+                          document.getElementById('categoryId').value = category.id;
+                          document.getElementById('categoryName').value = category.name;
+                          document.getElementById('categoryDescription').value = category.description || '';
+                          document.getElementById('categoryModal').classList.remove('hidden');
+                        }
+
+                        function closeCategoryModal() {
+                          document.getElementById('categoryModal').classList.add('hidden');
+                        }
+
+                        // Templates Modal Functions
+                        function openTemplatesModal(categoryId) {
+                          currentCategoryId = categoryId;
+                          const category = categories.find(c => c.id === categoryId);
+                          if (!category) return;
+
+                          document.getElementById('templatesModalTitle').textContent = `Attribute Templates - ${category.name}`;
+                          document.getElementById('templatesModal').classList.remove('hidden');
+                          loadTemplates(categoryId);
+                        }
+
+                        function closeTemplatesModal() {
+                          document.getElementById('templatesModal').classList.add('hidden');
+                          currentCategoryId = null;
+                        }
+
+                        function openAddTemplateModal() {
+                          document.getElementById('templateModalTitle').textContent = 'Add Attribute Template';
+                          document.getElementById('templateSubmitText').textContent = 'Add Template';
+                          document.getElementById('templateForm').reset();
+                          document.getElementById('templateId').value = '';
+                          document.getElementById('templateCategoryId').value = currentCategoryId;
+                          document.getElementById('templateModal').classList.remove('hidden');
+                        }
+
+                        function closeTemplateModal() {
+                          document.getElementById('templateModal').classList.add('hidden');
+                        }
+
+            // Load templates for a category
+            async function loadTemplates(categoryId) {
+              try {
+                const response = await fetch(`/api/v1/material/categories/${categoryId}`);
+
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                const container = document.getElementById('templatesList');
+
+                if (result.success && result.data.templates && result.data.templates.length > 0) {
+                              container.innerHTML = result.data.templates.map(template => `
+                                <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                      <div class="flex items-center space-x-3 mb-2">
+                                        <h4 class="font-medium text-gray-900 dark:text-white">${template.field_label}</h4>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
+                                          ${template.data_type}
+                                        </span>
+                                        ${template.is_required ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">Required</span>' : ''}
+                                      </div>
+                                      <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Field key: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">${template.field_key}</code></p>
+                                      ${template.enum_options ? `<p class="text-sm text-gray-600 dark:text-gray-300">Options: ${Array.isArray(template.enum_options) ? template.enum_options.join(', ') : JSON.parse(template.enum_options).join(', ')}</p>` : ''}
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                      <button onclick="editTemplate(${template.id})" class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                        <i data-lucide="edit" class="w-4 h-4"></i>
+                                      </button>
+                                      <button onclick="deleteTemplate(${template.id})" class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              `).join('');
+                            } else {
+                              container.innerHTML = `
+                                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                  <i data-lucide="settings" class="w-8 h-8 mx-auto mb-2"></i>
+                                  <p class="text-lg font-medium">No attribute templates</p>
+                                  <p class="text-sm">Add templates to define custom fields for materials in this category</p>
+                                </div>
+                              `;
+                            }
+
+                            // Re-initialize icons
+                            if (typeof lucide !== 'undefined') {
+                              lucide.createIcons();
+                            }
+                          } catch (error) {
+                            console.error('Error loading templates:', error);
+                            document.getElementById('templatesList').innerHTML = `
+                              <div class="text-center py-8 text-red-500">
+                                <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+                                <p>Failed to load templates</p>
+                              </div>
+                            `;
+                            if (typeof lucide !== 'undefined') {
+                              lucide.createIcons();
+                            }
+                          }
+                        }
+
+                        // Data type change handler
+                        document.getElementById('dataType').addEventListener('change', function() {
+                          const enumContainer = document.getElementById('enumOptionsContainer');
+                          if (this.value === 'enum') {
+                            enumContainer.classList.remove('hidden');
+                          } else {
+                            enumContainer.classList.add('hidden');
+                          }
+                        });
+
+                        // Form submissions
+                        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
+                          e.preventDefault();
+
+                          const formData = new FormData(this);
+                          const data = Object.fromEntries(formData);
+                          const isEdit = data.id !== '';
+
+                          try {
+                            const url = isEdit ? `/api/v1/material/categories/${data.id}` : '/api/v1/material/categories';
+                            const method = isEdit ? 'PUT' : 'POST';
+
+                            const response = await fetch(url, {
+                              method,
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(data)
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                              closeCategoryModal();
+                              location.reload();
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error saving category:', error);
+                            alert('Failed to save category');
+                          }
+                        });
+
+                        document.getElementById('templateForm').addEventListener('submit', async function(e) {
+                          e.preventDefault();
+
+                          const formData = new FormData(this);
+                          const data = Object.fromEntries(formData);
+                          const isEdit = data.id !== '';
+
+                          // Parse enum options if provided
+                          if (data.enum_options) {
+                            data.enum_options = data.enum_options.split(',').map(opt => opt.trim()).filter(opt => opt);
+                          }
+
+                          try {
+                            const url = isEdit ? `/api/v1/material/templates/${data.id}` : `/api/v1/material/categories/${data.category_id}/templates`;
+                            const method = isEdit ? 'PUT' : 'POST';
+
+                            const response = await fetch(url, {
+                              method,
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(data)
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                              closeTemplateModal();
+                              loadTemplates(currentCategoryId);
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error saving template:', error);
+                            alert('Failed to save template');
+                          }
+                        });
+
+                        // Delete functions
+                        async function deleteCategory(categoryId) {
+                          if (!confirm('Are you sure you want to delete this category? This action cannot be undone.')) return;
+
+                          try {
+                            const response = await fetch(`/api/v1/material/categories/${categoryId}`, {
+                              method: 'DELETE'
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                              location.reload();
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error deleting category:', error);
+                            alert('Failed to delete category');
+                          }
+                        }
+
+                        async function deleteTemplate(templateId) {
+                          if (!confirm('Are you sure you want to delete this template?')) return;
+
+                          try {
+                            const response = await fetch(`/api/v1/material/templates/${templateId}`, {
+                              method: 'DELETE'
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                              loadTemplates(currentCategoryId);
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error deleting template:', error);
+                            alert('Failed to delete template');
+                          }
+                        }
+
+                        async function editTemplate(templateId) {
+                          try {
+                            // Fetch template data
+                            const response = await fetch(`/api/v1/material/templates/${templateId}`);
+
+                            if (!response.ok) {
+                              throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const result = await response.json();
+
+                            if (!result.success) {
+                              throw new Error(result.error || 'Failed to fetch template');
+                            }
+
+                            const template = result.data;
+
+                            // Populate the form with template data
+                            document.getElementById('templateModalTitle').textContent = 'Edit Attribute Template';
+                            document.getElementById('templateSubmitText').textContent = 'Update Template';
+                            document.getElementById('templateId').value = template.id;
+                            document.getElementById('templateCategoryId').value = template.category_id;
+                            document.getElementById('fieldKey').value = template.field_key || '';
+                            document.getElementById('fieldLabel').value = template.field_label || '';
+                            document.getElementById('dataType').value = template.data_type || '';
+                            document.getElementById('isRequired').checked = template.is_required || false;
+                            document.getElementById('displayOrder').value = template.display_order || 0;
+
+                            // Handle enum options
+                            if (template.data_type === 'enum' && template.enum_options) {
+                              const enumOptions = Array.isArray(template.enum_options)
+                                ? template.enum_options.join(', ')
+                                : template.enum_options;
+                              document.getElementById('enumOptions').value = enumOptions;
+                              document.getElementById('enumOptionsContainer').classList.remove('hidden');
+                            } else {
+                              document.getElementById('enumOptions').value = '';
+                              document.getElementById('enumOptionsContainer').classList.add('hidden');
+                            }
+
+                            // Show the modal
+                            document.getElementById('templateModal').classList.remove('hidden');
+
+                          } catch (error) {
+                            console.error('Error loading template for editing:', error);
+                            alert('Failed to load template for editing: ' + error.message);
+                          }
+                        }
+          </script>
+        </section>
+      </main>
+
+      <%- include('../../../../partials/_footer') %>
+    </div>
+  </body>
+</html>

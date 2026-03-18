@@ -1,0 +1,856 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/sales-dark-mode.css">
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("sales_theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Sales', subsection: 'Product Mappings' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Product Mappings</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Map external product names to internal products</p>
+        </div>
+        <button onclick="openAddMappingModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Add Mapping
+        </button>
+      </div>
+
+      <!-- Info Banner -->
+      <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+        <div class="flex gap-2">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div class="text-sm text-blue-800 dark:text-blue-200">
+            <p class="font-medium">Product mappings help sync data from external sources.</p>
+            <p class="mt-1">When syncing from the Vrindavan App or partner systems, these mappings translate external product names to your internal products.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mappings by Source -->
+      <% if (sources && sources.length > 0) { %>
+        <% sources.forEach(source => { %>
+        <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900 capitalize"><%= source.replace('_', ' ') %></h2>
+            <p class="text-sm text-gray-600 mt-1"><%= mappingsBySource[source].length %> mapping(s)</p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External Size</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Internal Product</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% mappingsBySource[source].forEach(mapping => { %>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="font-medium text-gray-900"><%= mapping.external_name %></div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= mapping.external_unit_size || '-' %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900"><%= mapping.product_name %></div>
+                    <div class="text-xs text-gray-500"><%= mapping.product_unit_size %> • <%= mapping.category_name %></div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <% if (mapping.is_active) { %>
+                      <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                    <% } else { %>
+                      <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Inactive</span>
+                    <% } %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                    <button onclick="editMapping(<%= mapping.id %>)" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                    <button onclick="deleteMapping(<%= mapping.id %>, '<%= mapping.external_name %>')" class="text-red-600 hover:text-red-900">Delete</button>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <% }); %>
+      <% } else { %>
+        <div class="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+          <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-1">No Product Mappings</h3>
+          <p class="text-gray-600 mb-4">Get started by adding your first product mapping.</p>
+          <button onclick="openAddMappingModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add Mapping</button>
+        </div>
+      <% } %>
+
+      <!-- Partner Product Pricing Section -->
+      <div class="mt-12 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Partner Product Pricing</h2>
+            <p class="text-gray-600 dark:text-gray-300 mt-1">Manage product pricing for each partner</p>
+          </div>
+          <button onclick="openAddPricingModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add Pricing
+          </button>
+        </div>
+
+        <!-- Pricing by Partner -->
+        <% if (partners && partners.length > 0) { %>
+          <% partners.forEach(partner => { %>
+            <% const partnerPricing = pricingByPartner[partner.id] || []; %>
+            <div class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white"><%= partner.partner_name %></h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1"><%= partnerPricing.length %> product<%= partnerPricing.length !== 1 ? 's' : '' %> with pricing</p>
+              </div>
+
+              <% if (partnerPricing.length > 0) { %>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Unit Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">GST %</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">GST Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Basic Cost</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      <% partnerPricing.forEach(pricing => { %>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900 dark:text-white"><%= pricing.product_name %></div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400"><%= pricing.unit_size %> • <%= pricing.milk_type %></div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">₹<%= parseFloat(pricing.basic_price).toFixed(2) %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"><%= pricing.gst_percentage ? pricing.gst_percentage + '%' : '-' %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">₹<%= pricing.gst_amount ? parseFloat(pricing.gst_amount).toFixed(2) : '-' %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">₹<%= pricing.basic_cost ? parseFloat(pricing.basic_cost).toFixed(2) : parseFloat(pricing.basic_price).toFixed(2) %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="editPricing(<%= pricing.id %>)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">Edit</button>
+                            <button onclick="deletePricing(<%= pricing.id %>, '<%= pricing.product_name %>')" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                  No pricing configured for this partner
+                </div>
+              <% } %>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">No Partners Found</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Create a partner first to manage product pricing.</p>
+          </div>
+        <% } %>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_toast') %>
+
+  <!-- Add/Edit Mapping Modal -->
+  <div id="mappingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 sticky top-0">
+        <div class="flex items-center justify-between">
+          <h2 id="modalTitle" class="text-xl font-bold text-white">Add Product Mapping</h2>
+          <button type="button" onclick="closeMappingModal()" class="text-white hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <form id="mappingForm" class="p-6">
+        <input type="hidden" id="mappingId" name="id" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Source System *</label>
+            <select name="source" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <option value="">Select Source</option>
+              <option value="vrindavan_app">Vrindavan Farm App</option>
+              <option value="bigbasket">BigBasket</option>
+              <option value="freshtoHome">FreshToHome</option>
+              <option value="firstclub">FirstClub</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Internal Product *</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="productSearch" 
+                placeholder="Search products..." 
+                autocomplete="off"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <input type="hidden" name="product_id" id="productId" required />
+              <div id="productDropdown" class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <% products.forEach(product => { %>
+                  <% const displayName = product.name_alias || product.name; %>
+                  <div 
+                    class="px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-600 cursor-pointer product-option" 
+                    data-id="<%= product.id %>"
+                    data-name="<%= displayName %> (<%= product.unit_size %>) - <%= product.milk_type %>"
+                  >
+                    <div class="font-medium text-gray-900 dark:text-white"><%= displayName %></div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400"><%= product.unit_size %> • <%= product.milk_type %></div>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">External Product Name *</label>
+            <input type="text" name="external_name" required placeholder="e.g., Farm Fresh Natural Cow Milk" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">External Unit Size</label>
+            <input type="text" name="external_unit_size" placeholder="e.g., 500ml" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea name="notes" rows="2" placeholder="Optional notes about this mapping" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <div id="statusField" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select name="is_active" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-6 border-t border-gray-200 mt-6">
+          <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Mapping</button>
+          <button type="button" onclick="closeMappingModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let editMode = false;
+
+    // Searchable dropdown for products
+    const productSearch = document.getElementById("productSearch");
+    const productDropdown = document.getElementById("productDropdown");
+    const productId = document.getElementById("productId");
+    const productOptions = document.querySelectorAll(".product-option");
+
+    // Show dropdown when clicking on search input
+    productSearch.addEventListener("focus", function() {
+      productDropdown.classList.remove("hidden");
+      filterProducts("");
+    });
+
+    // Filter products as user types
+    productSearch.addEventListener("input", function() {
+      const searchTerm = this.value.toLowerCase();
+      filterProducts(searchTerm);
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!e.target.closest("#productSearch") && !e.target.closest("#productDropdown")) {
+        productDropdown.classList.add("hidden");
+      }
+    });
+
+    // Filter products based on search term
+    function filterProducts(searchTerm) {
+      let visibleCount = 0;
+      productOptions.forEach(option => {
+        const name = option.getAttribute("data-name").toLowerCase();
+        if (name.includes(searchTerm)) {
+          option.classList.remove("hidden");
+          visibleCount++;
+        } else {
+          option.classList.add("hidden");
+        }
+      });
+
+      // Show "no results" message if needed
+      if (visibleCount === 0) {
+        productDropdown.innerHTML = '<div class="px-3 py-2 text-gray-500 text-sm">No products found</div>';
+      }
+    }
+
+    // Handle product selection
+    productOptions.forEach(option => {
+      option.addEventListener("click", function() {
+        const id = this.getAttribute("data-id");
+        const name = this.getAttribute("data-name");
+        
+        productId.value = id;
+        productSearch.value = name;
+        productDropdown.classList.add("hidden");
+      });
+    });
+
+    function openAddMappingModal() {
+      editMode = false;
+      document.getElementById("modalTitle").textContent = "Add Product Mapping";
+      document.getElementById("mappingForm").reset();
+      document.getElementById("mappingId").value = "";
+      document.getElementById("productId").value = "";
+      document.getElementById("productSearch").value = "";
+      document.getElementById("statusField").classList.add("hidden");
+      document.getElementById("mappingModal").classList.remove("hidden");
+    }
+
+    function closeMappingModal() {
+      document.getElementById("mappingModal").classList.add("hidden");
+    }
+
+    async function editMapping(id) {
+      editMode = true;
+      document.getElementById("modalTitle").textContent = "Edit Product Mapping";
+      document.getElementById("statusField").classList.remove("hidden");
+
+      try {
+        const response = await fetch(`/sales/product-mappings/${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const mapping = data.mapping;
+          document.getElementById("mappingId").value = mapping.id;
+          
+          // Set product searchable dropdown
+          document.getElementById("productId").value = mapping.product_id;
+          const productName = `${mapping.product_name} (${mapping.product_unit_size}) - ${mapping.milk_type}`;
+          document.getElementById("productSearch").value = productName;
+          
+          document.querySelector('[name="source"]').value = mapping.source;
+          document.querySelector('[name="external_name"]').value = mapping.external_name;
+          document.querySelector('[name="external_unit_size"]').value = mapping.external_unit_size || "";
+          document.querySelector('[name="is_active"]').value = mapping.is_active ? "1" : "0";
+          document.querySelector('[name="notes"]').value = mapping.notes || "";
+          
+          document.getElementById("mappingModal").classList.remove("hidden");
+        } else {
+          showToast(data.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error loading mapping:", error);
+        showToast("Error loading mapping data", "", "error");
+      }
+    }
+
+    async function deleteMapping(id, name) {
+      if (!confirm(`Are you sure you want to delete the mapping for "${name}"?`)) return;
+
+      try {
+        const response = await fetch(`/sales/product-mappings/${id}`, {
+          method: "DELETE",
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showToast(result.message, "", "success");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast(result.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error deleting mapping:", error);
+        showToast("Error deleting mapping", "", "error");
+      }
+    }
+
+    document.getElementById("mappingForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      const mappingId = document.getElementById("mappingId").value;
+
+      try {
+        const url = mappingId 
+          ? `/sales/product-mappings/${mappingId}`
+          : "/sales/product-mappings";
+        
+        const method = mappingId ? "PUT" : "POST";
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          closeMappingModal();
+          showToast(result.message, "", "success");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast(result.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error saving mapping:", error);
+        showToast("Error saving mapping", "", "error");
+      }
+    });
+
+    // Pricing Management Functions
+    function openAddPricingModal() {
+      document.getElementById("pricingModalTitle").textContent = "Add Product Pricing";
+      document.getElementById("pricingForm").reset();
+      document.getElementById("pricingId").value = "";
+      document.getElementById("pricingPartnerId").value = "";
+      document.getElementById("pricingProductId").value = "";
+      document.getElementById("pricingProductSearch").value = "";
+      document.getElementById("pricingModal").classList.remove("hidden");
+      
+      // Setup event listeners
+      setupPricingCalculations();
+      setupPricingDropdownListeners();
+      
+      // Initialize dropdown and ensure it's hidden initially
+      const dropdown = document.getElementById("pricingProductDropdown");
+      if (dropdown) {
+        dropdown.classList.add("hidden");
+        initializePricingDropdown();
+      }
+      
+      // Clear calculated fields
+      updatePricingCalculations();
+    }
+
+    function closePricingModal() {
+      document.getElementById("pricingModal").classList.add("hidden");
+    }
+
+    async function editPricing(id) {
+      document.getElementById("pricingModalTitle").textContent = "Edit Product Pricing";
+      
+      try {
+        const response = await fetch(`/sales/partner-product-pricing/${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const pricing = data.pricing;
+          document.getElementById("pricingId").value = pricing.id;
+          document.getElementById("pricingPartnerId").value = pricing.partner_id;
+          document.getElementById("pricingProductId").value = pricing.product_id;
+          
+          // Set product search
+          const productName = `${pricing.product_name} (${pricing.unit_size}) - ${pricing.milk_type}`;
+          document.getElementById("pricingProductSearch").value = productName;
+          
+          document.getElementById("pricingUnitPrice").value = pricing.basic_price || "";
+          document.getElementById("pricingGstPercentage").value = pricing.gst_percentage || "";
+          document.getElementById("pricingGstAmount").value = pricing.gst_amount || "";
+          document.getElementById("pricingBasicCost").value = pricing.basic_cost || "";
+          
+          document.getElementById("pricingModal").classList.remove("hidden");
+          
+          // Setup event listeners
+          setupPricingCalculations();
+          setupPricingDropdownListeners();
+          
+          // Initialize dropdown when editing
+          initializePricingDropdown();
+          
+          // Calculate fields
+          updatePricingCalculations();
+        } else {
+          showToast(data.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error loading pricing:", error);
+        showToast("Error loading pricing data", "", "error");
+      }
+    }
+
+    async function deletePricing(id, productName) {
+      if (!confirm(`Are you sure you want to delete pricing for "${productName}"?`)) return;
+
+      try {
+        const response = await fetch(`/sales/partner-product-pricing/${id}`, {
+          method: "DELETE",
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showToast(result.message, "", "success");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast(result.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error deleting pricing:", error);
+        showToast("Error deleting pricing", "", "error");
+      }
+    }
+
+    // Pricing calculations
+    function updatePricingCalculations() {
+      const pricingUnitPriceEl = document.getElementById("pricingUnitPrice");
+      const pricingGstPercentageEl = document.getElementById("pricingGstPercentage");
+      const pricingGstAmountEl = document.getElementById("pricingGstAmount");
+      const pricingBasicCostEl = document.getElementById("pricingBasicCost");
+      
+      if (!pricingUnitPriceEl || !pricingGstAmountEl || !pricingBasicCostEl) {
+        return; // Elements don't exist yet
+      }
+      
+      const unitPrice = parseFloat(pricingUnitPriceEl.value) || 0;
+      const gstPercentage = parseFloat(pricingGstPercentageEl?.value) || 0;
+
+      // Calculate GST amount from unit price and GST percentage
+      if (unitPrice > 0 && gstPercentage > 0) {
+        const calculatedGstAmount = (unitPrice * gstPercentage) / 100;
+        pricingGstAmountEl.value = calculatedGstAmount.toFixed(2);
+      } else {
+        pricingGstAmountEl.value = "";
+      }
+
+      // Basic cost is same as unit price
+      if (unitPrice > 0) {
+        pricingBasicCostEl.value = unitPrice.toFixed(2);
+      } else {
+        pricingBasicCostEl.value = "";
+      }
+    }
+
+    // Setup auto-calculation for pricing fields (will be called when modal opens)
+    function setupPricingCalculations() {
+      const pricingUnitPrice = document.getElementById("pricingUnitPrice");
+      const pricingGstPercentage = document.getElementById("pricingGstPercentage");
+      
+      if (pricingUnitPrice && !pricingUnitPrice.dataset.listenerAttached) {
+        pricingUnitPrice.addEventListener("input", updatePricingCalculations);
+        pricingUnitPrice.dataset.listenerAttached = "true";
+      }
+      if (pricingGstPercentage && !pricingGstPercentage.dataset.listenerAttached) {
+        pricingGstPercentage.addEventListener("input", updatePricingCalculations);
+        pricingGstPercentage.dataset.listenerAttached = "true";
+      }
+    }
+
+    // Product search for pricing modal
+    let pricingProductSearch = null;
+    let pricingProductDropdown = null;
+    let pricingProductId = null;
+    
+    // Store original dropdown content for restoration (initialize when modal opens)
+    let originalDropdownContent = null;
+    let pricingDropdownInitialized = false;
+    
+    function initializePricingDropdown() {
+      pricingProductSearch = document.getElementById("pricingProductSearch");
+      pricingProductDropdown = document.getElementById("pricingProductDropdown");
+      pricingProductId = document.getElementById("pricingProductId");
+      
+      if (pricingProductDropdown && !originalDropdownContent) {
+        originalDropdownContent = pricingProductDropdown.innerHTML;
+      }
+    }
+
+    function getPricingProductOptions() {
+      return document.querySelectorAll(".pricing-product-option");
+    }
+
+    function setupPricingDropdownListeners() {
+      if (pricingDropdownInitialized) return;
+      
+      pricingProductSearch = document.getElementById("pricingProductSearch");
+      pricingProductDropdown = document.getElementById("pricingProductDropdown");
+      pricingProductId = document.getElementById("pricingProductId");
+
+      if (pricingProductSearch && pricingProductDropdown) {
+        pricingProductSearch.addEventListener("focus", function() {
+          if (!originalDropdownContent) {
+            initializePricingDropdown();
+          }
+          
+          if (originalDropdownContent && !pricingProductDropdown.querySelector(".pricing-product-option")) {
+            pricingProductDropdown.innerHTML = originalDropdownContent;
+          }
+          
+          pricingProductDropdown.classList.remove("hidden");
+          const searchTerm = this.value.toLowerCase();
+          filterPricingProducts(searchTerm);
+        });
+
+        pricingProductSearch.addEventListener("input", function() {
+          if (!originalDropdownContent) {
+            initializePricingDropdown();
+          }
+          
+          pricingProductDropdown.classList.remove("hidden");
+          const searchTerm = this.value.toLowerCase();
+          filterPricingProducts(searchTerm);
+        });
+
+        pricingProductSearch.addEventListener("click", function(e) {
+          e.stopPropagation();
+          if (!originalDropdownContent) {
+            initializePricingDropdown();
+          }
+          
+          if (originalDropdownContent && !pricingProductDropdown.querySelector(".pricing-product-option")) {
+            pricingProductDropdown.innerHTML = originalDropdownContent;
+          }
+          
+          pricingProductDropdown.classList.remove("hidden");
+          const searchTerm = this.value.toLowerCase();
+          filterPricingProducts(searchTerm);
+        });
+        
+        // Handle product selection clicks using event delegation
+        pricingProductDropdown.addEventListener("click", function(e) {
+          const option = e.target.closest(".pricing-product-option");
+          if (option) {
+            const id = option.getAttribute("data-id");
+            const name = option.getAttribute("data-name");
+            if (pricingProductId) pricingProductId.value = id;
+            if (pricingProductSearch) pricingProductSearch.value = name;
+            if (pricingProductDropdown) pricingProductDropdown.classList.add("hidden");
+          }
+        });
+        
+        pricingDropdownInitialized = true;
+      }
+    }
+
+    document.addEventListener("click", function(e) {
+      const dropdown = document.getElementById("pricingProductDropdown");
+      if (dropdown && !e.target.closest("#pricingProductSearch") && !e.target.closest("#pricingProductDropdown")) {
+        dropdown.classList.add("hidden");
+      }
+    });
+
+    function filterPricingProducts(searchTerm) {
+      const dropdown = document.getElementById("pricingProductDropdown");
+      if (!dropdown) return;
+      
+      if (!originalDropdownContent) {
+        initializePricingDropdown();
+      }
+      
+      if (originalDropdownContent && !dropdown.querySelector(".pricing-product-option")) {
+        dropdown.innerHTML = originalDropdownContent;
+      }
+      
+      const pricingProductOptions = document.querySelectorAll(".pricing-product-option");
+      
+      let visibleCount = 0;
+      let noResultsMessage = dropdown.querySelector(".no-results-message");
+      
+      if (noResultsMessage) {
+        noResultsMessage.remove();
+      }
+      
+      if (pricingProductOptions.length === 0) {
+        dropdown.innerHTML = '<div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">No products available</div>';
+        return;
+      }
+      
+      pricingProductOptions.forEach(option => {
+        const name = option.getAttribute("data-name");
+        if (name && name.toLowerCase().includes(searchTerm)) {
+          option.style.display = "";
+          visibleCount++;
+        } else {
+          option.style.display = "none";
+        }
+      });
+      
+      if (visibleCount === 0 && searchTerm.length > 0) {
+        noResultsMessage = document.createElement("div");
+        noResultsMessage.className = "px-3 py-2 text-gray-500 dark:text-gray-400 text-sm no-results-message";
+        noResultsMessage.textContent = "No products found";
+        dropdown.appendChild(noResultsMessage);
+      }
+    }
+
+    // Pricing form submission handler
+    async function handlePricingFormSubmit(e) {
+      e.preventDefault();
+
+      const form = document.getElementById("pricingForm");
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const pricingId = document.getElementById("pricingId").value;
+
+      // Validate required fields
+      if (!data.partner_id || !data.product_id || !data.basic_price) {
+        showToast("Please fill in all required fields", "", "error");
+        return false;
+      }
+
+      try {
+        const url = pricingId 
+          ? `/sales/partner-product-pricing/${pricingId}`
+          : "/sales/partner-product-pricing";
+        
+        const method = pricingId ? "PUT" : "POST";
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          closePricingModal();
+          showToast(result.message, "", "success");
+          location.reload();
+        } else {
+          showToast(result.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error saving pricing:", error);
+        showToast("Error saving pricing: " + error.message, "", "error");
+      }
+      
+      return false;
+    }
+  </script>
+
+  <!-- Add/Edit Pricing Modal -->
+  <div id="pricingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4 sticky top-0">
+        <div class="flex items-center justify-between">
+          <h2 id="pricingModalTitle" class="text-xl font-bold text-white">Add Product Pricing</h2>
+          <button type="button" onclick="closePricingModal()" class="text-white hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <form id="pricingForm" class="p-6" onsubmit="return handlePricingFormSubmit(event)">
+        <input type="hidden" id="pricingId" name="id" />
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Partner *</label>
+            <select name="partner_id" id="pricingPartnerId" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500">
+              <option value="">Select Partner</option>
+              <% if (partners && partners.length > 0) { %>
+                <% partners.forEach(partner => { %>
+                  <option value="<%= partner.id %>"><%= partner.partner_name %></option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product *</label>
+            <div class="relative z-10">
+              <input 
+                type="text" 
+                id="pricingProductSearch" 
+                placeholder="Search products..." 
+                autocomplete="off"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500"
+              />
+              <input type="hidden" name="product_id" id="pricingProductId" required />
+              <div id="pricingProductDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <% if (products && products.length > 0) { %>
+                  <% products.forEach(product => { %>
+                    <% const displayName = product.name_alias || product.name; %>
+                    <div 
+                      class="px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-600 cursor-pointer pricing-product-option" 
+                      data-id="<%= product.id %>"
+                      data-name="<%= displayName %> (<%= product.unit_size || 'N/A' %>) - <%= product.milk_type || 'N/A' %>"
+                    >
+                      <div class="font-medium text-gray-900 dark:text-white"><%= displayName %></div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400"><%= product.unit_size || 'N/A' %> • <%= product.milk_type || 'N/A' %></div>
+                    </div>
+                  <% }); %>
+                <% } else { %>
+                  <div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">No products available</div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit Price (₹) *</label>
+            <input type="number" name="basic_price" id="pricingUnitPrice" step="0.01" min="0" required placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST Percentage (%)</label>
+            <input type="number" name="gst_percentage" id="pricingGstPercentage" step="0.01" min="0" max="100" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST Amount (₹)</label>
+            <input type="number" name="gst_amount" id="pricingGstAmount" step="0.01" min="0" placeholder="Auto-calculated" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-gray-100" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Auto-calculated from Unit Price × GST %</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Basic Cost (₹)</label>
+            <input type="number" name="basic_cost" id="pricingBasicCost" step="0.01" min="0" readonly placeholder="Auto-calculated" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-gray-100" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Same as Unit Price</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
+          <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save Pricing</button>
+          <button type="button" onclick="closePricingModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+

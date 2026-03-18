@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d4af37" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#f5d483" stop-opacity="0.25"/>
+    </linearGradient>
+    <linearGradient id="gPurple" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#6d28d9" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+  <!-- Rangoli flower -->
+  <g transform="translate(120 120)">
+    <circle r="38" fill="none" stroke="url(#gGold)" stroke-width="2" />
+    <g fill="none" stroke="url(#gGold)" stroke-width="2">
+      <path d="M0,-56 C12,-48 12,-24 0,-16 C-12,-24 -12,-48 0,-56 Z"/>
+      <path d="M56,0 C48,12 24,12 16,0 C24,-12 48,-12 56,0 Z"/>
+      <path d="M0,56 C-12,48 -12,24 0,16 C12,24 12,48 0,56 Z"/>
+      <path d="M-56,0 C-48,-12 -24,-12 -16,0 C-24,12 -48,12 -56,0 Z"/>
+    </g>
+    <circle r="4" fill="#d4af37" fill-opacity="0.6" />
+  </g>
+  <!-- Diyas at corners -->
+  <g fill="url(#gPurple)" opacity="0.8">
+    <path d="M22 204c18 0 29-10 34-20 5 10 16 20 34 20-8 10-22 16-34 16-12 0-26-6-34-16z"/>
+    <path d="M186 36c18 0 29-10 34-20 5 10 16 20 34 20-8 10-22 16-34 16-12 0-26-6-34-16z"/>
+  </g>
+  <!-- Gold dots -->
+  <g fill="#d4af37">
+    <circle cx="32" cy="32" r="1.5" opacity="0.5"/>
+    <circle cx="208" cy="208" r="1.5" opacity="0.5"/>
+    <circle cx="120" cy="40" r="1.5" opacity="0.4"/>
+    <circle cx="40" cy="120" r="1.5" opacity="0.4"/>
+  </g>
+</svg>

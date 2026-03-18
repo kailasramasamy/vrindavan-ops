@@ -1,0 +1,1192 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/sales-dark-mode.css">
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("sales_theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Sales', subsection: 'Data Entry' }) %>
+
+  
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Sales Data Entry</h1>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">Record daily sales from all partners</p>
+          </div>
+
+          <!-- Date Selector -->
+          <div class="flex items-center gap-2 sm:gap-4">
+            <input type="date" id="date-selector" value="<%= date %>" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" />
+            <button onclick="refreshPage()" class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap text-sm sm:text-base">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 inline sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span class="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <% if (locals.error) { %>
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"><%= error %></div>
+      <% } %>
+
+       <!-- Partners Tabs -->
+       <div class="mb-6">
+         <div class="border-b border-gray-200">
+           <nav class="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide pb-px">
+             <% if (partners && partners.length > 0) { %>
+               <% 
+                 // Get active tab from query parameter passed from controller
+                 const activePartnerId = partner_id ? parseInt(partner_id) : partners[0].id;
+               %>
+               <% partners.forEach((partner, index) => { %>
+             <button onclick="switchPartner(<%= partner.id %>)" data-partner-id="<%= partner.id %>" class="partner-tab whitespace-nowrap py-3 sm:py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm <%= partner.id === activePartnerId ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %>"><%= partner.partner_name %></button>
+             <% }); %> <% } %>
+           </nav>
+         </div>
+       </div>
+
+       <!-- Partner Sales Entry -->
+       <% if (partners && partners.length > 0) { %>
+         <% const activePartnerIdContent = partner_id ? parseInt(partner_id) : partners[0].id; %>
+         <% partners.forEach((partner, index) => { %>
+       <div id="partner-<%= partner.id %>" class="partner-content <%= partner.id !== activePartnerIdContent ? 'hidden' : '' %>">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 truncate"><%= partner.partner_name %> - Sales Entry</h2>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <% if (partner.id === 1) { %>
+              <button onclick="openSyncModal()" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-sm sm:text-base whitespace-nowrap">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 inline sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span class="hidden sm:inline">Sync App Sales</span>
+                <span class="sm:hidden">Sync</span>
+              </button>
+              <% } %>
+              <% 
+                const partnerRecords = salesRecords.filter(r => r.partner_id === partner.id);
+                const hasRecords = partnerRecords.length > 0;
+              %>
+              <button onclick="loadPartnerProducts(<%= partner.id %>)" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 <%= hasRecords ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50' : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50' %> rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap">
+                <% if (hasRecords) { %>
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 inline sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span class="hidden sm:inline">Edit Sales Record</span>
+                <span class="sm:hidden">Edit</span>
+                <% } else { %>
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 inline sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span class="hidden sm:inline">Add Sales Record</span>
+                <span class="sm:hidden">Add</span>
+                <% } %>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sales Records for this Partner -->
+          <div id="partner-<%= partner.id %>-records" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity Sold</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% if (partnerRecords.length > 0) { %> <% partnerRecords.forEach(record => { %>
+                <tr>
+                   <td class="px-6 py-4 whitespace-nowrap">
+                     <div class="flex items-center gap-3">
+                       <div class="flex-shrink-0">
+                         <div class="w-10 h-10 bg-gray-200 rounded-lg overflow-hidden">
+                           <% if (record.image_url) { %>
+                             <img src="<%= record.image_url %>" alt="<%= record.product_name %>" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                           <% } %>
+                           <div class="w-full h-full flex items-center justify-center" style="<%= record.image_url ? 'display: none;' : '' %>">
+                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                             </svg>
+                           </div>
+                         </div>
+                       </div>
+                       <div class="min-w-0">
+                         <div class="font-medium text-gray-900"><%= record.product_name %></div>
+                         <div class="text-sm text-gray-500"><%= record.unit_size %></div>
+                       </div>
+                     </div>
+                   </td>
+                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900"><%= Math.round(parseFloat(record.quantity_sold || 0)) %></td>
+                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">₹<%= parseFloat(record.unit_price || 0).toFixed(2) %></td>
+                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">₹<%= parseFloat(record.total_amount || 0).toFixed(2) %></td>
+                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                     <div class="flex items-center justify-end space-x-2">
+                       <button onclick="editSalesRecord(<%= record.id %>)" 
+                               class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                               title="Edit Record">
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                         </svg>
+                       </button>
+                       <button onclick="deleteSalesRecord(<%= record.id %>, '<%= date %>', <%= partner.id %>)" 
+                               class="inline-flex items-center p-1.5 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                               title="Delete Record">
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                         </svg>
+                       </button>
+                     </div>
+                   </td>
+                </tr>
+                <% }); %> <% } else { %>
+                <tr>
+                  <td colspan="5" class="px-6 py-8 text-center text-gray-500">No sales records for this partner today. Click "Add Sales Record" to start.</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <% }); %> <% } else { %>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No Partners Configured</h3>
+        <p class="text-gray-600 mb-4">You need to add sales partners before entering sales data</p>
+        <a href="/sales/partners" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Go to Partners Management
+          <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+          </a>
+        </div>
+       <% } %>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+  <%- include('../../../partials/_toast') %>
+
+     <!-- Add/Edit Sales Record Modal -->
+    <div id="salesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div>
+            <h2 id="salesModalTitle" class="text-xl font-semibold text-gray-900 dark:text-white">Add Sales Records</h2>
+            <div class="flex items-center gap-3 mt-1">
+              <p id="salesModalPartner" class="text-sm text-gray-600 dark:text-gray-400"></p>
+              <span class="text-gray-400 dark:text-gray-500">•</span>
+              <p id="salesModalDate" class="text-sm text-gray-600 dark:text-gray-400"></p>
+            </div>
+          </div>
+          <button onclick="closeSalesModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="overflow-y-auto max-h-[calc(90vh-120px)]">
+          <form id="salesForm" class="p-6">
+            <input type="hidden" id="saleDate" name="sale_date" value="<%= date %>" />
+            <input type="hidden" id="partnerId" name="partner_id" />
+            <input type="hidden" name="sales_channel" value="partner" />
+
+            <!-- Products List -->
+            <div id="productsList" class="space-y-4">
+              <!-- Products will be populated here -->
+            </div>
+
+            <!-- Global Notes -->
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes (applies to all records)</label>
+              <textarea name="notes" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Optional notes for all sales records..."></textarea>
+            </div>
+
+            <div class="flex gap-3 pt-6">
+              <button type="submit" id="saveRecordsBtn" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span id="saveRecordsBtnText">Save All Records</span>
+                <svg id="saveRecordsSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </button>
+              <button type="button" onclick="closeSalesModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
+            </div>
+          </form>
+        </div>
+       </div>
+     </div>
+
+     <!-- Sync App Sales Modal -->
+     <div id="syncModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+       <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 overflow-hidden">
+         <!-- Modal Header -->
+         <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 rounded-t-2xl">
+           <div class="flex items-center justify-between">
+             <h2 class="text-xl font-bold text-white flex items-center gap-2">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+               </svg>
+               Sync App Sales
+             </h2>
+             <button type="button" onclick="closeSyncModal()" class="text-white hover:text-gray-200 transition-colors">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+               </svg>
+             </button>
+           </div>
+         </div>
+
+         <!-- Modal Body -->
+         <form id="syncForm" class="p-6">
+           <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+             <div class="flex gap-2">
+               <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+               </svg>
+               <p class="text-sm text-blue-800 dark:text-blue-200">This will fetch sales data from the Vrindavan Farm App for the current date (<strong><%= date %></strong>) and automatically create sales records for products assigned to this partner.</p>
+             </div>
+           </div>
+
+           <div class="flex items-center justify-center py-4">
+             <div class="text-center">
+               <p class="text-lg font-medium text-gray-700 mb-2">Sync Date</p>
+               <p class="text-2xl font-bold text-gray-900"><%= date %></p>
+             </div>
+           </div>
+
+           <div class="flex gap-3 mt-6">
+             <button type="submit" id="syncBtn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+               <span id="syncBtnText">Sync Sales Data</span>
+               <svg id="syncLoader" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+               </svg>
+             </button>
+             <button type="button" onclick="closeSyncModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+           </div>
+         </form>
+       </div>
+     </div>
+
+     <script>
+       // Refresh page while maintaining current parameters
+       function refreshPage() {
+         window.location.reload();
+       }
+
+       // Date selector change handler
+       document.getElementById("date-selector").addEventListener("change", function (e) {
+         // Preserve partner_id when changing date
+         const urlParams = new URLSearchParams(window.location.search);
+         const partnerId = urlParams.get('partner_id');
+         const newUrl = partnerId ? `?date=${e.target.value}&partner_id=${partnerId}` : `?date=${e.target.value}`;
+         window.location.href = newUrl;
+       });
+
+       // Partner tab switching
+       function switchPartner(partnerId) {
+         // Update URL with partner_id parameter
+         const currentUrl = new URL(window.location.href);
+         currentUrl.searchParams.set('partner_id', partnerId);
+         window.history.pushState({}, '', currentUrl);
+
+         // Update tabs
+         document.querySelectorAll(".partner-tab").forEach((tab) => {
+           if (parseInt(tab.dataset.partnerId) === partnerId) {
+             tab.classList.remove("border-transparent", "text-gray-500");
+             tab.classList.add("border-blue-500", "text-blue-600");
+           } else {
+             tab.classList.remove("border-blue-500", "text-blue-600");
+             tab.classList.add("border-transparent", "text-gray-500");
+           }
+         });
+
+         // Update content
+         document.querySelectorAll(".partner-content").forEach((content) => {
+           content.classList.add("hidden");
+         });
+         document.getElementById(`partner-${partnerId}`).classList.remove("hidden");
+       }
+
+       let partnerProducts = [];
+       let currentPartnerId = null;
+       let salesRecordsData = <%- JSON.stringify(salesRecords) %>; // Keep a mutable copy
+
+       async function loadPartnerProducts(partnerId) {
+         try {
+           currentPartnerId = partnerId;  // Store current partner ID
+           const response = await fetch(`/sales/partners/${partnerId}/products`);
+           const data = await response.json();
+
+           if (data.success) {
+             partnerProducts = data.products;
+             
+             // Find partner name from the partners array
+             const partner = <%- JSON.stringify(partners) %>.find(p => p.id === partnerId);
+             const partnerName = partner ? partner.partner_name : 'Unknown Partner';
+             
+             // Check if there are existing records for this partner
+             const existingRecords = salesRecordsData.filter(r => r.partner_id === partnerId);
+             const hasExistingRecords = existingRecords.length > 0;
+             
+             document.getElementById("partnerId").value = partnerId;
+             document.getElementById("salesModalTitle").textContent = hasExistingRecords ? "Edit Sales Records" : "Add Sales Records";
+             document.getElementById("salesModalPartner").textContent = `Partner: ${partnerName}`;
+             document.getElementById("salesModalDate").textContent = `Date: <%= date %>`;
+             document.getElementById("salesForm").reset();
+             document.getElementById("saleDate").value = "<%= date %>";
+             document.getElementById("partnerId").value = partnerId;
+             
+             // Show helpful message if no products configured
+             if (partnerProducts.length === 0) {
+               showToast("No products configured for this partner. Please configure products first.", "Go to Partners page to configure products", "warning");
+               document.getElementById("productsList").innerHTML = `
+                 <div class="text-center py-8 text-gray-500">
+                   <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-4 4m0 0l-4-4m4 4V3"></path>
+                   </svg>
+                   <h3 class="text-lg font-medium text-gray-900 mb-2">No Products Configured</h3>
+                   <p class="text-gray-600 mb-4">This partner doesn't have any products assigned yet.</p>
+                   <a href="/sales/partners" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                     Configure Products
+                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                     </svg>
+                   </a>
+                 </div>
+               `;
+            } else {
+              // Populate products list with existing data if available (async now)
+              await populateProductsList(existingRecords);
+              
+              // Populate notes if editing
+              if (hasExistingRecords && existingRecords[0].notes) {
+                document.querySelector('[name="notes"]').value = existingRecords[0].notes;
+              }
+              
+              // Recalculate totals after prices are populated
+              setTimeout(() => {
+                document.querySelectorAll('.price-input').forEach(input => {
+                  const productId = input.getAttribute('data-product-id');
+                  const quantityInput = document.querySelector(`input[data-product-id="${productId}"].quantity-input`);
+                  if (quantityInput && quantityInput.value) {
+                    calculateProductTotal(quantityInput);
+                  }
+                });
+              }, 100);
+            }
+             
+             document.getElementById("salesModal").classList.remove("hidden");
+           }
+         } catch (error) {
+           console.error("Error loading partner products:", error);
+           showToast("Error loading products", "", "error");
+         }
+       }
+
+      // Fetch landing price for a product from product margins
+      async function fetchProductLandingPrice(sellerId, productId) {
+        try {
+          const response = await fetch(`/product-margin/api/v1/seller-product-margins/${sellerId}/${productId}`);
+          const result = await response.json();
+          
+          if (result.success && result.data && result.data.landing_price) {
+            return parseFloat(result.data.landing_price);
+          }
+        } catch (error) {
+          console.error(`Error fetching landing price for product ${productId}:`, error);
+        }
+        return null;
+      }
+
+      // Populate products list for bulk entry
+      async function populateProductsList(existingRecords = []) {
+        const productsList = document.getElementById("productsList");
+        
+        if (partnerProducts.length === 0) {
+          productsList.innerHTML = '<div class="text-center py-4 text-gray-500">No products available</div>';
+          return;
+        }
+        
+        // Create a map of existing records by product_id for quick lookup
+        const existingDataMap = {};
+        existingRecords.forEach(record => {
+          existingDataMap[record.product_id] = {
+            quantity: record.quantity_sold,
+            price: record.unit_price,
+            total: record.total_amount
+          };
+        });
+
+        // Show loading state
+        productsList.innerHTML = '<div class="text-center py-4 text-gray-500">Loading product prices...</div>';
+
+        // Fetch landing prices for all products in parallel
+        const partnerId = parseInt(document.getElementById("partnerId").value) || currentPartnerId;
+        const landingPricePromises = partnerProducts.map(product => 
+          fetchProductLandingPrice(partnerId, product.product_id).then(price => ({
+            productId: product.product_id,
+            landingPrice: price
+          }))
+        );
+        
+        const landingPricesMap = {};
+        try {
+          const results = await Promise.all(landingPricePromises);
+          results.forEach(({ productId, landingPrice }) => {
+            if (landingPrice !== null) {
+              landingPricesMap[productId] = landingPrice;
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching landing prices:", error);
+        }
+
+        productsList.innerHTML = partnerProducts.map(product => {
+          const milkTypeBadge = product.milk_type === 'A1' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 
+                                product.milk_type === 'A2' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' : 
+                                'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300';
+          
+          // Get existing data for this product if available
+          const existingData = existingDataMap[product.product_id];
+          // Use existing price if editing, otherwise use landing price from margins, or fallback to product.unit_price
+          let unitPrice = '';
+          if (existingData && existingData.price) {
+            unitPrice = existingData.price;
+          } else if (landingPricesMap[product.product_id] !== undefined && landingPricesMap[product.product_id] !== null) {
+            unitPrice = landingPricesMap[product.product_id].toFixed(2);
+          } else if (product.unit_price) {
+            unitPrice = product.unit_price;
+          }
+          const quantity = existingData ? existingData.quantity : '';
+          const totalAmount = existingData ? existingData.total : '';
+
+          // Handle image URL - ensure it's properly formatted
+          let imageUrl = product.image_url || '';
+          // If image_url is a relative path, ensure it starts with /
+          if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+            imageUrl = '/' + imageUrl;
+          }
+          
+          return `
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-3">
+                <div class="flex-shrink-0">
+                  <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                    ${imageUrl ? 
+                      `<img src="${imageUrl}" alt="${product.product_name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.onerror=null;" />` : 
+                      ''
+                    }
+                    <div class="w-full h-full flex items-center justify-center ${imageUrl ? 'hidden' : 'flex'}" style="${imageUrl ? 'display: none;' : ''}">
+                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-medium text-gray-900 dark:text-white">${product.product_name}</h4>
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full ${milkTypeBadge}">${product.milk_type}</span>
+                  </div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">${product.unit_size}</p>
+                </div>
+                
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  <div class="w-28">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Qty Sold</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      min="0"
+                      value="${quantity}"
+                      data-product-id="${product.product_id}"
+                      data-product-name="${product.product_name}"
+                      data-unit-size="${product.unit_size}"
+                      data-milk-type="${product.milk_type}"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent quantity-input"
+                      placeholder="0"
+                      oninput="calculateProductTotal(this)"
+                    />
+                  </div>
+                  
+                  <div class="w-28">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unit Price</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      min="0"
+                      value="${unitPrice}"
+                      data-product-id="${product.product_id}"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent price-input ${unitPrice ? 'bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white' : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'}"
+                      placeholder="0.00"
+                      oninput="calculateProductTotal(this)"
+                    />
+                  </div>
+                  
+                  <div class="w-32">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      readonly
+                      value="${totalAmount}"
+                      data-product-id="${product.product_id}"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white total-input font-semibold"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+       }
+
+       // Calculate total for individual product
+       function calculateProductTotal(input) {
+         const productId = input.getAttribute('data-product-id');
+         const quantityInput = document.querySelector(`input[data-product-id="${productId}"].quantity-input`);
+         const priceInput = document.querySelector(`input[data-product-id="${productId}"].price-input`);
+         const totalInput = document.querySelector(`input[data-product-id="${productId}"].total-input`);
+         
+         if (quantityInput && priceInput && totalInput) {
+           const quantity = parseFloat(quantityInput.value) || 0;
+           const price = parseFloat(priceInput.value) || 0;
+           totalInput.value = (quantity * price).toFixed(2);
+         }
+       }
+
+       // Initialize searchable product dropdown (keeping for edit functionality)
+       let productSearchInitialized = false;
+       
+       function initializeProductSearch() {
+         const searchInput = document.getElementById("productSearchInput");
+         const dropdown = document.getElementById("productDropdown");
+         const hiddenInput = document.getElementById("productSelect");
+
+         // Remove old event listeners by cloning elements (prevents duplicates)
+         if (productSearchInitialized) {
+           const newSearchInput = searchInput.cloneNode(true);
+           searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+           const newDropdown = dropdown.cloneNode(true);
+           dropdown.parentNode.replaceChild(newDropdown, dropdown);
+         }
+
+         const currentSearchInput = document.getElementById("productSearchInput");
+         const currentDropdown = document.getElementById("productDropdown");
+
+         // Show dropdown on focus
+         currentSearchInput.addEventListener("focus", () => {
+           currentDropdown.classList.remove("hidden");
+           filterProducts("");
+         });
+
+         // Filter products as user types
+         currentSearchInput.addEventListener("input", (e) => {
+           filterProducts(e.target.value);
+         });
+
+         // Handle product selection
+         currentDropdown.addEventListener("click", (e) => {
+           const productElement = e.target.closest("[data-product-id]");
+           if (productElement) {
+             const productId = productElement.getAttribute("data-product-id");
+             const productName = productElement.getAttribute("data-product-name");
+             const productSize = productElement.getAttribute("data-product-size");
+
+             currentSearchInput.value = `${productName} (${productSize})`;
+             hiddenInput.value = productId;
+             currentDropdown.classList.add("hidden");
+           }
+         });
+
+         function filterProducts(searchTerm) {
+           const filteredProducts = partnerProducts.filter(
+             (product) =>
+               product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               product.unit_size.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               (product.milk_type && product.milk_type.toLowerCase().includes(searchTerm.toLowerCase()))
+           );
+
+           currentDropdown.innerHTML = "";
+
+           if (filteredProducts.length === 0) {
+             if (partnerProducts.length === 0) {
+               // No products configured for this partner
+               currentDropdown.innerHTML = `
+                 <div class="px-3 py-4 text-sm text-gray-500 text-center">
+                   <div class="mb-2">No products configured for this partner</div>
+                   <a href="/sales/partners" class="text-blue-600 hover:text-blue-800 underline">
+                     Configure Products →
+                   </a>
+                 </div>
+               `;
+             } else {
+               // Products exist but none match the search
+               currentDropdown.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 text-center">No products found matching your search</div>';
+             }
+           } else {
+             filteredProducts.forEach((product) => {
+               const productElement = document.createElement("div");
+               productElement.className = "px-3 py-2 text-sm text-gray-900 hover:bg-blue-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-0 transition-colors";
+               productElement.setAttribute("data-product-id", product.product_id);
+               productElement.setAttribute("data-product-name", product.product_name);
+               productElement.setAttribute("data-product-size", product.unit_size);
+
+              const milkTypeBadge = product.milk_type === 'A1' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 
+                                    product.milk_type === 'A2' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' : 
+                                    'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300';
+
+               productElement.innerHTML = `
+                 <div class="flex-1">
+                   <div class="font-medium">${product.product_name}</div>
+                   <div class="text-xs text-gray-500">${product.unit_size}</div>
+                 </div>
+                 <span class="px-2 py-0.5 text-xs font-semibold rounded-full ${milkTypeBadge}">${product.milk_type}</span>
+               `;
+
+               currentDropdown.appendChild(productElement);
+             });
+           }
+         }
+
+         // Initialize with all products on first open
+         filterProducts("");
+         productSearchInitialized = true;
+       }
+
+       // Hide dropdown when clicking outside
+       document.addEventListener("click", (e) => {
+         const searchInput = document.getElementById("productSearchInput");
+         const dropdown = document.getElementById("productDropdown");
+         if (searchInput && dropdown && !searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+           dropdown.classList.add("hidden");
+         }
+       });
+
+      function closeSalesModal() {
+        document.getElementById("salesModal").classList.add("hidden");
+      }
+
+      function calculateTotal() {
+        const quantity = parseFloat(document.getElementById("quantitySold").value) || 0;
+        const price = parseFloat(document.getElementById("unitPrice").value) || 0;
+        document.getElementById("totalAmount").value = (quantity * price).toFixed(2);
+      }
+
+      document.getElementById("salesForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        // Show loading state
+        const saveBtn = document.getElementById("saveRecordsBtn");
+        const saveBtnText = document.getElementById("saveRecordsBtnText");
+        const saveSpinner = document.getElementById("saveRecordsSpinner");
+        
+        saveBtn.disabled = true;
+        saveBtnText.textContent = "Saving...";
+        saveSpinner.classList.remove("hidden");
+
+        // Collect all sales records from the form
+        const salesRecords = [];
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        const notes = document.querySelector('[name="notes"]').value;
+
+        quantityInputs.forEach(quantityInput => {
+          const quantity = parseFloat(quantityInput.value);
+          if (quantity > 0) {
+            const productId = quantityInput.getAttribute('data-product-id');
+            const productName = quantityInput.getAttribute('data-product-name');
+            const unitSize = quantityInput.getAttribute('data-unit-size');
+            const milkType = quantityInput.getAttribute('data-milk-type');
+            
+            const priceInput = document.querySelector(`input[data-product-id="${productId}"].price-input`);
+            const totalInput = document.querySelector(`input[data-product-id="${productId}"].total-input`);
+            
+            const unitPrice = parseFloat(priceInput.value) || 0;
+            const totalAmount = parseFloat(totalInput.value) || 0;
+
+            salesRecords.push({
+              product_id: parseInt(productId),
+              product_name: productName,
+              unit_size: unitSize,
+              milk_type: milkType,
+              quantity_sold: quantity,
+              unit_price: unitPrice,
+              total_amount: totalAmount,
+              sale_date: document.getElementById("saleDate").value,
+              partner_id: parseInt(document.getElementById("partnerId").value),
+              sales_channel: 'partner',
+              notes: notes
+            });
+          }
+        });
+
+        if (salesRecords.length === 0) {
+          // Reset button state
+          saveBtn.disabled = false;
+          saveBtnText.textContent = "Save All Records";
+          saveSpinner.classList.add("hidden");
+          showToast("Please enter quantity for at least one product", "", "error");
+          return;
+        }
+
+        try {
+          const partnerId = parseInt(document.getElementById("partnerId").value);
+          const saleDate = document.getElementById("saleDate").value;
+          
+          // Check if we're editing (existing records for this partner)
+          const existingRecords = salesRecordsData.filter(r => r.partner_id === partnerId);
+          
+          // If editing, delete existing records first
+          if (existingRecords.length > 0) {
+            for (const record of existingRecords) {
+              try {
+                await fetch(`/sales/records/${record.id}`, {
+                  method: "DELETE",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ sale_date: saleDate }),
+                });
+              } catch (deleteError) {
+                console.error("Error deleting record:", deleteError);
+              }
+            }
+          }
+          
+          // Now create new records
+          const response = await fetch("/sales/records/bulk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ records: salesRecords }),
+          });
+
+          const result = await response.json();
+
+          // Reset button state before closing modal
+          saveBtn.disabled = false;
+          saveBtnText.textContent = "Save All Records";
+          saveSpinner.classList.add("hidden");
+
+          if (result.success) {
+            // Close modal immediately
+            closeSalesModal();
+            
+            // Show success toast independently
+            showToast(`Successfully saved ${result.savedCount} sales records`, "", "success");
+            
+            // Reload page to show all records properly
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            showToast(result.error || "Failed to save sales records", "", "error");
+          }
+        } catch (error) {
+          console.error("Error saving sales records:", error);
+          
+          // Reset button state on error
+          saveBtn.disabled = false;
+          saveBtnText.textContent = "Save All Records";
+          saveSpinner.classList.add("hidden");
+          
+          showToast("Error saving records: " + error.message, "", "error");
+        }
+      });
+
+      // Add new sales record to data array
+      function addSalesRecordData(recordId, data) {
+        const product = partnerProducts.find(p => p.product_id == data.product_id);
+        
+        const newRecord = {
+          id: recordId,
+          sale_date: data.sale_date,
+          product_id: parseInt(data.product_id),
+          partner_id: parseInt(data.partner_id),
+          sales_channel: data.sales_channel,
+          quantity_sold: data.quantity_sold,
+          unit_price: data.unit_price,
+          total_amount: data.total_amount,
+          notes: data.notes,
+          product_name: product ? product.product_name : 'Unknown',
+          unit_size: product ? product.unit_size : '',
+          milk_type: product ? product.milk_type : ''
+        };
+        
+        salesRecordsData.push(newRecord);
+      }
+
+      // Update sales record in data array
+      function updateSalesRecordData(recordId, data) {
+        const index = salesRecordsData.findIndex(r => r.id == recordId);
+        if (index !== -1) {
+          const product = partnerProducts.find(p => p.product_id == data.product_id);
+          
+          salesRecordsData[index] = {
+            ...salesRecordsData[index],
+            sale_date: data.sale_date,
+            product_id: parseInt(data.product_id),
+            partner_id: parseInt(data.partner_id),
+            sales_channel: data.sales_channel,
+            quantity_sold: data.quantity_sold,
+            unit_price: data.unit_price,
+            total_amount: data.total_amount,
+            notes: data.notes,
+            product_name: product ? product.product_name : salesRecordsData[index].product_name,
+            unit_size: product ? product.unit_size : salesRecordsData[index].unit_size,
+            milk_type: product ? product.milk_type : salesRecordsData[index].milk_type
+          };
+        }
+      }
+
+      // Add new sales record row to table
+      function addSalesRecordRow(recordId, data) {
+        const partnerId = parseInt(data.partner_id);
+        const tbody = document.querySelector(`#partner-${partnerId}-records tbody`);
+        
+        if (!tbody) return;
+
+        // Remove "no records" message if present
+        const noRecordsRow = tbody.querySelector('td[colspan="5"]');
+        if (noRecordsRow) {
+          noRecordsRow.parentElement.remove();
+        }
+
+        // Get product info from partnerProducts array
+        const product = partnerProducts.find(p => p.product_id == data.product_id);
+        
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center gap-3">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-gray-200 rounded-lg overflow-hidden">
+                  ${product && product.image_url ? 
+                    `<img src="${product.image_url}" alt="${product.product_name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />` : 
+                    ''
+                  }
+                  <div class="w-full h-full flex items-center justify-center" style="${product && product.image_url ? 'display: none;' : ''}">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="min-w-0">
+                <div class="font-medium text-gray-900">${product ? product.product_name : 'Unknown'}</div>
+                <div class="text-sm text-gray-500">${product ? product.unit_size : ''}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">${Math.round(parseFloat(data.quantity_sold || 0))}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">₹${parseFloat(data.unit_price || 0).toFixed(2)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">₹${parseFloat(data.total_amount || 0).toFixed(2)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+            <div class="flex items-center justify-end space-x-2">
+              <button onclick="editSalesRecord(${recordId})" 
+                      class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Edit Record">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </button>
+              <button onclick="deleteSalesRecord(${recordId}, '${data.sale_date}', ${partnerId})" 
+                      class="inline-flex items-center p-1.5 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Delete Record">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        `;
+        
+        tbody.appendChild(newRow);
+      }
+
+      // Update existing sales record row in table
+      function updateSalesRecordRow(recordId, data) {
+        const partnerId = parseInt(data.partner_id);
+        const tbody = document.querySelector(`#partner-${partnerId}-records tbody`);
+        
+        if (!tbody) return;
+
+        // Get product info from partnerProducts array
+        const product = partnerProducts.find(p => p.product_id == data.product_id);
+        
+        // Find all rows and update the matching one
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+          const editBtn = row.querySelector(`button[onclick*="editSalesRecord(${recordId})"]`);
+          if (editBtn) {
+            row.innerHTML = `
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-gray-200 rounded-lg overflow-hidden">
+                      ${product && product.image_url ? 
+                        `<img src="${product.image_url}" alt="${product.product_name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />` : 
+                        ''
+                      }
+                      <div class="w-full h-full flex items-center justify-center" style="${product && product.image_url ? 'display: none;' : ''}">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-medium text-gray-900">${product ? product.product_name : 'Unknown'}</div>
+                    <div class="text-sm text-gray-500">${product ? product.unit_size : ''}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">${Math.round(parseFloat(data.quantity_sold || 0))}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">₹${parseFloat(data.unit_price || 0).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">₹${parseFloat(data.total_amount || 0).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                <div class="flex items-center justify-end space-x-2">
+                  <button onclick="editSalesRecord(${recordId})" 
+                          class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Edit Record">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button onclick="deleteSalesRecord(${recordId}, '${data.sale_date}', ${partnerId})" 
+                          class="inline-flex items-center p-1.5 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Delete Record">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            `;
+          }
+        });
+      }
+
+       async function editSalesRecord(id) {
+         try {
+           // Find the record in the mutable salesRecords array
+           const record = salesRecordsData.find(r => r.id === id);
+           
+           if (!record) {
+             showToast("Sales record not found", "", "error");
+             return;
+           }
+
+           // Store current partner ID
+           currentPartnerId = record.partner_id;
+
+           // Load partner products first
+           const response = await fetch(`/sales/partners/${record.partner_id}/products`);
+           const data = await response.json();
+
+           if (data.success) {
+             partnerProducts = data.products;
+
+             // Set modal title
+             document.getElementById("salesModalTitle").textContent = "Edit Sales Record";
+             
+             // Set hidden fields
+             document.getElementById("salesRecordId").value = record.id;
+             
+             // Use the current page date (not the record's date to avoid timezone issues)
+             // The record is shown on this page, so it belongs to this date
+             document.getElementById("saleDate").value = '<%= date %>';
+             document.getElementById("partnerId").value = record.partner_id;
+             
+             console.log('Edit record loaded:', { 
+               id: record.id, 
+               sale_date: '<%= date %>', 
+               partner_id: record.partner_id,
+               product_id: record.product_id,
+               sales_channel: record.sales_channel
+             });
+             
+             // Initialize searchable dropdown
+             initializeProductSearch();
+             
+             // Set product search input display value
+             document.getElementById("productSearchInput").value = `${record.product_name} (${record.unit_size})`;
+             document.getElementById("productSelect").value = record.product_id;
+             
+             // Set other fields
+             document.getElementById("quantitySold").value = parseFloat(record.quantity_sold || 0);
+             document.getElementById("unitPrice").value = parseFloat(record.unit_price || 0);
+             document.getElementById("totalAmount").value = parseFloat(record.total_amount || 0);
+             document.querySelector('[name="notes"]').value = record.notes || '';
+             
+             // Show modal
+             document.getElementById("salesModal").classList.remove("hidden");
+           }
+         } catch (error) {
+           console.error("Error loading sales record:", error);
+           showToast("Error loading record data", "", "error");
+         }
+       }
+
+       async function deleteSalesRecord(id, date, partnerId) {
+         if (!confirm("Are you sure you want to delete this sales record?")) return;
+
+         try {
+           const response = await fetch(`/sales/records/${id}`, {
+             method: "DELETE",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ sale_date: date }),
+           });
+
+           const result = await response.json();
+
+           if (result.success) {
+             showToast(result.message, "", "success");
+             
+             // Remove from data array
+             const dataIndex = salesRecordsData.findIndex(r => r.id === id);
+             if (dataIndex !== -1) {
+               salesRecordsData.splice(dataIndex, 1);
+             }
+             
+             // Remove the row from table dynamically
+             const tbody = document.querySelector(`#partner-${partnerId}-records tbody`);
+             if (tbody) {
+               const rows = tbody.querySelectorAll('tr');
+               rows.forEach(row => {
+                 const deleteBtn = row.querySelector(`button[onclick*="deleteSalesRecord(${id}"]`);
+                 if (deleteBtn) {
+                   row.remove();
+                 }
+               });
+               
+               // If no rows left, show "no records" message
+               if (tbody.querySelectorAll('tr').length === 0) {
+                 tbody.innerHTML = `
+                   <tr>
+                     <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                       No sales records for this partner today. Click "Add Sales Record" to start.
+                     </td>
+                   </tr>
+                 `;
+               }
+             }
+           } else {
+             showToast(result.error, "", "error");
+           }
+         } catch (error) {
+           console.error("Error deleting sales record:", error);
+           showToast("Error deleting record", "", "error");
+         }
+       }
+
+       // App Sales Sync Functions
+       function openSyncModal() {
+         document.getElementById("syncModal").classList.remove("hidden");
+       }
+
+       function closeSyncModal() {
+         document.getElementById("syncModal").classList.add("hidden");
+       }
+
+       const syncForm = document.getElementById("syncForm");
+       if (syncForm) {
+         syncForm.addEventListener("submit", async function (e) {
+           e.preventDefault();
+
+           const currentDate = "<%= date %>";
+           const syncBtn = document.getElementById("syncBtn");
+           const syncBtnText = document.getElementById("syncBtnText");
+           const syncLoader = document.getElementById("syncLoader");
+
+           // Show loading state
+           syncBtn.disabled = true;
+           syncBtnText.textContent = "Syncing...";
+           syncLoader.classList.remove("hidden");
+
+           try {
+             const response = await fetch("/sales/api/sync-app-sales", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ 
+                 start_date: currentDate, 
+                 end_date: currentDate 
+               }),
+             });
+
+             const result = await response.json();
+
+             if (result.success) {
+               closeSyncModal();
+               
+               let message = result.message || "App sales synced successfully";
+               
+               // Log detailed results
+               console.log("Sync Results:", {
+                 synced: result.synced,
+                 skipped: result.skipped,
+                 totalItems: result.totalItems,
+                 errors: result.errors
+               });
+               
+               // Show detailed message if there were errors or skipped items
+               if (result.errors && result.errors.length > 0) {
+                 console.warn("Sync completed with errors:", result.errors);
+                 message += `\n${result.errors.length} errors occurred. Check console for details.`;
+                 // Show first 5 errors in console
+                 result.errors.slice(0, 5).forEach((err, idx) => {
+                   console.error(`Error ${idx + 1}:`, err);
+                 });
+               }
+               
+               if (result.skipped && result.skipped > 0) {
+                 console.warn(`${result.skipped} items were skipped (likely no product mappings)`);
+               }
+               
+               // Show appropriate toast
+               const toastType = result.errors && result.errors.length > 0 ? "warning" : 
+                                result.synced === 0 ? "warning" : "success";
+               showToast(message, "", toastType);
+               
+               // Reload page to show synced data, maintaining partner_id=1
+               setTimeout(() => {
+                 window.location.href = `/sales/data-entry?date=${currentDate}&partner_id=1`;
+               }, 2000);
+             } else {
+               console.error("Sync failed:", result.error);
+               showToast(result.error || "Failed to sync app sales", "", "error");
+             }
+           } catch (error) {
+             console.error("Error syncing app sales:", error);
+             showToast("Error syncing app sales: " + error.message, "", "error");
+           } finally {
+             // Reset button state
+             syncBtn.disabled = false;
+             syncBtnText.textContent = "Sync Sales Data";
+             syncLoader.classList.add("hidden");
+           }
+         });
+       }
+     </script>
+</body>
+</html>

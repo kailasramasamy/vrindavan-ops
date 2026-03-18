@@ -1,0 +1,898 @@
+<%- include('../../partials/_head', { title: 'Email Settings - Operations Management' }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../partials/_header', { user: user }) %>
+
+  <div class="min-h-screen">
+    <%- include('../../partials/_subnav', { user: user }) %>
+
+    <div>
+      <div class="px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Main Content Container -->
+        <div class="max-w-5xl mx-auto">
+          
+          <!-- Page Header -->
+          <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Email Settings</h1>
+            <p class="text-gray-600 dark:text-gray-300">Configure email alerts and notification preferences</p>
+          </div>
+
+          <!-- Horizontal Navigation Menu -->
+          <div class="mb-8">
+            <nav class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-2">
+              <div class="flex flex-wrap gap-2">
+                <a href="#email-config" onclick="scrollToSection('email-config', event)" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                  <span class="hidden sm:inline">Email Configuration</span>
+                  <span class="sm:hidden">Email Config</span>
+                </a>
+                <a href="#alert-settings" onclick="scrollToSection('alert-settings', event)" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                  </svg>
+                  <span class="hidden sm:inline">Alert Settings</span>
+                  <span class="sm:hidden">Alerts</span>
+                </a>
+                <a href="#email-templates" onclick="scrollToSection('email-templates', event)" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <span class="hidden sm:inline">Email Templates</span>
+                  <span class="sm:hidden">Templates</span>
+                </a>
+                <a href="#test-email" onclick="scrollToSection('test-email', event)" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="hidden sm:inline">Test Email</span>
+                  <span class="sm:hidden">Test</span>
+                </a>
+              </div>
+            </nav>
+          </div>
+
+          <!-- Settings Sections -->
+          <div class="space-y-6">
+          
+          <!-- Email Configuration -->
+          <div id="email-config" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 scroll-mt-8">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                Email Configuration
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Configure Zoho mail SMTP settings</p>
+            </div>
+            <div class="p-6">
+              <form id="emailConfigForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label for="smtp_host" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SMTP Host
+                    </label>
+                    <input type="text" id="smtp_host" name="smtp_host" value="smtp.zoho.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="smtp.zoho.com">
+                  </div>
+                  <div>
+                    <label for="smtp_port" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SMTP Port
+                    </label>
+                    <input type="number" id="smtp_port" name="smtp_port" value="587" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="587">
+                  </div>
+                  <div>
+                    <label for="smtp_user" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input type="email" id="smtp_user" name="smtp_user" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="your-email@yourdomain.com">
+                  </div>
+                  <div>
+                    <label for="smtp_pass" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      App Password
+                    </label>
+                    <input type="password" id="smtp_pass" name="smtp_pass" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Your Zoho app password">
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <input type="checkbox" id="smtp_secure" name="smtp_secure" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                  <label for="smtp_secure" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                    Use TLS/SSL encryption
+                  </label>
+                </div>
+                <div class="flex justify-end">
+                  <button type="button" onclick="testEmailConnection()" class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mr-3">
+                    Test Connection
+                  </button>
+                  <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    Save Configuration
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Alert Settings -->
+          <div id="alert-settings" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 scroll-mt-8">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                Alert Settings
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Configure recipients and frequencies for different alert types</p>
+            </div>
+            <div class="p-6">
+              <form id="alertSettingsForm" class="space-y-6">
+                
+                <!-- Service Reminder Settings -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Service Reminders
+                  </h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reminder_enabled" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Enable Service Reminders
+                      </label>
+                      <div class="flex items-center">
+                        <input type="checkbox" id="reminder_enabled" name="reminder_enabled" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                        <label for="reminder_enabled" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                          Send automatic service reminder emails
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="reminder_frequency" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Reminder Frequency
+                      </label>
+                      <select id="reminder_frequency" name="reminder_frequency" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">Bi-weekly</option>
+                        <option value="monthly">Monthly</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="reminder_days_before" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Days Before Deadline
+                      </label>
+                      <input type="number" id="reminder_days_before" name="reminder_days_before" min="1" max="30" value="7" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="7">
+                    </div>
+                    <div>
+                      <label for="reminder_recipients" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Service Reminder Recipients
+                      </label>
+                      <textarea id="reminder_recipients" name="reminder_recipients" rows="2" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter email addresses separated by commas"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Issue Alert Settings -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    Issue Alerts
+                  </h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="issue_alert_enabled" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Issue Report Alerts
+                      </label>
+                      <div class="flex items-center">
+                        <input type="checkbox" id="issue_alert_enabled" name="issue_alert_enabled" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded">
+                        <label for="issue_alert_enabled" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                          Send immediate alerts for reported issues
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="issue_status_change_enabled" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Status Change Alerts
+                      </label>
+                      <div class="flex items-center">
+                        <input type="checkbox" id="issue_status_change_enabled" name="issue_status_change_enabled" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 dark:border-gray-600 rounded">
+                        <label for="issue_status_change_enabled" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                          Send alerts when issue status changes
+                        </label>
+                      </div>
+                    </div>
+                    <div class="md:col-span-2">
+                      <label for="issue_alert_recipients" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Issue Alert Recipients
+                      </label>
+                      <textarea id="issue_alert_recipients" name="issue_alert_recipients" rows="2" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Enter email addresses separated by commas"></textarea>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">These recipients will receive both issue report alerts and status change alerts</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Material Management Alerts -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    Material Management Alerts
+                  </h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="material_transaction_alerts" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Material Transaction Alerts
+                      </label>
+                      <div class="flex items-center">
+                        <input type="checkbox" id="material_transaction_alerts" name="material_transaction_alerts" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded">
+                        <label for="material_transaction_alerts" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                          Send alerts for all material transactions
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="low_stock_alerts" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Low Stock Alerts
+                      </label>
+                      <div class="flex items-center">
+                        <input type="checkbox" id="low_stock_alerts" name="low_stock_alerts" class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 dark:border-gray-600 rounded">
+                        <label for="low_stock_alerts" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                          Send alerts when materials reach low stock threshold
+                        </label>
+                      </div>
+                    </div>
+                    <div class="md:col-span-2">
+                      <label for="material_alert_recipients" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Material Alert Recipients
+                      </label>
+                      <textarea id="material_alert_recipients" name="material_alert_recipients" rows="2" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter email addresses separated by commas"></textarea>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">These recipients will receive material transaction and low stock alerts</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end">
+                  <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    Save Alert Settings
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Email Templates -->
+          <div id="email-templates" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 scroll-mt-8">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Email Templates
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Customize email templates for different alert types</p>
+            </div>
+            <div class="p-6">
+              
+              <!-- Template Tabs -->
+              <div class="mb-6">
+                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-1 flex">
+                  <button onclick="showTemplate('service_reminder')" id="tab-service_reminder" class="template-tab flex-1 flex items-center justify-center py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Service Reminder
+                  </button>
+                  <button onclick="showTemplate('issue_alert')" id="tab-issue_alert" class="template-tab flex-1 flex items-center justify-center py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    Issue Alert
+                  </button>
+                  <button onclick="showTemplate('status_change')" id="tab-status_change" class="template-tab flex-1 flex items-center justify-center py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Status Change
+                  </button>
+                  <button onclick="showTemplate('material_transaction')" id="tab-material_transaction" class="template-tab flex-1 flex items-center justify-center py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    Material Transaction
+                  </button>
+                  <button onclick="showTemplate('low_stock_alert')" id="tab-low_stock_alert" class="template-tab flex-1 flex items-center justify-center py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    Low Stock Alert
+                  </button>
+                </div>
+              </div>
+
+              <!-- Service Reminder Template -->
+              <div id="template-service_reminder" class="template-content">
+                <form id="serviceReminderTemplateForm" class="space-y-4">
+                  <div>
+                    <label for="service_reminder_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Subject
+                    </label>
+                    <input type="text" id="service_reminder_subject" name="subject" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Service Reminder: {service_type} due for {machine_name}">
+                  </div>
+                  <div>
+                    <label for="service_reminder_template" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Template
+                    </label>
+                    <textarea id="service_reminder_template" name="template" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email template here..."></textarea>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                      Save Service Reminder Template
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Issue Alert Template -->
+              <div id="template-issue_alert" class="template-content hidden">
+                <form id="issueAlertTemplateForm" class="space-y-4">
+                  <div>
+                    <label for="issue_alert_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Subject
+                    </label>
+                    <input type="text" id="issue_alert_subject" name="subject" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="URGENT: Issue Reported - {machine_name}">
+                  </div>
+                  <div>
+                    <label for="issue_alert_template" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Template
+                    </label>
+                    <textarea id="issue_alert_template" name="template" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Enter your email template here..."></textarea>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                      Save Issue Alert Template
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Status Change Template -->
+              <div id="template-status_change" class="template-content hidden">
+                <form id="statusChangeTemplateForm" class="space-y-4">
+                  <div>
+                    <label for="status_change_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Subject
+                    </label>
+                    <input type="text" id="status_change_subject" name="subject" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Issue Status Updated - {machine_name}">
+                  </div>
+                  <div>
+                    <label for="status_change_template" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Template
+                    </label>
+                    <textarea id="status_change_template" name="template" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Enter your email template here..."></textarea>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
+                      Save Status Change Template
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Material Transaction Template -->
+              <div id="template-material_transaction" class="template-content hidden">
+                <form id="materialTransactionTemplateForm" class="space-y-4">
+                  <div>
+                    <label for="material_transaction_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Subject
+                    </label>
+                    <input type="text" id="material_transaction_subject" name="subject" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Material Transaction: {transaction_type} - {material_name}">
+                  </div>
+                  <div>
+                    <label for="material_transaction_template" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Template
+                    </label>
+                    <textarea id="material_transaction_template" name="template" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter your email template here..."></textarea>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                      Save Material Transaction Template
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Low Stock Alert Template -->
+              <div id="template-low_stock_alert" class="template-content hidden">
+                <form id="lowStockAlertTemplateForm" class="space-y-4">
+                  <div>
+                    <label for="low_stock_alert_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Subject
+                    </label>
+                    <input type="text" id="low_stock_alert_subject" name="subject" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" placeholder="LOW STOCK ALERT: {material_name} - {current_stock} remaining">
+                  </div>
+                  <div>
+                    <label for="low_stock_alert_template" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Template
+                    </label>
+                    <textarea id="low_stock_alert_template" name="template" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" placeholder="Enter your email template here..."></textarea>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition-colors">
+                      Save Low Stock Alert Template
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Variables Reference -->
+              <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h4 class="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">Available Variables:</h4>
+                <div class="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                  <div class="grid grid-cols-2 gap-2">
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{machine_name}</code> - Machine name</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{serial_number}</code> - Machine serial number</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{service_type}</code> - Service type name</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{due_date}</code> - Service due date</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{days_remaining}</code> - Days until due</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{location}</code> - Machine location</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{issue_type}</code> - Issue type (for alerts)</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{material_name}</code> - Material name</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{material_sku}</code> - Material SKU</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{transaction_type}</code> - Transaction type</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{transaction_quantity}</code> - Transaction quantity</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{current_stock}</code> - Current stock level</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{min_stock}</code> - Minimum stock level</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{transaction_date}</code> - Transaction date</div>
+                    <div><code class="bg-green-100 dark:bg-green-900/40 px-1 rounded">{user_name}</code> - User who performed action</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{severity}</code> - Issue severity (for alerts)</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{description}</code> - Issue description (for alerts)</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{reported_by}</code> - Who reported the issue</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{reported_at}</code> - When issue was reported</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{previous_status}</code> - Previous status (for status changes)</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{new_status}</code> - New status (for status changes)</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{updated_by}</code> - Who updated the status</div>
+                    <div><code class="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">{updated_at}</code> - When status was updated</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Email -->
+          <div id="test-email" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 scroll-mt-8">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Test Email
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Send a test email to verify your configuration</p>
+            </div>
+            <div class="p-6">
+              <form id="testEmailForm" class="space-y-4">
+                <div>
+                  <label for="test_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Test Email Address
+                  </label>
+                  <input type="email" id="test_email" name="test_email" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="test@example.com">
+                </div>
+                <div class="flex justify-end">
+                  <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                    Send Test Email
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Navigation scroll functionality
+    function scrollToSection(sectionId, event) {
+      event.preventDefault();
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Update active state
+        document.querySelectorAll('.nav-link').forEach(link => {
+          link.classList.remove('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-700', 'dark:text-blue-300');
+          link.classList.add('text-gray-700', 'dark:text-gray-300');
+        });
+        
+        event.target.closest('.nav-link').classList.remove('text-gray-700', 'dark:text-gray-300');
+        event.target.closest('.nav-link').classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-700', 'dark:text-blue-300');
+      }
+    }
+
+    // Highlight active section on scroll
+    function updateActiveSection() {
+      const sections = ['email-config', 'alert-settings', 'email-templates', 'test-email'];
+      let currentSection = sections[0];
+      
+      sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= 150 && rect.bottom >= 150) {
+            currentSection = sectionId;
+          }
+        }
+      });
+      
+      // Update nav links
+      document.querySelectorAll('.nav-link').forEach(link => {
+        const href = link.getAttribute('href').substring(1);
+        if (href === currentSection) {
+          link.classList.remove('text-gray-700', 'dark:text-gray-300');
+          link.classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-700', 'dark:text-blue-300');
+        } else {
+          link.classList.remove('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-700', 'dark:text-blue-300');
+          link.classList.add('text-gray-700', 'dark:text-gray-300');
+        }
+      });
+    }
+
+    // Add scroll listener
+    window.addEventListener('scroll', updateActiveSection);
+    
+    // Toast notification system
+    const toastManager = {
+      show: function(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
+          type === 'success' ? 'bg-green-500' : 
+          type === 'error' ? 'bg-red-500' : 
+          type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+        }`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      },
+      success: function(message) { this.show(message, 'success'); },
+      error: function(message) { this.show(message, 'error'); },
+      warning: function(message) { this.show(message, 'warning'); },
+      info: function(message) { this.show(message, 'info'); }
+    };
+
+    // Template switching
+    function showTemplate(templateType) {
+      // Hide all template contents
+      document.querySelectorAll('.template-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      // Remove active styling from all tabs
+      document.querySelectorAll('.template-tab').forEach(tab => {
+        tab.classList.remove('bg-white', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm');
+        tab.classList.add('text-gray-600', 'dark:text-gray-300');
+      });
+      
+      // Show selected template
+      document.getElementById(`template-${templateType}`).classList.remove('hidden');
+      
+      // Activate selected tab
+      const activeTab = document.getElementById(`tab-${templateType}`);
+      activeTab.classList.remove('text-gray-600', 'dark:text-gray-300');
+      activeTab.classList.add('bg-white', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm');
+    }
+
+    // Email configuration form
+    document.getElementById('emailConfigForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const config = Object.fromEntries(formData);
+      
+      fetch('/email-settings/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Email configuration saved successfully');
+        } else {
+          toastManager.error('Failed to save email configuration');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save email configuration');
+      });
+    });
+
+    // Alert settings form
+    document.getElementById('alertSettingsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const settings = Object.fromEntries(formData);
+      
+      fetch('/email-settings/reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Alert settings saved successfully');
+        } else {
+          toastManager.error('Failed to save alert settings');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save alert settings');
+      });
+    });
+
+    // Service reminder template form
+    document.getElementById('serviceReminderTemplateForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const templateData = Object.fromEntries(formData);
+      
+      fetch('/email-settings/template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateType: 'service_reminder',
+          templateData: templateData
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Service reminder template saved successfully');
+        } else {
+          toastManager.error('Failed to save service reminder template');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save service reminder template');
+      });
+    });
+
+    // Issue alert template form
+    document.getElementById('issueAlertTemplateForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const templateData = Object.fromEntries(formData);
+      
+      fetch('/email-settings/template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateType: 'issue_alert',
+          templateData: templateData
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Issue alert template saved successfully');
+        } else {
+          toastManager.error('Failed to save issue alert template');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save issue alert template');
+      });
+    });
+
+    // Status change template form
+    document.getElementById('statusChangeTemplateForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const templateData = Object.fromEntries(formData);
+      
+      fetch('/email-settings/template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateType: 'status_change',
+          templateData: templateData
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Status change template saved successfully');
+        } else {
+          toastManager.error('Failed to save status change template');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save status change template');
+      });
+    });
+
+    // Material transaction template form
+    document.getElementById('materialTransactionTemplateForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const templateData = Object.fromEntries(formData);
+      
+      fetch('/email-settings/template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateType: 'material_transaction',
+          templateData: templateData
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Material transaction template saved successfully');
+        } else {
+          toastManager.error('Failed to save material transaction template');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save material transaction template');
+      });
+    });
+
+    // Low stock alert template form
+    document.getElementById('lowStockAlertTemplateForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const templateData = Object.fromEntries(formData);
+      
+      fetch('/email-settings/template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateType: 'low_stock_alert',
+          templateData: templateData
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Low stock alert template saved successfully');
+        } else {
+          toastManager.error('Failed to save low stock alert template');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to save low stock alert template');
+      });
+    });
+
+    // Test email form
+    document.getElementById('testEmailForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const testData = Object.fromEntries(formData);
+      
+      fetch('/email-settings/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(testData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Test email sent successfully');
+        } else {
+          toastManager.error('Failed to send test email');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Failed to send test email');
+      });
+    });
+
+    // Test email connection
+    function testEmailConnection() {
+      const formData = new FormData(document.getElementById('emailConfigForm'));
+      const config = Object.fromEntries(formData);
+      
+      fetch('/email-settings/test-connection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          toastManager.success('Email connection test successful');
+        } else {
+          toastManager.error('Email connection test failed: ' + data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        toastManager.error('Email connection test failed');
+      });
+    }
+
+    // Load existing settings on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadEmailSettings();
+    });
+
+    function loadEmailSettings() {
+      fetch('/email-settings/load')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Populate email config
+            if (data.config) {
+              Object.keys(data.config).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                  if (element.type === 'checkbox') {
+                    element.checked = data.config[key];
+                  } else {
+                    element.value = data.config[key];
+                  }
+                }
+              });
+            }
+            
+            // Populate alert settings
+            if (data.reminders) {
+              Object.keys(data.reminders).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                  if (element.type === 'checkbox') {
+                    element.checked = data.reminders[key];
+                  } else {
+                    element.value = data.reminders[key];
+                  }
+                }
+              });
+            }
+            
+            // Populate templates
+            if (data.templates) {
+              // Service reminder template
+              if (data.templates.service_reminder) {
+                document.getElementById('service_reminder_subject').value = data.templates.service_reminder.subject || '';
+                document.getElementById('service_reminder_template').value = data.templates.service_reminder.template || '';
+              }
+              
+              // Issue alert template
+              if (data.templates.issue_alert) {
+                document.getElementById('issue_alert_subject').value = data.templates.issue_alert.subject || '';
+                document.getElementById('issue_alert_template').value = data.templates.issue_alert.template || '';
+              }
+              
+              // Status change template
+              if (data.templates.status_change) {
+                document.getElementById('status_change_subject').value = data.templates.status_change.subject || '';
+                document.getElementById('status_change_template').value = data.templates.status_change.template || '';
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error loading settings:', error);
+        });
+    }
+  </script>
+</body>
+</html>

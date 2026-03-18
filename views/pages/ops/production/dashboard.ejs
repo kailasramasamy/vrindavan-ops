@@ -1,0 +1,943 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Production', page: 'Dashboard' }) %>
+  
+  <div class="min-h-screen pt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Production Dashboard</h1>
+            <p class="text-gray-600 dark:text-gray-300">Overview of daily production and key performance indicators</p>
+          </div>
+          <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-4">
+            <input type="date" id="dateFilter" value="<%= date %>" 
+                   class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select id="timeFilter" class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="day" <%= time === 'day' ? 'selected' : '' %>>Day</option>
+              <option value="week" <%= time === 'week' ? 'selected' : '' %>>Week</option>
+              <option value="month" <%= time === 'month' ? 'selected' : '' %>>Month</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Daily Production Entry -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+          <div class="p-6">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              <h3 class="ml-3 text-lg font-semibold text-gray-900 dark:text-white">Daily Production</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Record today's production quantities and track milk usage for each product.</p>
+            <a href="/production/daily-production" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              Enter Production
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+          <div class="p-6">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <h3 class="ml-3 text-lg font-semibold text-gray-900 dark:text-white">Analytics</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Analyze production trends, milk usage patterns, and efficiency metrics.</p>
+            <a href="/production/analytics" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+              View Analytics
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Products Produced -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Products Produced</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= productionSummary ? productionSummary.total_products_produced || 0 : 0 %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Milk Used -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Milk Used</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= milkInventory ? (parseFloat(milkInventory.total_used) || 0).toFixed(1) : '0.0' %> L
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Quantity Produced -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Quantity</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <%= productionSummary ? (parseFloat(productionSummary.total_quantity_produced) || 0).toFixed(1) : '0.0' %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Production Efficiency -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Efficiency</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                <% if (productionSummary && milkInventory) { %>
+                  <% const totalAvailable = (milkInventory.a1_available || 0) + (milkInventory.a2_available || 0) + (milkInventory.buffalo_available || 0); %>
+                  <% const totalUsed = parseFloat(productionSummary.total_milk_used) || 0; %>
+                  <% const efficiency = totalAvailable > 0 ? ((totalUsed / totalAvailable) * 100).toFixed(1) : 0; %>
+                  <%= efficiency %>%
+                <% } else { %>
+                  0%
+                <% } %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Milk Usage by Type - Individual Cards -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Milk Usage by Type</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- A1 Milk Card -->
+          <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-green-900 dark:text-green-200">A1 Milk</h3>
+                  <p class="text-sm text-green-600 dark:text-green-400">Cow Milk Type A1</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-green-700 dark:text-green-300">Total Volume</span>
+                <span class="text-lg font-bold text-green-900 dark:text-green-200">
+                  <%= milkInventory ? (parseFloat(milkInventory.a1_available) || 0).toFixed(1) : '0.0' %> L
+                </span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-green-700 dark:text-green-300">Used Volume</span>
+                <span class="text-lg font-bold text-green-900 dark:text-green-200">
+                  <%= milkInventory ? (parseFloat(milkInventory.a1_used) || 0).toFixed(1) : '0.0' %> L
+                </span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-green-700 dark:text-green-300">Remaining Volume</span>
+                <span class="text-lg font-bold text-green-900 dark:text-green-200">
+                  <% 
+                    const a1Total = parseFloat(milkInventory?.a1_available) || 0;
+                    const a1Used = parseFloat(milkInventory?.a1_used) || 0;
+                    const a1Wasted = parseFloat(milkInventory?.a1_wasted) || 0;
+                    const a1Remaining = Math.max(0, a1Total - a1Used - a1Wasted);
+                  %>
+                  <%= a1Remaining.toFixed(1) %> L
+                </span>
+              </div>
+              
+              <div class="pt-2 border-t border-green-200 dark:border-green-800">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-medium text-green-700 dark:text-green-300">Usage</span>
+                  <span class="text-lg font-bold text-green-900 dark:text-green-200">
+                    <% 
+                      const a1Percentage = a1Total > 0 ? (a1Used / a1Total * 100) : 0;
+                    %>
+                    <%= a1Percentage.toFixed(1) %>%
+                  </span>
+                </div>
+                <div class="w-full bg-green-200 dark:bg-green-900/50 rounded-full h-2">
+                  <div class="bg-green-500 dark:bg-green-600 h-2 rounded-full transition-all duration-300" style="width: <%= Math.min(100, a1Percentage) %>%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- A2 Milk Card -->
+          <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-red-500 dark:bg-red-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-red-900 dark:text-red-200">A2 Milk</h3>
+                  <p class="text-sm text-red-600 dark:text-red-400">Cow Milk Type A2</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-700 dark:text-red-300">Total Volume</span>
+                <span class="text-lg font-bold text-red-900 dark:text-red-200">
+                  <%= milkInventory ? (parseFloat(milkInventory.a2_available) || 0).toFixed(1) : '0.0' %> L
+                </span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-700 dark:text-red-300">Used Volume</span>
+                <span class="text-lg font-bold text-red-900 dark:text-red-200">
+                  <%= milkInventory ? (parseFloat(milkInventory.a2_used) || 0).toFixed(1) : '0.0' %> L
+                </span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-red-700 dark:text-red-300">Remaining Volume</span>
+                <span class="text-lg font-bold text-red-900 dark:text-red-200">
+                  <% 
+                    const a2Total = parseFloat(milkInventory?.a2_available) || 0;
+                    const a2Used = parseFloat(milkInventory?.a2_used) || 0;
+                    const a2Wasted = parseFloat(milkInventory?.a2_wasted) || 0;
+                    const a2Remaining = Math.max(0, a2Total - a2Used - a2Wasted);
+                  %>
+                  <%= a2Remaining.toFixed(1) %> L
+                </span>
+              </div>
+              
+              <div class="pt-2 border-t border-red-200 dark:border-red-800">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-medium text-red-700 dark:text-red-300">Usage</span>
+                  <span class="text-lg font-bold text-red-900 dark:text-red-200">
+                    <% 
+                      const a2Percentage = a2Total > 0 ? (a2Used / a2Total * 100) : 0;
+                    %>
+                    <%= a2Percentage.toFixed(1) %>%
+                  </span>
+                </div>
+                <div class="w-full bg-red-200 dark:bg-red-900/50 rounded-full h-2">
+                  <div class="bg-red-500 dark:bg-red-600 h-2 rounded-full transition-all duration-300" style="width: <%= Math.min(100, a2Percentage) %>%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Buffalo Milk Card -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-200">Buffalo Milk</h3>
+                  <p class="text-sm text-blue-600 dark:text-blue-400">Buffalo Milk</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Volume</span>
+                <span class="text-lg font-bold text-blue-900 dark:text-blue-200">
+                  <%= milkInventory ? (parseFloat(milkInventory.buffalo_available) || 0).toFixed(1) : '0.0' %> L
+                </span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300">Used Volume</span>
+                <span class="text-lg font-bold text-blue-900 dark:text-blue-200">
+                  <%= milkInventory ? (parseFloat(milkInventory.buffalo_used) || 0).toFixed(1) : '0.0' %> L
+                </span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300">Remaining Volume</span>
+                <span class="text-lg font-bold text-blue-900 dark:text-blue-200">
+                  <% 
+                    const buffaloTotal = parseFloat(milkInventory?.buffalo_available) || 0;
+                    const buffaloUsed = parseFloat(milkInventory?.buffalo_used) || 0;
+                    const buffaloWasted = parseFloat(milkInventory?.buffalo_wasted) || 0;
+                    const buffaloRemaining = Math.max(0, buffaloTotal - buffaloUsed - buffaloWasted);
+                  %>
+                  <%= buffaloRemaining.toFixed(1) %> L
+                </span>
+              </div>
+              
+              <div class="pt-2 border-t border-blue-200 dark:border-blue-800">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-medium text-blue-700 dark:text-blue-300">Usage</span>
+                  <span class="text-lg font-bold text-blue-900 dark:text-blue-200">
+                    <% 
+                      const buffaloPercentage = buffaloTotal > 0 ? (buffaloUsed / buffaloTotal * 100) : 0;
+                    %>
+                    <%= buffaloPercentage.toFixed(1) %>%
+                  </span>
+                </div>
+                <div class="w-full bg-blue-200 dark:bg-blue-900/50 rounded-full h-2">
+                  <div class="bg-blue-500 dark:bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: <%= Math.min(100, buffaloPercentage) %>%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Product Overview - Tables -->
+      <div class="space-y-6">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Product Overview</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Production summary by milk type</p>
+          </div>
+        </div>
+
+        <!-- A1 Milk Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-b border-green-200 dark:border-green-800 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-lg font-bold text-green-900 dark:text-green-200">A1 Milk Products</h4>
+                  <p class="text-sm text-green-600 dark:text-green-400">Cow Milk Type A1</p>
+                </div>
+              </div>
+              <div class="px-3 py-1 bg-green-100 dark:bg-green-900/40 rounded-full border border-green-200 dark:border-green-800">
+                <span class="text-sm font-bold text-green-900 dark:text-green-200" id="a1-compact-total">0</span>
+                <span class="text-xs text-green-600 dark:text-green-400 ml-1">products</span>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Unit Size</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity Produced</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Milk Used</th>
+                </tr>
+              </thead>
+              <tbody id="a1-vertical-products" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                  <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Loading products...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- A2 Milk Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 border-b border-red-200 dark:border-red-800 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-red-500 dark:bg-red-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-lg font-bold text-red-900 dark:text-red-200">A2 Milk Products</h4>
+                  <p class="text-sm text-red-600 dark:text-red-400">Cow Milk Type A2</p>
+                </div>
+              </div>
+              <div class="px-3 py-1 bg-red-100 dark:bg-red-900/40 rounded-full border border-red-200 dark:border-red-800">
+                <span class="text-sm font-bold text-red-900 dark:text-red-200" id="a2-compact-total">0</span>
+                <span class="text-xs text-red-600 dark:text-red-400 ml-1">products</span>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Unit Size</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity Produced</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Milk Used</th>
+                </tr>
+              </thead>
+              <tbody id="a2-vertical-products" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                  <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Loading products...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Buffalo Milk Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-b border-blue-200 dark:border-blue-800 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-lg font-bold text-blue-900 dark:text-blue-200">Buffalo Milk Products</h4>
+                  <p class="text-sm text-blue-600 dark:text-blue-400">Buffalo Milk</p>
+                </div>
+              </div>
+              <div class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 rounded-full border border-blue-200 dark:border-blue-800">
+                <span class="text-sm font-bold text-blue-900 dark:text-blue-200" id="buffalo-compact-total">0</span>
+                <span class="text-xs text-blue-600 dark:text-blue-400 ml-1">products</span>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Unit Size</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity Produced</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Milk Used</th>
+                </tr>
+              </thead>
+              <tbody id="buffalo-vertical-products" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                  <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Loading products...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Milk Volume Trends Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mt-8">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mr-4 shadow-lg" style="background: linear-gradient(135deg, #6366f1, #3b82f6); min-width: 48px; min-height: 48px;">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: white;">
+                <path d="M3 13h2v8H3v-8zm4-6h2v14H7V7zm4-6h2v20h-2V1zm4 4h2v16h-2V5zm4 4h2v12h-2V9z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white">Milk Volume Trends</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Daily milk availability by type over time</p>
+            </div>
+          </div>
+          
+          <!-- Time Period Filter -->
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</span>
+            <select id="trend-period-filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="180">Last 180 Days</option>
+            </select>
+          </div>
+      </div>
+
+        <!-- Chart Container -->
+        <div class="relative">
+          <canvas id="milkVolumeChart" width="800" height="400"></canvas>
+        </div>
+        
+        <!-- Chart Legend -->
+        <div class="mt-6 flex items-center justify-center space-x-8">
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">A1 Milk</span>
+                    </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+            <span class="text-sm font-medium text-gray-700">A2 Milk</span>
+                    </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+            <span class="text-sm font-medium text-gray-700">Buffalo Milk</span>
+            </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <script>
+    // Filter change handlers
+    function navigateWithFilters() {
+      const date = document.getElementById('dateFilter').value;
+      const time = document.getElementById('timeFilter').value;
+      
+      if (date && time) {
+        const url = new URL(window.location);
+        url.searchParams.set('date', date);
+        url.searchParams.set('time', time);
+        window.location.href = url.toString();
+      }
+    }
+    
+    // Initialize filter functionality when DOM is ready
+    function initializeFilters() {
+      const dateFilter = document.getElementById('dateFilter');
+      const timeFilter = document.getElementById('timeFilter');
+      
+      if (dateFilter) {
+        dateFilter.addEventListener('change', navigateWithFilters);
+      }
+      
+      if (timeFilter) {
+        timeFilter.addEventListener('change', navigateWithFilters);
+      }
+    }
+    
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeFilters);
+    
+    // Also call immediately in case DOM is already ready
+    if (document.readyState !== 'loading') {
+      initializeFilters();
+    }
+
+    // Load products data for modern overview
+    async function loadProductsData() {
+      try {
+        const response = await fetch('/production/products-api');
+        const result = await response.json();
+        
+        if (result.success && result.products) {
+          const products = result.products;
+          
+          // Group products by milk type and sort by product_id
+          const a1Products = products.filter(p => p.milk_type === 'A1').sort((a, b) => a.product_id - b.product_id);
+          const a2Products = products.filter(p => p.milk_type === 'A2').sort((a, b) => a.product_id - b.product_id);
+          const buffaloProducts = products.filter(p => p.milk_type === 'Buffalo').sort((a, b) => a.product_id - b.product_id);
+          
+          
+          // Update modern overview
+          updateModernOverview(a1Products, a2Products, buffaloProducts);
+        }
+      } catch (error) {
+        console.error('Error loading production data:', error);
+      }
+    }
+    
+    function updateModernOverview(a1Products, a2Products, buffaloProducts) {
+      const totalProducts = a1Products.length + a2Products.length + buffaloProducts.length;
+      
+      // Note: Quick stats cards removed, so no need to update those elements
+      
+      // Note: Product Distribution section removed, so no need to update those elements
+      
+      // Note: Progress bars removed with quick stats cards, so no need to update those elements
+      
+      // Update Compact Product Overview section
+      updateCompactProductOverviewSection(a1Products, a2Products, buffaloProducts);
+    }
+    
+    // ========================================
+    // COMPACT PRODUCT OVERVIEW SECTION FUNCTIONS
+    // ========================================
+    function updateCompactProductOverviewSection(a1Products, a2Products, buffaloProducts) {
+      // Update compact total counts
+      const a1CompactTotal = document.getElementById('a1-compact-total');
+      const a2CompactTotal = document.getElementById('a2-compact-total');
+      const buffaloCompactTotal = document.getElementById('buffalo-compact-total');
+      
+      if (a1CompactTotal) a1CompactTotal.textContent = a1Products.length;
+      if (a2CompactTotal) a2CompactTotal.textContent = a2Products.length;
+      if (buffaloCompactTotal) buffaloCompactTotal.textContent = buffaloProducts.length;
+      
+      // Populate vertical compact cards
+      populateVerticalCards(a1Products, 'a1-vertical-products', 'green');
+      populateVerticalCards(a2Products, 'a2-vertical-products', 'red');
+      populateVerticalCards(buffaloProducts, 'buffalo-vertical-products', 'blue');
+    }
+    
+    function populateVerticalCards(products, containerId, colorTheme) {
+      const container = document.getElementById(containerId);
+      
+      if (!container) {
+        console.error(`Container with id '${containerId}' not found`);
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      if (products.length === 0) {
+        container.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">No products found</td>
+          </tr>
+        `;
+        return;
+      }
+      
+      products.forEach((product, index) => {
+        const tableRow = createTableRow(product, colorTheme, index);
+        container.appendChild(tableRow);
+      });
+    }
+    
+    function createTableRow(product, colorTheme, index) {
+      const row = document.createElement('tr');
+      row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors';
+      
+      // Get color classes based on theme
+      const colorClasses = {
+        green: {
+          accent: 'text-green-600 dark:text-green-400',
+          bg: 'bg-green-50 dark:bg-green-900/20',
+          border: 'border-green-200 dark:border-green-800'
+        },
+        red: {
+          accent: 'text-red-600 dark:text-red-400',
+          bg: 'bg-red-50 dark:bg-red-900/20',
+          border: 'border-red-200 dark:border-red-800'
+        },
+        blue: {
+          accent: 'text-blue-600 dark:text-blue-400',
+          bg: 'bg-blue-50 dark:bg-blue-900/20',
+          border: 'border-blue-200 dark:border-blue-800'
+        }
+      };
+      
+      const colors = colorClasses[colorTheme];
+      
+      // Use real production data - ensure values are numbers
+      const productionCount = parseFloat(product.total_produced) || 0;
+      const milkUsed = parseFloat(product.total_milk_used) || 0;
+      
+      row.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 h-10 w-10">
+              <div class="h-10 w-10 rounded-lg overflow-hidden border ${colors.border} ${colors.bg} flex items-center justify-center">
+                ${product.image_url ? 
+                  `<img src="${product.image_url}" alt="${product.name}" class="h-full w-full object-cover">` :
+                  `<svg class="h-6 w-6 ${colors.accent}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>`
+                }
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${product.name}</div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-500 dark:text-gray-400">${product.unit_size || '-'}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-semibold ${colors.accent}">${productionCount}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-semibold ${colors.accent}">${milkUsed.toFixed(1)} L</div>
+        </td>
+      `;
+      
+      return row;
+    }
+    
+    // Register Chart.js plugins
+    Chart.register(ChartDataLabels);
+    
+    // Load products data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadProductsData();
+      loadMilkVolumeTrends();
+    });
+
+    // ========================================
+    // MILK VOLUME TRENDS CHART FUNCTIONS
+    // ========================================
+    let milkVolumeChart = null;
+
+    async function loadMilkVolumeTrends(days = 7) {
+      try {
+        const response = await fetch(`/production/milk-volume-trends/api?days=${days}`);
+        const result = await response.json();
+        
+        if (result.success && result.trends) {
+          const trends = result.trends;
+          
+          // Process data for chart
+          const chartData = processTrendsData(trends, days);
+          
+          // Create or update chart
+          createMilkVolumeChart(chartData);
+        }
+      } catch (error) {
+        console.error('Error loading milk volume trends:', error);
+      }
+    }
+
+    function processTrendsData(trends, days) {
+      // Create date range
+      const dates = [];
+      const endDate = new Date();
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(endDate.getDate() - i);
+        dates.push(date.toISOString().split('T')[0]);
+      }
+
+      // Initialize data structure
+      const data = {
+        labels: dates.map(date => {
+          const d = new Date(date);
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [
+          {
+            label: 'A1 Milk',
+            data: new Array(dates.length).fill(0),
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgb(34, 197, 94)',
+            pointBorderColor: 'rgb(34, 197, 94)',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'A2 Milk',
+            data: new Array(dates.length).fill(0),
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: 'rgb(239, 68, 68)',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Buffalo Milk',
+            data: new Array(dates.length).fill(0),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: 'rgb(59, 130, 246)',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      };
+
+      // Populate data from trends
+      trends.forEach(trend => {
+        const dateIndex = dates.indexOf(trend.production_date);
+        if (dateIndex !== -1) {
+          const datasetIndex = trend.milk_type === 'A1' ? 0 : 
+                             trend.milk_type === 'A2' ? 1 : 2;
+          data.datasets[datasetIndex].data[dateIndex] = parseFloat(trend.daily_milk_volume) || 0;
+        }
+      });
+
+      return data;
+    }
+
+    function createMilkVolumeChart(data) {
+      const ctx = document.getElementById('milkVolumeChart');
+      if (!ctx) {
+        console.error('Chart canvas not found');
+        return;
+      }
+
+      // Destroy existing chart if it exists
+      if (milkVolumeChart) {
+        milkVolumeChart.destroy();
+      }
+
+      milkVolumeChart = new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+            plugins: {
+              legend: {
+                display: false // We have custom legend below chart
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: 'white',
+                bodyColor: 'white',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                cornerRadius: 8,
+                displayColors: true,
+                callbacks: {
+                  title: function(context) {
+                    return context[0].label;
+                  },
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}L available`;
+                }
+                }
+              },
+              datalabels: {
+                display: true,
+                color: function(context) {
+                  // Use the same color as the line
+                  return context.dataset.borderColor;
+                },
+                font: {
+                  size: 11,
+                  weight: 'bold'
+                },
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderColor: function(context) {
+                  return context.dataset.borderColor;
+                },
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: 4,
+                formatter: function(value, context) {
+                  return value.toFixed(0) + 'L';
+                },
+                anchor: 'end',
+                align: 'top',
+                offset: 8
+              }
+            },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: 'rgb(107, 114, 128)',
+                font: {
+                  size: 12
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: 'rgb(107, 114, 128)',
+                font: {
+                  size: 12
+                },
+                callback: function(value) {
+                  return value.toFixed(0) + 'L';
+                }
+              },
+              // Add padding at the top to ensure labels are visible
+              suggestedMax: function(context) {
+                const max = Math.max(...context.chart.data.datasets.flatMap(d => d.data));
+                return max * 1.15; // Add 15% padding above the max value
+              }
+            }
+          },
+          elements: {
+            point: {
+              hoverBackgroundColor: 'white',
+              hoverBorderWidth: 2
+            }
+          }
+        }
+      });
+    }
+
+    // Event listener for period filter
+    document.addEventListener('DOMContentLoaded', function() {
+      const periodFilter = document.getElementById('trend-period-filter');
+      if (periodFilter) {
+        periodFilter.addEventListener('change', function() {
+          const days = parseInt(this.value);
+          loadMilkVolumeTrends(days);
+        });
+      }
+    });
+  </script>
+  <%- include('../../../partials/_toast') %>
+</body>
+</html>

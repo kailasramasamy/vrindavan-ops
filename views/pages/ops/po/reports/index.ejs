@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %>
+  <link rel="stylesheet" href="/assets/css/po-dark-mode.css" />
+
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'Reports' }) %>
+
+    <div class="min-h-screen pt-16">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="py-6">
+            <div class="md:flex md:items-center md:justify-between">
+              <div class="flex-1 min-w-0">
+                <nav class="flex mb-4" aria-label="Breadcrumb">
+                  <ol class="flex items-center space-x-4">
+                    <li>
+                      <div>
+                        <a href="/" class="text-gray-400 hover:text-gray-500 dark:text-gray-400">
+                          <i data-lucide="home" class="h-5 w-5"></i>
+                          <span class="sr-only">Home</span>
+                        </a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-5 w-5 text-gray-400 dark:text-gray-500"></i>
+                        <a href="/po/dashboard" class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700">PO Management</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-5 w-5 text-gray-400 dark:text-gray-500"></i>
+                        <span class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400">Reports</span>
+                      </div>
+                    </li>
+                  </ol>
+                </nav>
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">Reports & Analytics</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View and download reports for purchase orders</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <!-- Sidebar Menu -->
+          <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+              <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-600">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Report Types</h3>
+              </div>
+              <nav class="flex-1">
+                <button onclick="showReport('invoices')" id="menu-invoices" class="report-menu-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-900 dark:text-white bg-blue-50 border-l-4 border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                  <i data-lucide="file-text" class="h-5 w-5 mr-3"></i>
+                  Invoices
+                </button>
+                <!-- Add more report types here in the future -->
+              </nav>
+            </div>
+          </div>
+
+          <!-- Report Content -->
+          <div class="lg:col-span-3">
+            <!-- Invoices Report -->
+            <div id="report-invoices" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+              <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Invoice List</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">All invoices with purchase order details</p>
+                  </div>
+                  <div class="mt-4 sm:mt-0">
+                    <button onclick="refreshInvoices()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                      <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Date Filters -->
+                <div class="mt-4 flex flex-wrap items-end gap-3">
+                  <div class="flex-1 min-w-[150px]">
+                    <label for="fromDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
+                    <input type="date" id="fromDate" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                  </div>
+                  <div class="flex-1 min-w-[150px]">
+                    <label for="toDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
+                    <input type="date" id="toDate" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                  </div>
+                  <button onclick="applyFilters()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i data-lucide="filter" class="h-4 w-4 mr-2"></i>
+                    Apply
+                  </button>
+                  <button onclick="clearFilters()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <i data-lucide="x" class="h-4 w-4 mr-2"></i>
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              <div class="px-6 py-4">
+                <!-- Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0">
+                        <i data-lucide="file-text" class="h-8 w-8 text-blue-600 dark:text-blue-400"></i>
+                      </div>
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Invoices</p>
+                        <p id="totalInvoices" class="text-2xl font-bold text-gray-900 dark:text-white">-</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0">
+                        <i data-lucide="dollar-sign" class="h-8 w-8 text-green-600 dark:text-green-400"></i>
+                      </div>
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Amount</p>
+                        <p id="totalAmount" class="text-2xl font-bold text-gray-900 dark:text-white">-</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0">
+                        <i data-lucide="calendar" class="h-8 w-8 text-purple-600 dark:text-purple-400"></i>
+                      </div>
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Date Range</p>
+                        <p id="dateRange" class="text-sm font-bold text-gray-900 dark:text-white">All Time</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Invoice Table -->
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">PO #</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vendor</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Invoice Date</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                      <!-- Invoices will be loaded here -->
+                      <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                          <i data-lucide="loader" class="h-8 w-8 mx-auto text-gray-400 dark:text-gray-500 animate-spin mb-4"></i>
+                          <p class="text-gray-500 dark:text-gray-400">Loading invoices...</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../../../partials/_footer') %> <%- include('../../../../partials/_toast') %>
+
+    <script>
+      let invoices = [];
+      let filteredInvoices = [];
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadInvoices();
+
+        // Initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      });
+
+      // Load invoices
+      async function loadInvoices(filters = {}) {
+        try {
+          let url = "/po/api/v1/reports/invoices";
+          const params = new URLSearchParams();
+
+          if (filters.from_date) {
+            params.append("from_date", filters.from_date);
+          }
+          if (filters.to_date) {
+            params.append("to_date", filters.to_date);
+          }
+
+          if (params.toString()) {
+            url += `?${params.toString()}`;
+          }
+
+          const response = await fetch(url);
+          const result = await response.json();
+
+          if (result.success) {
+            invoices = result.data;
+            filteredInvoices = result.data;
+            updateStats();
+            renderInvoices();
+          } else {
+            console.error("Error loading invoices:", result.error);
+            showEmptyState("Error loading invoices");
+          }
+        } catch (error) {
+          console.error("Error loading invoices:", error);
+          showEmptyState("Error loading invoices");
+        }
+      }
+
+      // Update statistics
+      function updateStats() {
+        const totalInvoices = filteredInvoices.length;
+        const totalAmount = filteredInvoices.reduce((sum, inv) => sum + parseFloat(inv.invoice_amount || 0), 0);
+
+        document.getElementById("totalInvoices").textContent = totalInvoices;
+        document.getElementById("totalAmount").textContent = "₹" + totalAmount.toLocaleString("en-IN");
+
+        // Update date range display
+        const fromDate = document.getElementById("fromDate").value;
+        const toDate = document.getElementById("toDate").value;
+
+        if (fromDate && toDate) {
+          document.getElementById("dateRange").textContent = `${new Date(fromDate).toLocaleDateString("en-IN")} - ${new Date(toDate).toLocaleDateString("en-IN")}`;
+        } else if (fromDate) {
+          document.getElementById("dateRange").textContent = `From ${new Date(fromDate).toLocaleDateString("en-IN")}`;
+        } else if (toDate) {
+          document.getElementById("dateRange").textContent = `Until ${new Date(toDate).toLocaleDateString("en-IN")}`;
+        } else {
+          document.getElementById("dateRange").textContent = "All Time";
+        }
+      }
+
+      // Render invoices table
+      function renderInvoices() {
+        const tbody = document.getElementById("invoicesTableBody");
+
+        if (filteredInvoices.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center">
+                <i data-lucide="inbox" class="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"></i>
+                <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No invoices found</p>
+                <p class="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+              </td>
+            </tr>
+          `;
+          if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+          }
+          return;
+        }
+
+        tbody.innerHTML = filteredInvoices
+          .map(
+            (invoice) => `
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <a href="/po/purchase-orders/${invoice.po_id}" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-medium">${invoice.po_number}</a>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 dark:text-white">${invoice.vendor_name || "N/A"}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">${invoice.vendor_gstin || ""}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 dark:text-white">${new Date(invoice.invoice_date).toLocaleDateString("en-IN")}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(invoice.invoice_amount).toLocaleString("en-IN")}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(invoice.payment_status)}">
+                ${invoice.payment_status.replace("_", " ").toUpperCase()}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                ${
+                  invoice.invoice_file_url
+                    ? `<a href="${invoice.invoice_file_url}" target="_blank" download class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Download Invoice">
+                         <i data-lucide="download" class="h-4 w-4"></i>
+                       </a>`
+                    : `<span class="text-gray-400" title="No file uploaded">
+                         <i data-lucide="file-x" class="h-4 w-4"></i>
+                       </span>`
+                }
+                <a href="/po/purchase-orders/${invoice.po_id}" class="text-gray-600 dark:text-gray-400 hover:text-gray-900" title="View PO">
+                  <i data-lucide="external-link" class="h-4 w-4"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        `,
+          )
+          .join("");
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Show empty state
+      function showEmptyState(message) {
+        const tbody = document.getElementById("invoicesTableBody");
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center">
+              <i data-lucide="alert-circle" class="h-12 w-12 mx-auto text-red-400 mb-4"></i>
+              <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">${message}</p>
+            </td>
+          </tr>
+        `;
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Get payment status color
+      function getPaymentStatusColor(status) {
+        const colors = {
+          pending: "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400",
+          partially_paid: "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400",
+          paid: "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400",
+        };
+        return colors[status] || "bg-gray-100 text-gray-800";
+      }
+
+      // Apply filters
+      function applyFilters() {
+        const fromDate = document.getElementById("fromDate").value;
+        const toDate = document.getElementById("toDate").value;
+
+        const filters = {};
+        if (fromDate) filters.from_date = fromDate;
+        if (toDate) filters.to_date = toDate;
+
+        loadInvoices(filters);
+      }
+
+      // Clear filters
+      function clearFilters() {
+        document.getElementById("fromDate").value = "";
+        document.getElementById("toDate").value = "";
+        loadInvoices();
+      }
+
+      // Refresh invoices
+      function refreshInvoices() {
+        const fromDate = document.getElementById("fromDate").value;
+        const toDate = document.getElementById("toDate").value;
+
+        const filters = {};
+        if (fromDate) filters.from_date = fromDate;
+        if (toDate) filters.to_date = toDate;
+
+        loadInvoices(filters);
+      }
+
+      // Show report (for future report types)
+      function showReport(reportType) {
+        // Update menu styling
+        document.querySelectorAll(".report-menu-item").forEach((item) => {
+          item.classList.remove("bg-blue-50", "border-blue-600");
+          item.classList.add("text-gray-600", "hover:bg-gray-50");
+        });
+
+        const selectedMenu = document.getElementById(`menu-${reportType}`);
+        if (selectedMenu) {
+          selectedMenu.classList.add("bg-blue-50", "border-blue-600");
+          selectedMenu.classList.remove("text-gray-600");
+        }
+
+        // Show/hide report content
+        // Currently only invoices is implemented
+        if (reportType === "invoices") {
+          document.getElementById("report-invoices").style.display = "block";
+        }
+      }
+    </script>
+  </body>
+</html>

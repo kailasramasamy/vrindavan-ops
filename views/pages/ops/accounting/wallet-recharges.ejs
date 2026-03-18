@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_subnav', { section, subsection, user }) %>
+
+      <!-- Toast Notification -->
+      <%- include('../../../partials/_toast') %>
+
+      <main class="flex-1 pt-16">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <!-- Page Header -->
+          <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Wallet Recharges</h1>
+            <p class="text-gray-600 dark:text-gray-400">Monitor and analyze wallet recharge transactions</p>
+          </div>
+
+          <!-- Date Range and Filters -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:justify-end gap-4">
+              <!-- Status Filter -->
+              <div class="w-full md:w-40">
+                <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select id="statusFilter" onchange="loadData()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="all">All</option>
+                  <option value="success" selected>Success</option>
+                  <option value="failed">Failed</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+
+              <!-- Date Range Filter -->
+              <div class="w-full md:w-56">
+                <label for="dateRangeFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+                <select id="dateRangeFilter" onchange="handleDateRangeChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="today" selected>Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="last7days">Last 7 Days</option>
+                  <option value="last30days">Last 30 Days</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Custom Date Range (shown only when custom is selected) -->
+            <div id="customDateRange" class="hidden flex flex-col md:flex-row md:justify-end gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div class="w-full md:w-48">
+                <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
+                <input type="date" id="startDate" onchange="applyCustomDateRange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div class="w-full md:w-48">
+                <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date</label>
+                <input type="date" id="endDate" onchange="applyCustomDateRange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Cards -->
+          <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Cards will be loaded dynamically -->
+            <div class="col-span-full text-center py-8">
+              <i data-lucide="loader" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 animate-spin mb-2"></i>
+              <p class="text-gray-600 dark:text-gray-400">Loading summary...</p>
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Transactions</h2>
+            </div>
+
+            <div id="tableContainer" class="overflow-x-auto">
+              <!-- Table will be loaded dynamically -->
+              <div class="text-center py-12">
+                <i data-lucide="loader" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 animate-spin mb-2"></i>
+                <p class="text-gray-600 dark:text-gray-400">Loading transactions...</p>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="p-6 border-t border-gray-200 dark:border-gray-700">
+              <!-- Pagination will be loaded dynamically -->
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <%- include('../../../partials/_footer') %>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+      // Initialize Lucide icons
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+
+      let currentPage = 1;
+      let currentStatus = 'success';
+      let startDate = '';
+      let endDate = '';
+
+      // Handle date range dropdown change
+      function handleDateRangeChange() {
+        const range = document.getElementById('dateRangeFilter').value;
+        const customDateRange = document.getElementById('customDateRange');
+
+        if (range === 'custom') {
+          customDateRange.classList.remove('hidden');
+          // Don't auto-load until custom dates are set
+          return;
+        } else {
+          customDateRange.classList.add('hidden');
+        }
+
+        setDateRange(range);
+      }
+
+      // Set date range based on filter
+      function setDateRange(range) {
+        const today = new Date();
+        let start, end;
+
+        switch (range) {
+          case 'today':
+            start = end = formatDate(today);
+            break;
+          case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            start = end = formatDate(yesterday);
+            break;
+          case 'last7days':
+            const last7 = new Date(today);
+            last7.setDate(last7.getDate() - 6);
+            start = formatDate(last7);
+            end = formatDate(today);
+            break;
+          case 'last30days':
+            const last30 = new Date(today);
+            last30.setDate(last30.getDate() - 29);
+            start = formatDate(last30);
+            end = formatDate(today);
+            break;
+          default:
+            return;
+        }
+
+        document.getElementById('startDate').value = start;
+        document.getElementById('endDate').value = end;
+
+        // Auto-apply: Load data immediately
+        loadData();
+      }
+
+      // Apply custom date range
+      function applyCustomDateRange() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+
+        if (start && end) {
+          if (new Date(start) > new Date(end)) {
+            showToast('Start date must be before end date', 'error');
+            return;
+          }
+          // Auto-apply: Load data immediately
+          loadData();
+        }
+      }
+
+      function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      async function loadData(page = 1) {
+        startDate = document.getElementById('startDate').value;
+        endDate = document.getElementById('endDate').value;
+        currentStatus = document.getElementById('statusFilter').value;
+        currentPage = page;
+
+        if (!startDate || !endDate) {
+          showToast('Please select start and end dates', 'error');
+          return;
+        }
+
+        await Promise.all([loadSummary(), loadTransactions()]);
+      }
+
+      async function loadSummary() {
+        try {
+          const params = new URLSearchParams({
+            startDate,
+            endDate,
+            status: currentStatus
+          });
+
+          const response = await fetch(`/accounting/api/wallet-recharges/summary?${params}`);
+          const data = await response.json();
+
+          if (data.success) {
+            renderSummaryCards(data.summary, data.breakdown);
+          } else {
+            throw new Error(data.error || 'Failed to load summary');
+          }
+        } catch (error) {
+          console.error('Error loading summary:', error);
+          document.getElementById('summaryCards').innerHTML = `
+            <div class="col-span-full text-center py-8">
+              <i data-lucide="alert-circle" class="w-8 h-8 mx-auto text-red-500 mb-2"></i>
+              <p class="text-red-600 dark:text-red-400">Failed to load summary</p>
+            </div>
+          `;
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+      }
+
+      function renderSummaryCards(summary, breakdown) {
+        const successRate = summary.total_transactions > 0 
+          ? ((summary.successful_count / summary.total_transactions) * 100).toFixed(1) 
+          : 0;
+
+        const html = `
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Total Transactions</h3>
+              <div class="w-10 h-10 bg-blue-200 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <i data-lucide="activity" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">${summary.total_transactions.toLocaleString()}</p>
+            <p class="text-sm text-blue-600 dark:text-blue-400 mt-2">${summary.unique_users} unique users</p>
+          </div>
+
+          <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-6 border border-green-200 dark:border-green-800">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">Successful</h3>
+              <div class="w-10 h-10 bg-green-200 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                <i data-lucide="check-circle" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-green-900 dark:text-green-100">₹${parseFloat(summary.successful_amount || 0).toLocaleString()}</p>
+            <p class="text-sm text-green-600 dark:text-green-400 mt-2">${summary.successful_count} transactions (${successRate}%)</p>
+          </div>
+
+          <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-6 border border-orange-200 dark:border-orange-800">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide">Average Transaction</h3>
+              <div class="w-10 h-10 bg-orange-200 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
+                <i data-lucide="trending-up" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-orange-900 dark:text-orange-100">₹${parseFloat(summary.avg_transaction_amount || 0).toFixed(0)}</p>
+            <p class="text-sm text-orange-600 dark:text-orange-400 mt-2">Per successful transaction</p>
+          </div>
+
+          <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl p-6 border border-red-200 dark:border-red-800">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide">Failed</h3>
+              <div class="w-10 h-10 bg-red-200 dark:bg-red-900/40 rounded-lg flex items-center justify-center">
+                <i data-lucide="x-circle" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-red-900 dark:text-red-100">${summary.failed_count}</p>
+            <p class="text-sm text-red-600 dark:text-red-400 mt-2">Failed transactions</p>
+          </div>
+        `;
+
+        document.getElementById('summaryCards').innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+
+      async function loadTransactions() {
+        try {
+          const params = new URLSearchParams({
+            startDate,
+            endDate,
+            status: currentStatus,
+            page: currentPage,
+            limit: 25
+          });
+
+          const response = await fetch(`/accounting/api/wallet-recharges?${params}`);
+          const data = await response.json();
+
+          if (data.success) {
+            renderTransactions(data.transactions);
+            renderPagination(data.pagination);
+          } else {
+            throw new Error(data.error || 'Failed to load transactions');
+          }
+        } catch (error) {
+          console.error('Error loading transactions:', error);
+          document.getElementById('tableContainer').innerHTML = `
+            <div class="text-center py-12">
+              <i data-lucide="alert-circle" class="w-8 h-8 mx-auto text-red-500 mb-2"></i>
+              <p class="text-red-600 dark:text-red-400">Failed to load transactions</p>
+            </div>
+          `;
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+      }
+
+      function renderTransactions(transactions) {
+        if (transactions.length === 0) {
+          document.getElementById('tableContainer').innerHTML = `
+            <div class="text-center py-12">
+              <i data-lucide="inbox" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"></i>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No transactions found</h3>
+              <p class="text-gray-600 dark:text-gray-400">Try adjusting your filters</p>
+            </div>
+          `;
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+          return;
+        }
+
+        const rows = transactions.map(t => `
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 dark:text-white">${formatDateTime(t.transaction_date)}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${t.rp_payment_id || 'N/A'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${t.user_name || 'N/A'}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">ID: ${t.user_id}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="group/phone flex items-center gap-2">
+                <div class="text-sm text-gray-900 dark:text-white">${t.user_phone || 'N/A'}</div>
+                ${t.user_phone && t.user_phone !== 'N/A' ? `
+                  <button onclick="copyToClipboard(event, '${t.user_phone}', 'Phone')" class="copy-btn opacity-0 group-hover/phone:opacity-100 transition-opacity p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Copy phone">
+                    <i data-lucide="copy" class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"></i>
+                  </button>
+                ` : ''}
+              </div>
+              <div class="group/email flex items-center gap-2">
+                <div class="text-xs text-gray-500 dark:text-gray-400">${t.user_email || 'N/A'}</div>
+                ${t.user_email && t.user_email !== 'N/A' ? `
+                  <button onclick="copyToClipboard(event, '${t.user_email}', 'Email')" class="copy-btn opacity-0 group-hover/email:opacity-100 transition-opacity p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Copy email">
+                    <i data-lucide="copy" class="w-3 h-3 text-gray-500 dark:text-gray-400"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              ${getStatusBadge(t.status)}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <div class="text-sm font-semibold text-gray-900 dark:text-white">₹${parseFloat(t.transaction_amount).toFixed(2)}</div>
+            </td>
+          </tr>
+        `).join('');
+
+        document.getElementById('tableContainer').innerHTML = `
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date & Time</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Payment ID</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contact</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              ${rows}
+            </tbody>
+          </table>
+        `;
+        
+        // Reinitialize Lucide icons for the new content
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+
+      function renderPagination(pagination) {
+        if (pagination.totalPages <= 1) {
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        const pages = [];
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, pagination.page - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(pagination.totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage < maxVisiblePages - 1) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          pages.push(i);
+        }
+
+        const html = `
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+              Showing <span class="font-medium">${(pagination.page - 1) * pagination.limit + 1}</span> to 
+              <span class="font-medium">${Math.min(pagination.page * pagination.limit, pagination.total)}</span> of 
+              <span class="font-medium">${pagination.total}</span> results
+            </div>
+            <div class="flex gap-2">
+              <button 
+                onclick="loadData(${pagination.page - 1})" 
+                ${pagination.page === 1 ? 'disabled' : ''}
+                class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Previous
+              </button>
+              ${pages.map(p => `
+                <button 
+                  onclick="loadData(${p})" 
+                  class="px-4 py-2 text-sm font-medium rounded-lg ${p === pagination.page ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'} transition-colors">
+                  ${p}
+                </button>
+              `).join('')}
+              <button 
+                onclick="loadData(${pagination.page + 1})" 
+                ${pagination.page === pagination.totalPages ? 'disabled' : ''}
+                class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Next
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('pagination').innerHTML = html;
+      }
+
+      function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        const dateStr = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return `${dateStr} ${timeStr}`;
+      }
+
+      function getStatusBadge(status) {
+        const badges = {
+          success: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Success</span>',
+          failed: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">Failed</span>',
+          pending: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400">Pending</span>',
+        };
+        return badges[status] || `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">${status}</span>`;
+      }
+
+      function copyToClipboard(event, text, label) {
+        const button = event.currentTarget;
+        
+        navigator.clipboard.writeText(text).then(() => {
+          // Store original HTML
+          const originalHTML = button.innerHTML;
+          
+          // Change to check mark icon
+          button.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-green-600 dark:text-green-400"></i>';
+          
+          // Keep button visible
+          button.style.opacity = '1';
+          
+          // Reinitialize the icon
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          }
+          
+          showToast(`${label} copied to clipboard!`, 'success');
+          
+          // Revert back to copy icon after 2 seconds
+          setTimeout(() => {
+            button.innerHTML = originalHTML;
+            
+            // Reinitialize the icon again
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+            }
+            
+            // Reset opacity style
+            button.style.opacity = '';
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+          showToast('Failed to copy to clipboard', 'error');
+        });
+      }
+
+      function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        if (toast) {
+          toast.textContent = message;
+          toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === 'error' ? 'bg-red-600' : 'bg-green-600'} text-white`;
+          toast.style.display = 'block';
+          setTimeout(() => {
+            toast.style.display = 'none';
+          }, 3000);
+        }
+      }
+
+      // Initialize with today's data
+      document.addEventListener('DOMContentLoaded', () => {
+        // Set initial date range and load data
+        handleDateRangeChange();
+      });
+    </script>
+  </body>
+</html>
+

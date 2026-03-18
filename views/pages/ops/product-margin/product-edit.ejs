@@ -1,0 +1,606 @@
+<%- include('../../../partials/_head', { seo }) %>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Product Margin', subsection: 'Edit Product' }) %>
+
+  <style>
+    /* Ensure inputs maintain dark mode styling when values are entered or autofilled */
+    .dark input[type="text"],
+    .dark input[type="number"],
+    .dark input[type="email"],
+    .dark input[type="tel"],
+    .dark textarea,
+    .dark select {
+      color-scheme: dark;
+    }
+    
+    /* Override browser autofill styles in dark mode - this is the main fix */
+    .dark input[type="text"]:-webkit-autofill,
+    .dark input[type="number"]:-webkit-autofill,
+    .dark input[type="email"]:-webkit-autofill,
+    .dark input[type="tel"]:-webkit-autofill,
+    .dark textarea:-webkit-autofill,
+    .dark select:-webkit-autofill,
+    .dark input[type="text"]:-webkit-autofill:hover,
+    .dark input[type="number"]:-webkit-autofill:hover,
+    .dark input[type="email"]:-webkit-autofill:hover,
+    .dark input[type="tel"]:-webkit-autofill:hover,
+    .dark input[type="text"]:-webkit-autofill:focus,
+    .dark input[type="number"]:-webkit-autofill:focus,
+    .dark input[type="email"]:-webkit-autofill:focus,
+    .dark input[type="tel"]:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #374151 inset !important;
+      -webkit-text-fill-color: #f3f4f6 !important;
+      box-shadow: 0 0 0 1000px #374151 inset !important;
+      background-color: #374151 !important;
+      color: #f3f4f6 !important;
+    }
+    
+    /* Force dark mode styling for inputs in Product Identification section */
+    .dark #editProductName,
+    .dark #editNameAlias,
+    .dark #editBrandName,
+    .dark #editProductType,
+    .dark #editCategoryId,
+    .dark #editSubcategoryId {
+      background-color: #374151 !important; /* gray-700 */
+      color: #f3f4f6 !important; /* gray-100 */
+      border-color: #4b5563 !important; /* gray-600 */
+    }
+    
+    .dark #editProductName:focus,
+    .dark #editNameAlias:focus,
+    .dark #editBrandName:focus,
+    .dark #editProductType:focus,
+    .dark #editCategoryId:focus,
+    .dark #editSubcategoryId:focus {
+      background-color: #374151 !important; /* gray-700 */
+      color: #f3f4f6 !important; /* gray-100 */
+    }
+    
+    .dark #editCategoryId option,
+    .dark #editSubcategoryId option {
+      background-color: #374151 !important; /* gray-700 */
+      color: #f3f4f6 !important; /* gray-100 */
+    }
+  </style>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <a href="/product-margin" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+              </a>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Edit Product</h1>
+            </div>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Update product information</p>
+          </div>
+          <div class="flex gap-2">
+            <a id="viewBtn" href="/product-margin/products/<%= productId %>" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              View Details
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading product details...</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div class="text-center">
+          <div class="text-red-500 mb-4">
+            <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Failed to Load Product</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4" id="errorMessage"></p>
+          <button onclick="window.location.reload()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Retry</button>
+        </div>
+      </div>
+
+      <!-- Edit Form -->
+      <form id="productEditForm" onsubmit="saveProductDetails(event)">
+        <div id="productForm" class="hidden">
+          <!-- Product Identification -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Product Identification</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Name *</label>
+                <input type="text" id="editProductName" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name Alias</label>
+                <input type="text" id="editNameAlias" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Alternative name for product">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand Name</label>
+                <input type="text" id="editBrandName" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Type</label>
+                <input type="text" id="editProductType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
+                <select id="editCategoryId" required onchange="updateSubcategoryOptions()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Category</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory</label>
+                <select id="editSubcategoryId" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Subcategory</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing Information -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Pricing Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <!-- Editable Fields (Top) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cost Price (₹) *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">The actual cost price paid to acquire the product</p>
+                <input type="number" id="editCostPrice" step="0.01" oninput="updateProfit();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MRP (₹) *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Maximum Retail Price - the final selling price to customers</p>
+                <input type="number" id="editMrp" step="0.01" oninput="calculatePricing();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST % *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Goods and Services Tax percentage applicable</p>
+                <input type="number" id="editGstPercentage" step="0.01" oninput="calculatePricing();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seller Margin % *</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Seller margin percentage on MRP</p>
+                <input type="number" id="editMarginPercentage" step="0.01" oninput="calculateSellerCommission();" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <!-- Calculated/Readonly Fields (Bottom) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Basic Price (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Base price before GST (Calculated from Landing Price)</p>
+                <input type="number" id="editBasicPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GST Value (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Calculated GST amount (Auto-calculated)</p>
+                <input type="number" id="editGstValue" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Landing Price (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">MRP minus Seller Margin (Auto-calculated)</p>
+                <input type="number" id="editLandingPrice" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seller Commission (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Commission amount (Auto-calculated from MRP and Seller Margin %)</p>
+                <input type="number" id="editSellerCommission" step="0.01" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Net Profit (₹)</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Net profit after seller commission (MRP - Cost - Commission)</p>
+                <div id="profitIndicator" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold text-lg">
+                  ₹0.00
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Physical Properties -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Physical Properties</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grammage</label>
+                <input type="text" id="editGrammage" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Packing Type</label>
+                <input type="text" id="editPackingType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milk Type</label>
+                <select id="editMilkType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="Buffalo">Buffalo</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Storage Type</label>
+                <select id="editStorageType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="cold">Cold</option>
+                  <option value="room_temperature">Room Temperature</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Codes & Identification -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Codes & Identification</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">EAN Code</label>
+                <input type="text" id="editEanCode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">HSN Code</label>
+                <input type="text" id="editHsnCode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Packaging & Logistics -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Packaging & Logistics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vendor Pack Size</label>
+                <input type="text" id="editVendorPackSize" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Packaging Dimensions</label>
+                <input type="text" id="editPackagingDimensions" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temperature</label>
+                <input type="text" id="editTemperature" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cut-off Time</label>
+                <input type="time" id="editCutoffTime" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Lifecycle -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Product Lifecycle</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shelf Life (days)</label>
+                <input type="number" id="editShelfLifeDays" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RTV Status</label>
+                <select id="editRtvStatus" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select</option>
+                  <option value="RTV">RTV</option>
+                  <option value="Non RTV">Non RTV</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Description</h3>
+            <textarea id="editDescription" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Status</h3>
+            <label class="flex items-center">
+              <input type="checkbox" id="editIsActive" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
+            </label>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-end gap-2">
+            <a href="/product-margin" class="px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_toast') %>
+
+  <script>
+    const API_BASE = '/product-margin/api/v1';
+    const productId = <%= productId %>;
+    let categories = [];
+    let subcategories = [];
+
+    // Load categories and subcategories
+    async function loadCategories() {
+      try {
+        const [catRes, subcatRes] = await Promise.all([
+          fetch(`${API_BASE}/product-categories`),
+          fetch(`${API_BASE}/product-subcategories`)
+        ]);
+
+        const catData = await catRes.json();
+        const subcatData = await subcatRes.json();
+
+        if (catData.success) categories = catData.data || [];
+        if (subcatData.success) subcategories = subcatData.data || [];
+
+        // Populate category dropdown
+        const categorySelect = document.getElementById('editCategoryId');
+        categorySelect.innerHTML = '<option value="">Select Category</option>' +
+          categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+
+    // Update subcategory options based on selected category
+    function updateSubcategoryOptions() {
+      const categoryId = document.getElementById('editCategoryId').value;
+      const subcategorySelect = document.getElementById('editSubcategoryId');
+      
+      if (!categoryId) {
+        subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+        return;
+      }
+      
+      const filtered = subcategories.filter(sc => sc.category_id == categoryId);
+      subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>' +
+        filtered.map(sc => `<option value="${sc.id}">${sc.name}</option>`).join('');
+    }
+
+    // Calculate pricing from MRP, Seller Margin, and GST%
+    function calculatePricing() {
+      const mrp = parseFloat(document.getElementById('editMrp').value) || 0;
+      const gstPercentage = parseFloat(document.getElementById('editGstPercentage').value) || 0;
+      const marginPercentage = parseFloat(document.getElementById('editMarginPercentage').value) || 0;
+
+      // Calculate Seller Commission (Seller Margin Value)
+      const sellerCommission = mrp > 0 && marginPercentage >= 0 ? mrp * (marginPercentage / 100) : 0;
+      const sellerCommissionRounded = Math.round(sellerCommission * 100) / 100;
+
+      // Landing Price = MRP - Seller Margin Value
+      const landingPrice = mrp - sellerCommissionRounded;
+      const landingPriceRounded = Math.round(landingPrice * 100) / 100;
+
+      // Calculate Basic Price from Landing Price (Landing Price = Basic Price + GST Value)
+      // Basic Price = Landing Price / (1 + GST%/100)
+      let basicPrice = 0;
+      if (landingPriceRounded > 0 && gstPercentage >= 0) {
+        basicPrice = landingPriceRounded / (1 + gstPercentage / 100);
+        basicPrice = Math.round(basicPrice * 100) / 100; // Round to 2 decimal places
+      }
+
+      // Calculate GST Value from Basic Price
+      const gstValue = Math.round((basicPrice * gstPercentage / 100) * 100) / 100;
+
+      // Update calculated fields
+      document.getElementById('editBasicPrice').value = basicPrice.toFixed(2);
+      document.getElementById('editGstValue').value = gstValue.toFixed(2);
+      document.getElementById('editLandingPrice').value = landingPriceRounded.toFixed(2);
+      document.getElementById('editSellerCommission').value = sellerCommissionRounded.toFixed(2);
+
+      // Calculate and update Net Profit
+      updateProfit();
+    }
+
+
+    // Calculate Seller Commission from Seller Margin % and MRP
+    // This function is called when Seller Margin % changes, but we also need to recalculate pricing
+    function calculateSellerCommission() {
+      // Recalculate pricing which will also update seller commission
+      calculatePricing();
+    }
+
+    // Update Net Profit indicator
+    function updateProfit() {
+      const costPrice = parseFloat(document.getElementById('editCostPrice').value) || 0;
+      const mrp = parseFloat(document.getElementById('editMrp').value) || 0;
+      const sellerCommission = parseFloat(document.getElementById('editSellerCommission').value) || 0;
+      
+      // Net Profit = MRP - Cost Price - Seller Commission
+      const netProfit = mrp - costPrice - sellerCommission;
+      
+      const profitIndicator = document.getElementById('profitIndicator');
+      const profitAmount = netProfit.toFixed(2);
+      
+      if (netProfit > 0) {
+        profitIndicator.className = 'w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      } else if (netProfit < 0) {
+        profitIndicator.className = 'w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      } else {
+        profitIndicator.className = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold text-lg';
+        profitIndicator.textContent = `₹${profitAmount}`;
+      }
+    }
+
+    // Load product details
+    async function loadProductDetails() {
+      try {
+        const response = await fetch(`${API_BASE}/products/${productId}`);
+        const result = await response.json();
+
+        if (!result.success || !result.product) {
+          throw new Error(result.error || 'Product not found');
+        }
+
+        const product = result.product;
+
+        // Hide loading, show form
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('productForm').classList.remove('hidden');
+
+        // Populate form fields
+        document.getElementById('editProductName').value = product.name || '';
+        document.getElementById('editNameAlias').value = product.name_alias || '';
+        document.getElementById('editBrandName').value = product.brand_name || '';
+        document.getElementById('editProductType').value = product.product_type || '';
+        document.getElementById('editCategoryId').value = product.category_id || '';
+        document.getElementById('editGrammage').value = product.grammage || product.unit_size || '';
+        document.getElementById('editPackingType').value = product.packing_type || '';
+        document.getElementById('editMilkType').value = product.milk_type || 'A2';
+        document.getElementById('editStorageType').value = product.storage_type || 'cold';
+        document.getElementById('editEanCode').value = product.ean_code || '';
+        document.getElementById('editHsnCode').value = product.hsn_code || '';
+        // Set variable fields first
+        document.getElementById('editCostPrice').value = product.cost_price || '';
+        document.getElementById('editGstPercentage').value = product.gst_percentage || '';
+        document.getElementById('editMrp').value = product.mrp || '';
+        document.getElementById('editMarginPercentage').value = product.margin_percentage || '';
+        
+        // Calculate dependent fields after setting variable fields
+        // Use a small delay to ensure all fields are set before calculation
+        setTimeout(() => {
+          calculatePricing(); // This will calculate all dependent fields including seller commission
+        }, 100);
+        document.getElementById('editShelfLifeDays').value = product.shelf_life_days || '';
+        document.getElementById('editRtvStatus').value = product.rtv_status || '';
+        document.getElementById('editVendorPackSize').value = product.vendor_pack_size || '';
+        document.getElementById('editPackagingDimensions').value = product.packaging_dimensions || '';
+        document.getElementById('editTemperature').value = product.temperature || '';
+        document.getElementById('editCutoffTime').value = product.cutoff_time || '';
+        document.getElementById('editDescription').value = product.description || '';
+        document.getElementById('editIsActive').checked = product.is_active !== undefined ? product.is_active : true;
+
+        // Update subcategory dropdown after category is set
+        updateSubcategoryOptions();
+        if (product.subcategory_id) {
+          // Wait a bit for subcategories to load
+          setTimeout(() => {
+            document.getElementById('editSubcategoryId').value = product.subcategory_id || '';
+          }, 100);
+        }
+
+      } catch (error) {
+        console.error('Error loading product:', error);
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = error.message || 'Failed to load product details';
+      }
+    }
+
+    // Save product details
+    async function saveProductDetails(event) {
+      event.preventDefault();
+
+      const productData = {
+        name: document.getElementById('editProductName').value,
+        name_alias: document.getElementById('editNameAlias').value || null,
+        brand_name: document.getElementById('editBrandName').value || null,
+        product_type: document.getElementById('editProductType').value || null,
+        category_id: document.getElementById('editCategoryId').value || null,
+        subcategory_id: document.getElementById('editSubcategoryId').value || null,
+        grammage: document.getElementById('editGrammage').value || null,
+        unit_size: document.getElementById('editGrammage').value || null,
+        packing_type: document.getElementById('editPackingType').value || null,
+        milk_type: document.getElementById('editMilkType').value || null,
+        storage_type: document.getElementById('editStorageType').value || null,
+        description: document.getElementById('editDescription').value || null,
+        ean_code: document.getElementById('editEanCode').value || null,
+        hsn_code: document.getElementById('editHsnCode').value || null,
+        cost_price: document.getElementById('editCostPrice').value || null,
+        basic_price: document.getElementById('editBasicPrice').value || null,
+        gst_percentage: document.getElementById('editGstPercentage').value || null,
+        gst_value: document.getElementById('editGstValue').value || null,
+        landing_price: document.getElementById('editLandingPrice').value || null,
+        mrp: document.getElementById('editMrp').value || null,
+        margin_percentage: document.getElementById('editMarginPercentage').value || null,
+        // seller_commission is calculated and stored for reference, but can be recalculated from margin_percentage and mrp
+        seller_commission: document.getElementById('editSellerCommission').value || null,
+        shelf_life_days: document.getElementById('editShelfLifeDays').value || null,
+        rtv_status: document.getElementById('editRtvStatus').value || null,
+        vendor_pack_size: document.getElementById('editVendorPackSize').value || null,
+        packaging_dimensions: document.getElementById('editPackagingDimensions').value || null,
+        temperature: document.getElementById('editTemperature').value || null,
+        cutoff_time: document.getElementById('editCutoffTime').value || null,
+        is_active: document.getElementById('editIsActive').checked ? 'true' : 'false',
+      };
+
+      if (!productData.name || productData.name.trim() === '') {
+        showErrorToast('Product name is required');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/products/${productId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to update product');
+        }
+
+        // Store toast message in sessionStorage before redirecting
+        sessionStorage.setItem('productEditToast', JSON.stringify({
+          message: 'Product updated successfully',
+          type: 'success'
+        }));
+        // Redirect to product view page
+        window.location.href = `/product-margin/products/${productId}`;
+      } catch (error) {
+        console.error('Error updating product:', error);
+        showErrorToast(error.message || 'Failed to update product');
+      }
+    }
+
+    // Check for stored toast message on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check for stored toast message from previous page load
+      const storedToast = sessionStorage.getItem('productEditToast');
+      if (storedToast) {
+        try {
+          const toastData = JSON.parse(storedToast);
+          // Wait a bit for toast manager to be initialized
+          setTimeout(() => {
+            if (toastData.type === 'success') {
+              showSuccessToast(toastData.message);
+            } else if (toastData.type === 'error') {
+              showErrorToast(toastData.message);
+            } else if (toastData.type === 'warning') {
+              showWarningToast(toastData.message);
+            } else {
+              showInfoToast(toastData.message);
+            }
+            // Clear the stored message
+            sessionStorage.removeItem('productEditToast');
+          }, 100);
+        } catch (e) {
+          console.error('Error displaying stored toast:', e);
+          sessionStorage.removeItem('productEditToast');
+        }
+      }
+
+      await loadCategories();
+      await loadProductDetails();
+    });
+  </script>
+</body>
+</html>
+

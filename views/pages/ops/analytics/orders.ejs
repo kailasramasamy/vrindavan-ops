@@ -1,0 +1,2842 @@
+<%- include('../../../partials/_head') %> <%- include('../../../partials/_subnav', { section: 'Analytics', page: 'Orders Analytics', user: user }) %>
+
+<style>
+/* Force lighter chart grid lines */
+canvas {
+  filter: contrast(0.8) !important;
+}
+.chartjs-render-monitor {
+  opacity: 0.9 !important;
+}
+</style>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Orders Analytics</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Comprehensive order insights and performance metrics</p>
+          <!-- Grid lines updated: <%= new Date().getTime() %> -->
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Date Range Selector -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</label>
+          <select id="dateRange" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            <option value="today" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'today') ? 'selected' : '' %>>Today</option>
+            <option value="yesterday" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'yesterday') ? 'selected' : '' %>>Yesterday</option>
+            <option value="last_7_days" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'last_7_days') || (typeof dateRange === 'undefined') ? 'selected' : '' %>>Last 7 Days</option>
+            <option value="this_week" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'this_week') ? 'selected' : '' %>>This Week</option>
+            <option value="last_week" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'last_week') ? 'selected' : '' %>>Last Week</option>
+            <option value="this_month" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'this_month') ? 'selected' : '' %>>This Month</option>
+            <option value="last_month" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'last_month') ? 'selected' : '' %>>Last Month</option>
+            <option value="this_quarter" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'this_quarter') ? 'selected' : '' %>>This Quarter</option>
+            <option value="last_quarter" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'last_quarter') ? 'selected' : '' %>>Last Quarter</option>
+            <option value="this_year" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'this_year') ? 'selected' : '' %>>This Year</option>
+            <option value="last_year" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'last_year') ? 'selected' : '' %>>Last Year</option>
+            <option value="custom" <%= (typeof dateRange !== 'undefined' && dateRange.range === 'custom') ? 'selected' : '' %>>Custom Range</option>
+          </select>
+          
+          <!-- Custom Date Range Inputs -->
+          <div id="customDateRange" class="hidden flex items-center gap-2">
+            <input type="date" id="customStartDate" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
+            <span class="text-gray-500 dark:text-gray-400">to</span>
+            <input type="date" id="customEndDate" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
+            <button id="applyCustomRange" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">Apply</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <!-- Total Orders -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Orders</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="totalOrders"><%= metrics.total_orders || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscription Orders -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Subscription Orders</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="subscriptionOrders"><%= metrics.subscription_orders || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regular Orders -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Regular Orders</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="regularOrders"><%= metrics.regular_orders || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Order Value -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">AOV</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="avgOrderValue">₹<span id="aovAmount"><%= (metrics.avg_order_value || 0).toFixed(2) %></span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Revenue</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="revenue">₹<span id="revenueAmount"><%= (metrics.total_revenue || 0).toFixed(2) %></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Orders Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Orders Trend</h3>
+          <a href="/analytics/orders/order-trend-detailed" class="flex items-center px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-md transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+            </svg>
+            Detailed Analysis
+          </a>
+        </div>
+        <div class="h-64">
+          <canvas id="ordersTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Revenue Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Revenue Trend</h3>
+          <a href="/analytics/orders/revenue-trend-detailed" class="flex items-center px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-md transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+            </svg>
+            Detailed Analysis
+          </a>
+        </div>
+        <div class="h-64">
+          <canvas id="revenueTrendChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Trend Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Milk Order Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Milk Order Trend</h3>
+          <a href="/analytics/orders/milk-trend-detailed" class="flex items-center px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-md transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+            </svg>
+            Detailed Analysis
+          </a>
+        </div>
+        <div class="h-96 relative">
+          <canvas id="milkOrderTrendChart"></canvas>
+          <!-- Loading spinner overlay -->
+          <div id="milkTrendSpinnerOverlay" class="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
+            <div class="flex flex-col items-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Loading trend data...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curd Order Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Curd Order Trend</h3>
+          <a href="/analytics/orders/curd-trend-detailed" class="flex items-center px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-md transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+            </svg>
+            Detailed Analysis
+          </a>
+        </div>
+        <div class="h-96 relative">
+          <canvas id="curdOrderTrendChart"></canvas>
+          <!-- Loading spinner overlay -->
+          <div id="curdTrendSpinnerOverlay" class="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
+            <div class="flex flex-col items-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Loading trend data...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Category Trend Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Paneer Order Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Paneer Order Trend</h3>
+          <a href="/analytics/orders/paneer-trend-detailed" class="flex items-center px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-md transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+            </svg>
+            Detailed Analysis
+          </a>
+        </div>
+        <div class="h-96 relative">
+          <canvas id="paneerOrderTrendChart"></canvas>
+          <!-- Loading spinner overlay -->
+          <div id="paneerTrendSpinnerOverlay" class="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
+            <div class="flex flex-col items-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Loading trend data...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ghee Order Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ghee Order Trend</h3>
+          <a href="/analytics/orders/ghee-trend-detailed" class="flex items-center px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-md transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+            </svg>
+            Detailed Analysis
+          </a>
+        </div>
+        <div class="h-96 relative">
+          <canvas id="gheeOrderTrendChart"></canvas>
+          <!-- Loading spinner overlay -->
+          <div id="gheeTrendSpinnerOverlay" class="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
+            <div class="flex flex-col items-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Loading trend data...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Cancellation Reasons -->
+    <% if (cancellationReasons && cancellationReasons.length > 0) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cancellation Reasons</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reason</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cancellations</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Affected Customers</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% cancellationReasons.forEach(reason => { %>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"><%= reason.reason %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= reason.cancellation_count %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= reason.affected_customers %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Find Specific Product Performance Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between cursor-pointer" onclick="toggleProductsPerformanceSection()">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Find Specific Product Performance</h2>
+          <svg id="productsPerformanceToggleIcon" class="w-5 h-5 text-gray-500 dark:text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Collapsible Content -->
+      <div id="productsPerformanceContent" class="hidden">
+
+      <!-- Filters -->
+      <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div class="flex flex-wrap items-end gap-4">
+          <!-- Product Search Dropdown -->
+          <div class="flex-1 min-w-0">
+            <label for="productSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Products</label>
+            <div class="relative">
+              <input type="text" id="productSearchInput" placeholder="Search and select multiple products..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" onfocus="this.placeholder=''" onblur="if(this.value==='') this.placeholder='Search and select multiple products...'">
+              <div id="productDropdown" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto hidden">
+                <% if (dropdownProducts) { %>
+                  <% dropdownProducts.forEach(product => { %>
+                    <div class="product-option px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white" data-id="<%= product.id %>" data-name="<%= product.product_name %>" data-unit="<%= product.unit || '' %>">
+                      <div class="flex items-center">
+                        <input type="checkbox" class="mr-2 product-checkbox" data-id="<%= product.id %>">
+                        <span><%= product.product_name %> <% if (product.unit) { %>(<%= product.unit %>)<% } %></span>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div class="min-w-0">
+            <label for="performanceDateRange" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
+            <select id="performanceDateRange" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last_7_days" selected>Last 7 days</option>
+              <option value="last_30_days">Last 30 days</option>
+              <option value="this_month">This month</option>
+              <option value="last_month">Last month</option>
+              <option value="this_quarter">This quarter</option>
+              <option value="last_quarter">Last quarter</option>
+              <option value="this_year">This year</option>
+              <option value="last_year">Last year</option>
+            </select>
+          </div>
+
+          <!-- Apply Filter Button -->
+          <div class="min-w-0">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">&nbsp;</label>
+            <button id="applyFilterBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm flex items-center">
+              <span id="productFilterBtnText">Apply Filter</span>
+              <svg id="productFilterSpinner" class="animate-spin -mr-1 ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Selected Products Section -->
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Selected Products</label>
+            <button id="resetSelectionBtn" class="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">Reset Selection</button>
+          </div>
+          <div id="selectedProducts" class="flex flex-wrap gap-2">
+            <!-- Selected products will appear here -->
+          </div>
+        </div>
+      </div>
+
+        <!-- Chart Container -->
+        <div class="px-6 py-4">
+          <div class="h-[400px]">
+            <canvas id="productPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Find Specific Category Performance Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between cursor-pointer" onclick="toggleCategoryPerformanceSection()">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Find Specific Category Performance</h2>
+          <svg id="categoryPerformanceToggleIcon" class="w-5 h-5 text-gray-500 dark:text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Collapsible Content -->
+      <div id="categoryPerformanceContent" class="hidden">
+
+      <!-- Filters -->
+      <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div class="flex flex-wrap items-end gap-4">
+          <!-- Category Dropdown -->
+          <div class="flex-1 min-w-0">
+            <label for="categorySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+            <select id="categorySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Category</option>
+            </select>
+          </div>
+
+          <!-- Sub-Category Dropdown -->
+          <div class="flex-1 min-w-0">
+            <label for="subCategorySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sub-Category</label>
+            <select id="subCategorySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Sub-Category</option>
+            </select>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div class="min-w-0">
+            <label for="categoryPerformanceDateRange" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
+            <select id="categoryPerformanceDateRange" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last_7_days" selected>Last 7 days</option>
+              <option value="last_30_days">Last 30 days</option>
+              <option value="this_month">This month</option>
+              <option value="last_month">Last month</option>
+              <option value="this_quarter">This quarter</option>
+              <option value="last_quarter">Last quarter</option>
+              <option value="this_year">This year</option>
+              <option value="last_year">Last year</option>
+            </select>
+          </div>
+
+          <!-- Apply Filter Button -->
+          <div class="min-w-0">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">&nbsp;</label>
+            <button id="applyCategoryFilterBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm flex items-center">
+              <span id="categoryFilterBtnText">Apply Filter</span>
+              <svg id="categoryFilterSpinner" class="animate-spin -mr-1 ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Selected Category Section -->
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Selected Category</label>
+            <button id="resetCategorySelectionBtn" class="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">Reset Selection</button>
+          </div>
+          <div id="selectedCategoryInfo" class="text-sm text-gray-600 dark:text-gray-400">
+            <!-- Selected category info will appear here -->
+          </div>
+        </div>
+      </div>
+
+        <!-- Chart Container -->
+        <div class="px-6 py-4">
+          <div id="categoryPerformanceChartContainer" class="h-[400px]">
+            <canvas id="categoryPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Top Products by Revenue -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top Products by Revenue</h3>
+          <a href="/analytics/orders/all-products<%= dateRange.range ? '?range=' + dateRange.range : '' %>" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% topProductsByRevenue.slice(0, 5).forEach(product => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white"><%= product.product_name %></div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400"><%= product.unit || 'No unit' %></div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400"><%= product.category_name %></div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= product.total_quantity || 0 %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= (product.total_revenue || 0).toLocaleString() %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Categories -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top Categories</h3>
+          <a href="/analytics/orders/all-categories<%= dateRange.range ? '?range=' + dateRange.range : '' %>" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Orders</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% topCategories.slice(0, 5).forEach(category => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white"><%= category.category_name %></div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400"><%= category.unique_products %> products</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= category.order_count %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= (category.total_revenue || 0).toLocaleString() %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- End Container -->
+</div>
+
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  // Color helper functions (defined early for use in expanded charts)
+  function getMilkColor(productName, unit) {
+    if (productName.includes('Farm Fresh Natural Cow Milk')) {
+      if (unit === '500ml') return '#10B981'; // Green
+      if (unit === '1L') return '#059669'; // Darker Green
+      if (unit === '2L') return '#047857'; // Darkest Green
+      return '#10B981'; // Default Green
+    }
+    if (productName.includes('A2 Desi Cow Milk')) {
+      if (unit === '500ml') return '#EF4444'; // Red
+      if (unit === '1L') return '#DC2626'; // Darker Red
+      if (unit === '2L') return '#B91C1C'; // Darkest Red
+      return '#EF4444'; // Default Red
+    }
+    if (productName.includes('Buffalo Milk')) {
+      if (unit === '500ml') return '#3B82F6'; // Blue
+      if (unit === '1L') return '#2563EB'; // Darker Blue
+      if (unit === '2L') return '#1D4ED8'; // Darkest Blue
+      return '#3B82F6'; // Default Blue
+    }
+    return '#6B7280'; // Default Gray
+  }
+
+  function getCurdColor(productName, unit) {
+    if (productName.includes('Farm Fresh Natural Curd')) {
+      if (unit === '400g') return '#10B981'; // Green
+      if (unit === '200g') return '#059669'; // Darker Green
+      if (unit === '500g') return '#047857'; // Darkest Green
+      if (unit === '1kg') return '#047857'; // Darkest Green
+      return '#10B981'; // Default Green
+    }
+    if (productName.includes('A2 Desi Cow Curd')) {
+      if (unit === '400g') return '#EF4444'; // Red
+      if (unit === '200g') return '#DC2626'; // Darker Red
+      if (unit === '500g') return '#B91C1C'; // Darkest Red
+      if (unit === '1kg') return '#B91C1C'; // Darkest Red
+      return '#EF4444'; // Default Red
+    }
+    if (productName.includes('Buffalo Curd')) {
+      if (unit === '400g') return '#3B82F6'; // Blue
+      if (unit === '200g') return '#2563EB'; // Darker Blue
+      if (unit === '500g') return '#1D4ED8'; // Darkest Blue
+      if (unit === '1kg') return '#1D4ED8'; // Darkest Blue
+      return '#3B82F6'; // Default Blue
+    }
+    return '#6B7280'; // Default Gray
+  }
+
+  function getPaneerColor(productName, unit) {
+    if (productName.includes('Farm Fresh Natural Paneer')) {
+      if (unit === '200g') return '#10B981'; // Green
+      if (unit === '500g') return '#059669'; // Darker Green
+      return '#10B981'; // Default Green
+    }
+    if (productName.includes('A2 Desi Cow Paneer')) {
+      if (unit === '150g') return '#EF4444'; // Red
+      if (unit === '500g') return '#DC2626'; // Darker Red
+      return '#EF4444'; // Default Red
+    }
+    return '#6B7280'; // Default Gray
+  }
+
+  function getGheeColor(productName, unit) {
+    if (productName.includes('Farm Fresh Traditional Cow Ghee')) {
+      if (unit === '200g') return '#10B981'; // Green
+      if (unit === '500g') return '#059669'; // Darker Green
+      if (unit === '4kg') return '#047857'; // Darkest Green
+      return '#10B981'; // Default Green
+    }
+    if (productName.includes('Indus A2 Desi Cow Ghee')) {
+      if (unit === '200g') return '#F59E0B'; // Yellow
+      if (unit === '500g') return '#D97706'; // Darker Yellow/Orange
+      return '#F59E0B'; // Default Yellow
+    }
+    if (productName.includes('A2 Desi Cow Ghee')) {
+      if (unit === '200g') return '#EF4444'; // Red
+      if (unit === '500g') return '#DC2626'; // Darker Red
+      if (unit === '4kg') return '#B91C1C'; // Darkest Red
+      return '#EF4444'; // Default Red
+    }
+    if (productName.includes('Buffalo Ghee')) {
+      if (unit === '200g') return '#3B82F6'; // Blue
+      if (unit === '500g') return '#2563EB'; // Darker Blue
+      return '#3B82F6'; // Default Blue
+    }
+    return '#6B7280'; // Default Gray
+  }
+
+  // Toggle functions for collapsible sections
+  function toggleProductsPerformanceSection() {
+    const content = document.getElementById('productsPerformanceContent');
+    const icon = document.getElementById('productsPerformanceToggleIcon');
+    
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  function toggleCategoryPerformanceSection() {
+    const content = document.getElementById('categoryPerformanceContent');
+    const icon = document.getElementById('categoryPerformanceToggleIcon');
+    
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+
+
+
+
+
+  // Indian lakh format function
+  function formatIndianCurrency(amount) {
+    return amount.toLocaleString('en-IN');
+  }
+
+  // Apply Indian lakh format to amounts on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const aovAmount = document.getElementById('aovAmount');
+    const revenueAmount = document.getElementById('revenueAmount');
+
+    
+    if (aovAmount) {
+      const aovValue = parseFloat(aovAmount.textContent);
+      aovAmount.textContent = formatIndianCurrency(aovValue);
+    }
+    
+    if (revenueAmount) {
+      const revenueValue = parseFloat(revenueAmount.textContent);
+      revenueAmount.textContent = formatIndianCurrency(revenueValue);
+    }
+  });
+
+  // Date range change handler
+  document.getElementById('dateRange').addEventListener('change', function() {
+    const range = this.value;
+    const customDateRange = document.getElementById('customDateRange');
+    
+    if (range === 'custom') {
+      customDateRange.classList.remove('hidden');
+      // Set default dates (last 7 days)
+      const today = new Date();
+      const weekAgo = new Date(today);
+      weekAgo.setDate(today.getDate() - 7);
+      
+      document.getElementById('customStartDate').value = weekAgo.toISOString().split('T')[0];
+      document.getElementById('customEndDate').value = today.toISOString().split('T')[0];
+    } else {
+      customDateRange.classList.add('hidden');
+      const url = new URL(window.location);
+      url.searchParams.set('range', range);
+      window.location.href = url.toString();
+    }
+  });
+
+  // Custom date range apply handler
+  document.getElementById('applyCustomRange').addEventListener('click', function() {
+    const startDate = document.getElementById('customStartDate').value;
+    const endDate = document.getElementById('customEndDate').value;
+    
+    if (!startDate || !endDate) {
+      alert('Please select both start and end dates');
+      return;
+    }
+    
+    if (new Date(startDate) > new Date(endDate)) {
+      alert('Start date cannot be after end date');
+      return;
+    }
+    
+    const url = new URL(window.location);
+    url.searchParams.set('range', 'custom');
+    url.searchParams.set('start', startDate);
+    url.searchParams.set('end', endDate);
+    window.location.href = url.toString();
+  });
+
+
+  // Register the datalabels plugin
+  if (typeof ChartDataLabels !== 'undefined') {
+  Chart.register(ChartDataLabels);
+  }
+
+  // Load saved theme FIRST (before initializing charts)
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else if (savedTheme === 'light') {
+    document.documentElement.classList.remove('dark');
+  } else {
+    // No saved preference: follow system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }
+
+  // Initialize custom date range if needed
+  const currentRange = document.getElementById('dateRange').value;
+  if (currentRange === 'custom') {
+    document.getElementById('customDateRange').classList.remove('hidden');
+    <% if (typeof dateRange !== 'undefined' && dateRange.range === 'custom' && dateRange.start && dateRange.end) { %>
+    document.getElementById('customStartDate').value = '<%= dateRange.start %>';
+    document.getElementById('customEndDate').value = '<%= dateRange.end %>';
+    <% } %>
+  }
+
+  // Force dark mode detection (after theme is loaded)
+  const isDarkMode = document.documentElement.classList.contains('dark') || 
+                    window.matchMedia('(prefers-color-scheme: dark)').matches ||
+                    localStorage.getItem('theme') === 'dark';
+
+  // Initialize charts
+  const trendData = <%- JSON.stringify(typeof trendData !== 'undefined' ? trendData : []) %>;
+  const milkTrendData = <%- JSON.stringify(typeof milkTrendData !== 'undefined' ? milkTrendData : []) %>;
+  const curdTrendData = <%- JSON.stringify(typeof curdTrendData !== 'undefined' ? curdTrendData : []) %>;
+  const paneerTrendData = <%- JSON.stringify(typeof paneerTrendData !== 'undefined' ? paneerTrendData : []) %>;
+  const gheeTrendData = <%- JSON.stringify(typeof gheeTrendData !== 'undefined' ? gheeTrendData : []) %>;
+
+  // Orders Trend Chart
+  const ordersTrendCtx = document.getElementById('ordersTrendChart').getContext('2d');
+  
+  // Force chart refresh by clearing any existing chart
+  Chart.helpers.each(Chart.instances, function(instance) {
+    if (instance.canvas.id === 'ordersTrendChart') {
+      instance.destroy();
+    }
+  });
+  
+  new Chart(ordersTrendCtx, {
+    type: 'line',
+    data: {
+      labels: trendData.map(item => {
+        // Format date as DD/MM for better readability
+        const date = new Date(item.period);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}`;
+      }),
+      datasets: [{
+        label: 'Total Orders',
+        data: trendData.map(item => item.total_orders),
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        pointBackgroundColor: 'rgb(59, 130, 246)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }, {
+        label: 'Subscription Orders',
+        data: trendData.map(item => item.subscription_orders || 0),
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        tension: 0.4,
+        pointBackgroundColor: 'rgb(34, 197, 94)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }, {
+        label: 'Regular Orders',
+        data: trendData.map(item => item.regular_orders || 0),
+        borderColor: 'rgb(168, 85, 247)',
+        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+        tension: 0.4,
+        pointBackgroundColor: 'rgb(168, 85, 247)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#9CA3AF',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            boxWidth: 10,
+            boxHeight: 10,
+            font: {
+              size: 11
+            }
+          },
+          position: 'top',
+          margin: {
+            top: 20,
+            bottom: 0
+          }
+        },
+        datalabels: {
+          display: function(context) {
+            // Show data labels for Total, Subscription and Regular orders
+            return context.datasetIndex === 0 || context.datasetIndex === 1 || context.datasetIndex === 2;
+          },
+          color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#9CA3AF',
+          font: {
+            weight: 'bold',
+            size: 10
+          },
+          formatter: function(value) {
+            return value > 0 ? value : '';
+          },
+          anchor: function(context) {
+            // keep anchor at end for better placement
+            return 'end';
+          },
+          align: function(context) {
+            // place Subscription Orders labels below the point
+            return context.datasetIndex === 1 ? 'bottom' : 'top';
+          },
+          offset: function(context) {
+            // move subscription labels a bit further for clarity
+            return context.datasetIndex === 1 ? 6 : 4;
+        }
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#9CA3AF',
+            maxRotation: 45,
+            minRotation: 0,
+            maxTicksLimit: 8,
+            font: {
+              size: 10
+            }
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
+            display: true,
+            borderDash: [3,3],
+            lineWidth: 0.5
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#9CA3AF',
+            font: {
+              size: 10
+            }
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
+            display: true,
+            borderDash: [3,3],
+            lineWidth: 0.5
+          }
+        }
+      }
+    }
+  });
+
+  // Revenue Trend Chart
+  const revenueTrendCtx = document.getElementById('revenueTrendChart').getContext('2d');
+  new Chart(revenueTrendCtx, {
+    type: 'bar',
+    data: {
+      labels: trendData.map(item => {
+        // Clean date formatting - extract only the date part and format as DD/MM
+        if (item.period.includes('T') || item.period.includes(' ')) {
+          // Handle ISO date strings or date with time
+          const datePart = item.period.split('T')[0].split(' ')[0];
+          // Format as DD/MM
+          const [year, month, day] = datePart.split('-');
+          return `${day}/${month}`;
+        } else if (item.period.includes('-') && item.period.split('-').length === 3) {
+          // Handle YYYY-MM-DD format
+          const [year, month, day] = item.period.split('-');
+          return `${day}/${month}`;
+        } else if (item.period.includes('-') && item.period.split('-').length === 2) {
+          // Handle YYYY-MM format
+          const [year, month] = item.period.split('-');
+          return `${month}`;
+        }
+        return item.period;
+      }),
+      datasets: [{
+        label: 'Revenue',
+        data: trendData.map(item => item.revenue || 0),
+        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+        borderColor: 'rgb(34, 197, 94)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 30
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            boxWidth: 12,
+            boxHeight: 12
+          },
+          position: 'top',
+          margin: {
+            top: 20,
+            bottom: 0
+          }
+        },
+        datalabels: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+          font: {
+            weight: 'bold',
+            size: 10
+          },
+          formatter: function(value) {
+            return value > 1000 ? (value / 1000).toFixed(1) + 'k' : value;
+          },
+          anchor: 'end',
+          align: 'top',
+          offset: 4
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            callback: function(value) {
+              return value > 1000 ? (value / 1000).toFixed(1) + 'k' : value;
+            }
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        }
+      }
+    }
+  });
+
+  // Milk Order Trend Chart
+  const milkOrderTrendCtx = document.getElementById('milkOrderTrendChart').getContext('2d');
+  
+  // Process milk trend data for multiple products
+  let milkLabels = [];
+  let milkDatasets = [];
+  
+  if (milkTrendData && milkTrendData.length > 0) {
+    // Get all unique dates from all products
+    const allMilkDates = [...new Set(milkTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+    
+    // Format labels
+    milkLabels = allMilkDates.map(date => {
+      if (date.includes('T') || date.includes(' ')) {
+        const datePart = date.split('T')[0].split(' ')[0];
+        const [year, month, day] = datePart.split('-');
+        return `${day}/${month}`;
+      } else if (date.includes('-') && date.split('-').length === 3) {
+        const [year, month, day] = date.split('-');
+        return `${day}/${month}`;
+      }
+      return date;
+    });
+    
+    // Create datasets for each product with custom colors
+    milkDatasets = milkTrendData.map((product) => {
+      const dataPoints = allMilkDates.map(date => {
+        const productData = product.data.find(item => item.period === date);
+        return productData ? productData.total_quantity : 0;
+      });
+
+      const color = getMilkColor(product.name, product.unit);
+
+      return {
+        label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+        data: dataPoints,
+        borderColor: color,
+        backgroundColor: color + '20',
+        pointBackgroundColor: color,
+        pointBorderColor: color,
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4
+      };
+    });
+  }
+  
+  new Chart(milkOrderTrendCtx, {
+    type: 'line',
+    data: {
+      labels: ['Loading...'],
+      datasets: [{
+        label: 'Loading trend data...',
+        data: [0],
+        borderColor: '#e5e7eb',
+        backgroundColor: '#f3f4f6',
+        pointBackgroundColor: '#e5e7eb',
+        pointBorderColor: '#e5e7eb',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 30
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            boxWidth: 12,
+            boxHeight: 12
+          },
+          position: 'top',
+          margin: {
+            top: 20,
+            bottom: 0
+          }
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        }
+      }
+    }
+  });
+
+  // Curd Order Trend Chart
+  const curdOrderTrendCtx = document.getElementById('curdOrderTrendChart').getContext('2d');
+  
+  // Process curd trend data for multiple products
+  let curdLabels = [];
+  let curdDatasets = [];
+  
+  if (curdTrendData && curdTrendData.length > 0) {
+    // Get all unique dates from all products
+    const allCurdDates = [...new Set(curdTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+    
+    // Format labels
+    curdLabels = allCurdDates.map(date => {
+      if (date.includes('T') || date.includes(' ')) {
+        const datePart = date.split('T')[0].split(' ')[0];
+        const [year, month, day] = datePart.split('-');
+        return `${day}/${month}`;
+      } else if (date.includes('-') && date.split('-').length === 3) {
+        const [year, month, day] = date.split('-');
+        return `${day}/${month}`;
+      }
+      return date;
+    });
+    
+    // Create datasets for each product with custom colors
+    curdDatasets = curdTrendData.map((product) => {
+      const dataPoints = allCurdDates.map(date => {
+        const productData = product.data.find(item => item.period === date);
+        return productData ? productData.total_quantity : 0;
+      });
+
+      const color = getCurdColor(product.name, product.unit);
+
+      return {
+        label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+        data: dataPoints,
+        borderColor: color,
+        backgroundColor: color + '20',
+        pointBackgroundColor: color,
+        pointBorderColor: color,
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4
+      };
+    });
+  }
+  
+  new Chart(curdOrderTrendCtx, {
+    type: 'line',
+    data: {
+      labels: curdLabels,
+      datasets: curdDatasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 10
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            boxWidth: 12,
+            boxHeight: 12
+          },
+          position: 'top',
+          margin: {
+            top: 0,
+            bottom: 0
+          }
+        },
+        datalabels: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+          font: {
+            weight: 'bold',
+            size: 10
+          },
+          formatter: function(value) {
+            return value > 0 ? value : '';
+          },
+          anchor: 'end',
+          align: 'top',
+          offset: 4
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        }
+      }
+    }
+  });
+
+  // Paneer Order Trend Chart
+  const paneerOrderTrendCtx = document.getElementById('paneerOrderTrendChart').getContext('2d');
+  
+  // Process paneer trend data for multiple products
+  let paneerLabels = [];
+  let paneerDatasets = [];
+  
+  if (paneerTrendData && paneerTrendData.length > 0) {
+    // Get all unique dates from all products
+    const allPaneerDates = [...new Set(paneerTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+    
+    // Format labels
+    paneerLabels = allPaneerDates.map(date => {
+      if (date.includes('T') || date.includes(' ')) {
+        const datePart = date.split('T')[0].split(' ')[0];
+        const [year, month, day] = datePart.split('-');
+        return `${day}/${month}`;
+      } else if (date.includes('-') && date.split('-').length === 3) {
+        const [year, month, day] = date.split('-');
+        return `${day}/${month}`;
+      }
+      return date;
+    });
+    
+    // Create datasets for each product with custom colors
+    paneerDatasets = paneerTrendData.map((product) => {
+      const dataPoints = allPaneerDates.map(date => {
+        const productData = product.data.find(item => item.period === date);
+        return productData ? productData.total_quantity : 0;
+      });
+
+      const color = getPaneerColor(product.name, product.unit);
+
+      return {
+        label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+        data: dataPoints,
+        borderColor: color,
+        backgroundColor: color + '20',
+        pointBackgroundColor: color,
+        pointBorderColor: color,
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4
+      };
+    });
+  }
+  
+  new Chart(paneerOrderTrendCtx, {
+    type: 'line',
+    data: {
+      labels: paneerLabels,
+      datasets: paneerDatasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 10
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            boxWidth: 12,
+            boxHeight: 12
+          },
+          position: 'top',
+          margin: {
+            top: 0,
+            bottom: 0
+          }
+        },
+        datalabels: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+          font: {
+            weight: 'bold',
+            size: 10
+          },
+          formatter: function(value) {
+            return value > 0 ? value : '';
+          },
+          anchor: 'end',
+          align: 'top',
+          offset: 4
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        }
+      }
+    }
+  });
+
+  // Ghee Order Trend Chart
+  const gheeOrderTrendCtx = document.getElementById('gheeOrderTrendChart').getContext('2d');
+  
+  // Process ghee trend data for multiple products
+  let gheeLabels = [];
+  let gheeDatasets = [];
+  
+  if (gheeTrendData && gheeTrendData.length > 0) {
+    // Get all unique dates from all products
+    const allGheeDates = [...new Set(gheeTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+    
+    // Format labels
+    gheeLabels = allGheeDates.map(date => {
+      if (date.includes('T') || date.includes(' ')) {
+        const datePart = date.split('T')[0].split(' ')[0];
+        const [year, month, day] = datePart.split('-');
+        return `${day}/${month}`;
+      } else if (date.includes('-') && date.split('-').length === 3) {
+        const [year, month, day] = date.split('-');
+        return `${day}/${month}`;
+      }
+      return date;
+    });
+    
+    // Create datasets for each product with custom colors
+    gheeDatasets = gheeTrendData.map((product) => {
+      const dataPoints = allGheeDates.map(date => {
+        const productData = product.data.find(item => item.period === date);
+        return productData ? productData.total_quantity : 0;
+      });
+
+      const color = getGheeColor(product.name, product.unit);
+
+      return {
+        label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+        data: dataPoints,
+        borderColor: color,
+        backgroundColor: color + '20',
+        pointBackgroundColor: color,
+        pointBorderColor: color,
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4
+      };
+    });
+  }
+  
+  new Chart(gheeOrderTrendCtx, {
+    type: 'line',
+    data: {
+      labels: gheeLabels,
+      datasets: gheeDatasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 10
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            boxWidth: 12,
+            boxHeight: 12
+          },
+          position: 'top',
+          margin: {
+            top: 0,
+            bottom: 0
+          }
+        },
+        datalabels: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+          font: {
+            weight: 'bold',
+            size: 10
+          },
+          formatter: function(value) {
+            return value > 0 ? value : '';
+          },
+          anchor: 'end',
+          align: 'top',
+          offset: 4
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        }
+      }
+    }
+  });
+
+
+  // Product Performance Chart
+  let productPerformanceChart = null;
+  let chartUpdateTimeout = null;
+  
+  function initializeProductPerformanceChart() {
+    const ctx = document.getElementById('productPerformanceChart');
+    if (!ctx) return;
+
+    // Destroy existing chart if it exists
+    if (productPerformanceChart) {
+      productPerformanceChart.destroy();
+    }
+
+    productPerformanceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 30
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#374151',
+              font: {
+                size: 12
+              },
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          datalabels: {
+            display: true,
+            color: function(context) {
+              // Use contrasting color based on theme
+              return document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151';
+            },
+            font: {
+              size: 10,
+              weight: 'bold'
+            },
+            formatter: function(value, context) {
+              return value > 0 ? value : '';
+            },
+            anchor: 'end',
+            align: 'top',
+            offset: 4
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            },
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#374151',
+              font: {
+                size: 11
+              }
+            }
+          },
+          y: {
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            },
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#374151',
+              font: {
+                size: 11
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Get selected product IDs from checkboxes
+  function getSelectedProductIds() {
+    const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.dataset.id);
+  }
+
+  async function loadProductPerformanceData() {
+    const selectedProducts = getSelectedProductIds();
+    const dateRange = document.getElementById('performanceDateRange').value;
+    const groupBy = "day"; // Fixed to day grouping
+    
+    
+
+    if (selectedProducts.length === 0) {
+      // Clear chart if no products selected
+      if (productPerformanceChart) {
+        productPerformanceChart.data.labels = [];
+        productPerformanceChart.data.datasets = [];
+        productPerformanceChart.update();
+      }
+      return;
+    }
+
+    // Show loading spinner
+    const btn = document.getElementById('applyFilterBtn');
+    const btnText = document.getElementById('productFilterBtnText');
+    const spinner = document.getElementById('productFilterSpinner');
+    
+    btn.disabled = true;
+    btnText.textContent = 'Loading...';
+    spinner.classList.remove('hidden');
+
+    try {
+      const productIds = selectedProducts.join(',');
+      const response = await fetch(`/analytics/api/orders/product-performance?productId=${productIds}&range=${dateRange}&groupBy=${groupBy}`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
+
+      if (result.success && productPerformanceChart) {
+        // For multiple products, we need to structure the data differently
+        const data = result.data;
+        
+        
+        
+        if (data.length > 0) {
+          // Get all unique date periods
+          const allDates = [...new Set(data.flatMap(product => product.data.map(item => item.date_period)))].sort();
+          
+          // Create datasets for each product
+          const datasets = data.map((product, index) => {
+            const colors = [
+              'rgb(59, 130, 246)',   // Blue
+              'rgb(16, 185, 129)',   // Green
+              'rgb(245, 158, 11)',   // Yellow
+              'rgb(239, 68, 68)',    // Red
+              'rgb(139, 92, 246)'    // Purple
+            ];
+            
+            const dataPoints = allDates.map(date => {
+              const productData = product.data.find(item => item.date_period === date);
+              return productData ? productData.total_quantity : 0;
+            });
+
+            return {
+              label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+              data: dataPoints,
+              borderColor: colors[index % colors.length],
+              backgroundColor: colors[index % colors.length] + '20',
+              pointBackgroundColor: colors[index % colors.length],
+              pointBorderColor: colors[index % colors.length],
+              borderWidth: 2,
+              fill: false,
+              tension: 0.4
+            };
+          });
+
+          // Format labels based on groupBy
+            const labels = allDates.map(date => {
+              const dateObj = new Date(date);
+              return dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
+            });
+
+          productPerformanceChart.data.labels = labels;
+          productPerformanceChart.data.datasets = datasets;
+          productPerformanceChart.update();
+        }
+      }
+    } catch (error) {
+      console.error('Error loading product performance data:', error);
+    } finally {
+      // Hide loading spinner
+      btn.disabled = false;
+      btnText.textContent = 'Apply Filter';
+      spinner.classList.add('hidden');
+    }
+  }
+
+
+  // Global function to update selected products display
+  function updateSelectedProducts() {
+    const selectedProductsContainer = document.getElementById('selectedProducts');
+    selectedProductsContainer.innerHTML = '';
+    const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+    
+    selectedCheckboxes.forEach(checkbox => {
+      const productOption = checkbox.closest('.product-option');
+      const productName = productOption.dataset.name;
+      const productUnit = productOption.dataset.unit;
+      
+      const selectedTag = document.createElement('div');
+      selectedTag.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      selectedTag.innerHTML = `
+        ${productName} ${productUnit ? `(${productUnit})` : ''}
+        <button type="button" class="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200" onclick="removeSelectedProduct('${checkbox.dataset.id}')">
+          ×
+        </button>
+      `;
+      selectedProductsContainer.appendChild(selectedTag);
+    });
+  }
+
+  // Searchable dropdown functionality
+  function initializeSearchableDropdown() {
+    const searchInput = document.getElementById('productSearchInput');
+    const dropdown = document.getElementById('productDropdown');
+    const selectedProductsContainer = document.getElementById('selectedProducts');
+    const productOptions = document.querySelectorAll('.product-option');
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+
+    // Show/hide dropdown based on search input
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      
+      if (searchTerm.length > 0) {
+        dropdown.classList.remove('hidden');
+        
+        productOptions.forEach(option => {
+          const productName = option.dataset.name.toLowerCase();
+          const unit = option.dataset.unit.toLowerCase();
+          const searchText = `${productName} ${unit}`;
+          
+          if (searchText.includes(searchTerm)) {
+            option.style.display = 'block';
+          } else {
+            option.style.display = 'none';
+          }
+        });
+      } else {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    // Handle checkbox selection
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const productId = this.dataset.id;
+        const productOption = this.closest('.product-option');
+        const productName = productOption.dataset.name;
+        const productUnit = productOption.dataset.unit;
+        
+        updateSelectedProducts();
+        
+        // Automatically update chart when products are selected/deselected (with debounce)
+        if (chartUpdateTimeout) {
+          clearTimeout(chartUpdateTimeout);
+        }
+        chartUpdateTimeout = setTimeout(() => {
+          loadProductPerformanceData();
+        }, 300);
+      });
+    });
+
+    // Handle clicking on product option (not just checkbox)
+    productOptions.forEach(option => {
+      option.addEventListener('click', function(e) {
+        if (e.target.type !== 'checkbox') {
+          const checkbox = this.querySelector('.product-checkbox');
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+
+    // Make removeSelectedProduct globally available
+    window.removeSelectedProduct = function(productId) {
+      const checkbox = document.querySelector(`.product-checkbox[data-id="${productId}"]`);
+      if (checkbox) {
+        checkbox.checked = false;
+        checkbox.dispatchEvent(new Event('change'));
+      }
+      // Chart will be updated automatically via the change event
+    };
+  }
+
+  // Reset selected products only (keep date range unchanged)
+  function resetProductSelection() {
+    // Uncheck all checkboxes
+    const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+
+    // Clear selected products display
+    updateSelectedProducts();
+
+    // Clear the search input
+    const searchInput = document.getElementById('productSearchInput');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.placeholder = 'Search and select multiple products...';
+    }
+
+    // Hide the dropdown
+    const dropdown = document.getElementById('productDropdown');
+    if (dropdown) {
+      dropdown.classList.add('hidden');
+    }
+
+    // Clear the chart
+    if (productPerformanceChart) {
+      productPerformanceChart.data.labels = [];
+      productPerformanceChart.data.datasets = [];
+      productPerformanceChart.update();
+    }
+  }
+
+  // Initialize chart on page load
+  initializeProductPerformanceChart();
+  initializeSearchableDropdown();
+
+  // Event listeners for Apply Filter button
+  document.getElementById('applyFilterBtn').addEventListener('click', loadProductPerformanceData);
+
+  // Event listener for Reset Selection button
+  const resetBtn = document.getElementById('resetSelectionBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      resetProductSelection();
+    });
+  }
+
+  // Category Performance Chart
+  let categoryPerformanceChart = null;
+  let categoryUpdateTimeout = null;
+  
+  function initializeCategoryPerformanceChart() {
+    const ctx = document.getElementById('categoryPerformanceChart');
+    if (!ctx) return;
+
+    if (categoryPerformanceChart) {
+      categoryPerformanceChart.destroy();
+    }
+
+    categoryPerformanceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 80
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#374151',
+              font: {
+                size: 12
+              },
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 30
+            }
+          },
+          datalabels: {
+            display: true,
+            color: function(context) {
+              return document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151';
+            },
+            font: {
+              size: 10,
+              weight: 'bold'
+            },
+            formatter: function(value, context) {
+              return value > 0 ? value : '';
+            },
+            anchor: 'end',
+            align: 'top',
+            offset: 4
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            },
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#374151',
+              font: {
+                size: 11
+              }
+            }
+          },
+          y: {
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            },
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#374151',
+              font: {
+                size: 11
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  async function loadCategoryPerformanceData() {
+    const categoryId = document.getElementById('categorySelect').value;
+    const subCategoryId = document.getElementById('subCategorySelect').value;
+    const dateRange = document.getElementById('categoryPerformanceDateRange').value;
+    
+    if (!categoryId || !subCategoryId) {
+      // Clear chart if no category/sub-category selected
+      if (categoryPerformanceChart) {
+        categoryPerformanceChart.data.labels = [];
+        categoryPerformanceChart.data.datasets = [];
+        categoryPerformanceChart.update();
+      }
+      return;
+    }
+
+    // Show loading spinner
+    const btn = document.getElementById('applyCategoryFilterBtn');
+    const btnText = document.getElementById('categoryFilterBtnText');
+    const spinner = document.getElementById('categoryFilterSpinner');
+    
+    btn.disabled = true;
+    btnText.textContent = 'Loading...';
+    spinner.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`/analytics/api/orders/category-performance?categoryId=${categoryId}&subCategoryId=${subCategoryId}&range=${dateRange}&groupBy=day`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
+
+      if (result.success && categoryPerformanceChart) {
+        const data = result.data;
+        
+        if (data.length > 0) {
+          // Get all unique date periods
+          const allDates = [...new Set(data.flatMap(product => product.data.map(item => item.date_period)))].sort();
+          
+          // Create datasets for each product
+          const datasets = data.map((product, index) => {
+            const colors = [
+              'rgb(59, 130, 246)',   // Blue
+              'rgb(16, 185, 129)',   // Green
+              'rgb(245, 158, 11)',   // Yellow
+              'rgb(239, 68, 68)',    // Red
+              'rgb(139, 92, 246)',   // Purple
+              'rgb(236, 72, 153)',   // Pink
+              'rgb(14, 165, 233)',   // Sky Blue
+              'rgb(34, 197, 94)',    // Emerald
+              'rgb(251, 146, 60)',   // Orange
+              'rgb(168, 85, 247)'    // Violet
+            ];
+            
+            const dataPoints = allDates.map(date => {
+              const productData = product.data.find(item => item.date_period === date);
+              return productData ? productData.total_quantity : 0;
+            });
+
+            return {
+              label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+              data: dataPoints,
+              borderColor: colors[index % colors.length],
+              backgroundColor: colors[index % colors.length] + '20',
+              pointBackgroundColor: colors[index % colors.length],
+              pointBorderColor: colors[index % colors.length],
+              borderWidth: 2,
+              fill: false,
+              tension: 0.4
+            };
+          });
+
+          // Format labels based on groupBy
+          const labels = allDates.map(date => {
+            const dateObj = new Date(date);
+            return dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
+          });
+
+          // Dynamically adjust chart height based on number of products
+          const chartContainer = document.getElementById('categoryPerformanceChartContainer');
+          const baseHeight = 400;
+          const additionalHeight = Math.max(0, (data.length - 5) * 50); // Add 50px for each product beyond 5
+          chartContainer.style.height = `${baseHeight + additionalHeight}px`;
+
+          categoryPerformanceChart.data.labels = labels;
+          categoryPerformanceChart.data.datasets = datasets;
+          categoryPerformanceChart.update();
+        }
+      }
+    } catch (error) {
+      console.error('Error loading category performance data:', error);
+    } finally {
+      // Hide loading spinner
+      btn.disabled = false;
+      btnText.textContent = 'Apply Filter';
+      spinner.classList.add('hidden');
+    }
+  }
+
+  // Initialize category dropdowns
+  async function initializeCategoryDropdowns() {
+    try {
+      // Load categories
+      const categoriesResponse = await fetch('/analytics/api/orders/categories', {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      const categoriesResult = await categoriesResponse.json();
+      
+      if (categoriesResult.success) {
+        const categorySelect = document.getElementById('categorySelect');
+        categoriesResult.data.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          categorySelect.appendChild(option);
+        });
+      }
+
+      // Category change handler
+      document.getElementById('categorySelect').addEventListener('change', async function() {
+        const categoryId = this.value;
+        const subCategorySelect = document.getElementById('subCategorySelect');
+        
+        // Clear sub-categories
+        subCategorySelect.innerHTML = '<option value="">Select Sub-Category</option>';
+        
+        if (categoryId) {
+          try {
+            const response = await fetch(`/analytics/api/orders/sub-categories?categoryId=${categoryId}`, {
+              credentials: 'include',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+              result.data.forEach(subCategory => {
+                const option = document.createElement('option');
+                option.value = subCategory.id;
+                option.textContent = subCategory.name;
+                subCategorySelect.appendChild(option);
+              });
+            }
+          } catch (error) {
+            console.error('Error loading sub-categories:', error);
+          }
+        }
+        
+        updateSelectedCategoryInfo();
+      });
+
+      // Sub-category change handler
+      document.getElementById('subCategorySelect').addEventListener('change', function() {
+        updateSelectedCategoryInfo();
+      });
+
+    } catch (error) {
+      console.error('Error initializing category dropdowns:', error);
+    }
+  }
+
+  function updateSelectedCategoryInfo() {
+    const categorySelect = document.getElementById('categorySelect');
+    const subCategorySelect = document.getElementById('subCategorySelect');
+    const selectedCategoryInfo = document.getElementById('selectedCategoryInfo');
+    
+    const categoryText = categorySelect.options[categorySelect.selectedIndex]?.text || '';
+    const subCategoryText = subCategorySelect.options[subCategorySelect.selectedIndex]?.text || '';
+    
+    if (categoryText && subCategoryText) {
+      selectedCategoryInfo.innerHTML = `<strong>${categoryText}</strong> → <strong>${subCategoryText}</strong>`;
+    } else if (categoryText) {
+      selectedCategoryInfo.innerHTML = `<strong>${categoryText}</strong> → Select Sub-Category`;
+    } else {
+      selectedCategoryInfo.innerHTML = 'Select Category and Sub-Category';
+    }
+  }
+
+  // Reset category selection
+  function resetCategorySelection() {
+    document.getElementById('categorySelect').value = '';
+    document.getElementById('subCategorySelect').innerHTML = '<option value="">Select Sub-Category</option>';
+    updateSelectedCategoryInfo();
+    
+    if (categoryPerformanceChart) {
+      categoryPerformanceChart.data.labels = [];
+      categoryPerformanceChart.data.datasets = [];
+      categoryPerformanceChart.update();
+    }
+    
+    // Reset chart height
+    const chartContainer = document.getElementById('categoryPerformanceChartContainer');
+    chartContainer.style.height = '400px';
+  }
+
+  // Initialize category performance chart on page load
+  initializeCategoryPerformanceChart();
+  initializeCategoryDropdowns();
+
+  // Event listeners for Apply Category Filter button
+  document.getElementById('applyCategoryFilterBtn').addEventListener('click', loadCategoryPerformanceData);
+
+  // Event listener for Reset Category Selection button
+  const resetCategoryBtn = document.getElementById('resetCategorySelectionBtn');
+  if (resetCategoryBtn) {
+    resetCategoryBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      resetCategorySelection();
+    });
+  }
+
+  // Milk Trend Data Loading Functionality
+  // Auto-load milk trend data when page loads
+  async function loadMilkTrendData() {
+    const spinnerOverlay = document.getElementById('milkTrendSpinnerOverlay');
+    
+    // Show spinner overlay when starting to load
+    if (spinnerOverlay) {
+      spinnerOverlay.style.display = 'flex';
+    }
+    
+    try {
+      // Get current date range from the dropdown selector
+      const dateRangeSelect = document.getElementById('dateRange');
+      const range = dateRangeSelect ? dateRangeSelect.value : 'last_7_days'; // Default to 7 days for faster loading
+      
+      // Load milk trend data via API
+      const response = await fetch(`/analytics/api/orders/milk-trend-expanded?range=${range}&groupBy=day&page=1`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result && result.success && result.data && result.data.length > 0) {
+        // Update the milk trend data
+        window.milkTrendData = result.data;
+        
+        // Recreate the milk trend chart with new data
+        recreateMilkTrendChart();
+        
+        // Hide spinner overlay
+        spinnerOverlay.style.display = 'none';
+        
+        // Show success message
+      } else if (result && result.success && result.data && result.data.length === 0) {
+        // No data available for this date range - show empty chart
+        recreateMilkTrendChart();
+        spinnerOverlay.style.display = 'none';
+        
+      } else {
+        throw new Error(result?.error || 'No data received');
+      }
+    } catch (error) {
+      console.error('Error loading milk trend data:', error);
+      spinnerOverlay.style.display = 'none';
+      
+    }
+  }
+
+  // Start loading milk trend data when page loads
+  loadMilkTrendData();
+
+  // Curd Trend Data Loading Functionality
+  // Auto-load curd trend data when page loads
+  async function loadCurdTrendData() {
+    const spinnerOverlay = document.getElementById('curdTrendSpinnerOverlay');
+    
+    // Show spinner overlay when starting to load
+    if (spinnerOverlay) {
+      spinnerOverlay.style.display = 'flex';
+    }
+    
+    try {
+      // Get current date range from the dropdown selector
+      const dateRangeSelect = document.getElementById('dateRange');
+      const range = dateRangeSelect ? dateRangeSelect.value : 'last_7_days'; // Default to 7 days for faster loading
+      
+      // Load curd trend data via API
+      const response = await fetch(`/analytics/api/orders/curd-trend-expanded?range=${range}&groupBy=day&page=1`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result && result.success && result.data && result.data.length > 0) {
+        // Update the curd trend data
+        window.curdTrendData = result.data;
+        
+        // Recreate the curd trend chart with new data
+        recreateCurdTrendChart();
+        
+        // Hide spinner overlay
+        spinnerOverlay.style.display = 'none';
+        
+        // Show success message
+      } else if (result && result.success && result.data && result.data.length === 0) {
+        // No data available for this date range - show empty chart
+        recreateCurdTrendChart();
+        spinnerOverlay.style.display = 'none';
+        
+      } else {
+        throw new Error(result?.error || 'No data received');
+      }
+    } catch (error) {
+      console.error('Error loading curd trend data:', error);
+      spinnerOverlay.style.display = 'none';
+      
+    }
+  }
+
+  // Paneer Trend Data Loading Functionality
+  // Auto-load paneer trend data when page loads
+  async function loadPaneerTrendData() {
+    const spinnerOverlay = document.getElementById('paneerTrendSpinnerOverlay');
+    
+    // Show spinner overlay when starting to load
+    if (spinnerOverlay) {
+      spinnerOverlay.style.display = 'flex';
+    }
+    
+    try {
+      // Get current date range from the dropdown selector
+      const dateRangeSelect = document.getElementById('dateRange');
+      const range = dateRangeSelect ? dateRangeSelect.value : 'last_7_days'; // Default to 7 days for faster loading
+      
+      // Load paneer trend data via API
+      const response = await fetch(`/analytics/api/orders/paneer-trend-expanded?range=${range}&groupBy=day&page=1`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result && result.success && result.data && result.data.length > 0) {
+        // Update the paneer trend data
+        window.paneerTrendData = result.data;
+        
+        // Recreate the paneer trend chart with new data
+        recreatePaneerTrendChart();
+        
+        // Hide spinner overlay
+        spinnerOverlay.style.display = 'none';
+        
+        // Show success message
+      } else if (result && result.success && result.data && result.data.length === 0) {
+        // No data available for this date range - show empty chart
+        recreatePaneerTrendChart();
+        spinnerOverlay.style.display = 'none';
+        
+      } else {
+        throw new Error(result?.error || 'No data received');
+      }
+    } catch (error) {
+      console.error('Error loading paneer trend data:', error);
+      spinnerOverlay.style.display = 'none';
+      
+    }
+  }
+
+  // Ghee Trend Data Loading Functionality
+  // Auto-load ghee trend data when page loads
+  async function loadGheeTrendData() {
+    const spinnerOverlay = document.getElementById('gheeTrendSpinnerOverlay');
+    
+    // Show spinner overlay when starting to load
+    if (spinnerOverlay) {
+      spinnerOverlay.style.display = 'flex';
+    }
+    
+    try {
+      // Get current date range from the dropdown selector
+      const dateRangeSelect = document.getElementById('dateRange');
+      const range = dateRangeSelect ? dateRangeSelect.value : 'last_7_days'; // Default to 7 days for faster loading
+      
+      // Load ghee trend data via API
+      const response = await fetch(`/analytics/api/orders/ghee-trend-expanded?range=${range}&groupBy=day&page=1`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result && result.success && result.data && result.data.length > 0) {
+        // Update the ghee trend data
+        window.gheeTrendData = result.data;
+        
+        // Recreate the ghee trend chart with new data
+        recreateGheeTrendChart();
+        
+        // Hide spinner overlay
+        spinnerOverlay.style.display = 'none';
+        
+        // Show success message
+      } else if (result && result.success && result.data && result.data.length === 0) {
+        // No data available for this date range - show empty chart
+        recreateGheeTrendChart();
+        spinnerOverlay.style.display = 'none';
+        
+      } else {
+        throw new Error(result?.error || 'No data received');
+      }
+    } catch (error) {
+      console.error('Error loading ghee trend data:', error);
+      spinnerOverlay.style.display = 'none';
+      
+    }
+  }
+
+  // Start loading all trend data when page loads
+  loadCurdTrendData();
+  loadPaneerTrendData();
+  loadGheeTrendData();
+
+  // Add event listener to date range selector to reload trend data when changed
+  const dateRangeSelect = document.getElementById('dateRange');
+  if (dateRangeSelect) {
+    dateRangeSelect.addEventListener('change', function() {
+      
+      // Reload all trend data with new date range
+      loadMilkTrendData();
+      loadCurdTrendData();
+      loadPaneerTrendData();
+      loadGheeTrendData();
+    });
+  }
+
+  function recreateMilkTrendChart() {
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart('milkOrderTrendChart');
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
+    // Get chart context
+    const milkOrderTrendCtx = document.getElementById('milkOrderTrendChart').getContext('2d');
+    
+    // Process milk trend data for multiple products
+    let milkLabels = [];
+    let milkDatasets = [];
+    
+    if (window.milkTrendData && window.milkTrendData.length > 0) {
+      // Get all unique dates from all products
+      const allMilkDates = [...new Set(window.milkTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+      
+      // Format labels
+      milkLabels = allMilkDates.map(date => {
+        if (date.includes('T') || date.includes(' ')) {
+          const datePart = date.split('T')[0].split(' ')[0];
+          const [year, month, day] = datePart.split('-');
+          return `${day}/${month}`;
+        } else if (date.includes('-') && date.split('-').length === 3) {
+          const [year, month, day] = date.split('-');
+          return `${day}/${month}`;
+        }
+        return date;
+      });
+      
+      // Create datasets for each product with custom colors
+      milkDatasets = window.milkTrendData.map((product) => {
+        const dataPoints = allMilkDates.map(date => {
+          const productData = product.data.find(item => item.period === date);
+          return productData ? productData.total_quantity : 0;
+        });
+
+        const color = getMilkColor(product.name, product.unit);
+
+        return {
+          label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: color + '20',
+          pointBackgroundColor: color,
+          pointBorderColor: color,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4
+        };
+      });
+    }
+    
+    // Create new chart
+    new Chart(milkOrderTrendCtx, {
+      type: 'line',
+      data: {
+        labels: milkLabels,
+        datasets: milkDatasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 10
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 25,
+              boxWidth: 12,
+              boxHeight: 12
+            },
+            position: 'top',
+            margin: {
+              top: 0,
+              bottom: 0
+            }
+          },
+          datalabels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            font: {
+              weight: 'bold',
+              size: 10
+            },
+            formatter: function(value) {
+              return value > 0 ? value : '';
+            },
+            anchor: 'end',
+            align: 'top',
+            offset: 4
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function recreateCurdTrendChart() {
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart('curdOrderTrendChart');
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
+    // Get chart context
+    const curdOrderTrendCtx = document.getElementById('curdOrderTrendChart').getContext('2d');
+    
+    // Process curd trend data for multiple products
+    let curdLabels = [];
+    let curdDatasets = [];
+    
+    if (window.curdTrendData && window.curdTrendData.length > 0) {
+      // Get all unique dates from all products
+      const allCurdDates = [...new Set(window.curdTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+      
+      // Format labels
+      curdLabels = allCurdDates.map(date => {
+        if (date.includes('T') || date.includes(' ')) {
+          const datePart = date.split('T')[0].split(' ')[0];
+          const [year, month, day] = datePart.split('-');
+          return `${day}/${month}`;
+        } else if (date.includes('-') && date.split('-').length === 3) {
+          const [year, month, day] = date.split('-');
+          return `${day}/${month}`;
+        }
+        return date;
+      });
+      
+      // Create datasets for each product with custom colors
+      curdDatasets = window.curdTrendData.map((product) => {
+        const dataPoints = allCurdDates.map(date => {
+          const productData = product.data.find(item => item.period === date);
+          return productData ? productData.total_quantity : 0;
+        });
+
+        const color = getCurdColor(product.name, product.unit);
+
+        return {
+          label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: color + '20',
+          pointBackgroundColor: color,
+          pointBorderColor: color,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4
+        };
+      });
+    }
+    
+    // Create new chart
+    new Chart(curdOrderTrendCtx, {
+      type: 'line',
+      data: {
+        labels: curdLabels,
+        datasets: curdDatasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 10
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 25,
+              boxWidth: 12,
+              boxHeight: 12
+            },
+            position: 'top',
+            margin: {
+              top: 0,
+              bottom: 0
+            }
+          },
+          datalabels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            font: {
+              weight: 'bold',
+              size: 10
+            },
+            formatter: function(value) {
+              return value > 0 ? value : '';
+            },
+            anchor: 'end',
+            align: 'top',
+            offset: 4
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function recreatePaneerTrendChart() {
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart('paneerOrderTrendChart');
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
+    // Get chart context
+    const paneerOrderTrendCtx = document.getElementById('paneerOrderTrendChart').getContext('2d');
+    
+    // Process paneer trend data for multiple products
+    let paneerLabels = [];
+    let paneerDatasets = [];
+    
+    if (window.paneerTrendData && window.paneerTrendData.length > 0) {
+      // Get all unique dates from all products
+      const allPaneerDates = [...new Set(window.paneerTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+      
+      // Format labels
+      paneerLabels = allPaneerDates.map(date => {
+        if (date.includes('T') || date.includes(' ')) {
+          const datePart = date.split('T')[0].split(' ')[0];
+          const [year, month, day] = datePart.split('-');
+          return `${day}/${month}`;
+        } else if (date.includes('-') && date.split('-').length === 3) {
+          const [year, month, day] = date.split('-');
+          return `${day}/${month}`;
+        }
+        return date;
+      });
+      
+      // Create datasets for each product with custom colors
+      paneerDatasets = window.paneerTrendData.map((product) => {
+        const dataPoints = allPaneerDates.map(date => {
+          const productData = product.data.find(item => item.period === date);
+          return productData ? productData.total_quantity : 0;
+        });
+
+        const color = getPaneerColor(product.name, product.unit);
+
+        return {
+          label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: color + '20',
+          pointBackgroundColor: color,
+          pointBorderColor: color,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4
+        };
+      });
+    }
+    
+    // Create new chart
+    new Chart(paneerOrderTrendCtx, {
+      type: 'line',
+      data: {
+        labels: paneerLabels,
+        datasets: paneerDatasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 10
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 25,
+              boxWidth: 12,
+              boxHeight: 12
+            },
+            position: 'top',
+            margin: {
+              top: 0,
+              bottom: 0
+            }
+          },
+          datalabels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            font: {
+              weight: 'bold',
+              size: 10
+            },
+            formatter: function(value) {
+              return value > 0 ? value : '';
+            },
+            anchor: 'end',
+            align: 'top',
+            offset: 4
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function recreateGheeTrendChart() {
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart('gheeOrderTrendChart');
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
+    // Get chart context
+    const gheeOrderTrendCtx = document.getElementById('gheeOrderTrendChart').getContext('2d');
+    
+    // Process ghee trend data for multiple products
+    let gheeLabels = [];
+    let gheeDatasets = [];
+    
+    if (window.gheeTrendData && window.gheeTrendData.length > 0) {
+      // Get all unique dates from all products
+      const allGheeDates = [...new Set(window.gheeTrendData.flatMap(product => product.data.map(item => item.period)))].sort();
+      
+      // Format labels
+      gheeLabels = allGheeDates.map(date => {
+        if (date.includes('T') || date.includes(' ')) {
+          const datePart = date.split('T')[0].split(' ')[0];
+          const [year, month, day] = datePart.split('-');
+          return `${day}/${month}`;
+        } else if (date.includes('-') && date.split('-').length === 3) {
+          const [year, month, day] = date.split('-');
+          return `${day}/${month}`;
+        }
+        return date;
+      });
+      
+      // Create datasets for each product with custom colors
+      gheeDatasets = window.gheeTrendData.map((product) => {
+        const dataPoints = allGheeDates.map(date => {
+          const productData = product.data.find(item => item.period === date);
+          return productData ? productData.total_quantity : 0;
+        });
+
+        const color = getGheeColor(product.name, product.unit);
+
+        return {
+          label: `${product.name} ${product.unit ? `(${product.unit})` : ''}`,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: color + '20',
+          pointBackgroundColor: color,
+          pointBorderColor: color,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4
+        };
+      });
+    }
+    
+    // Create new chart
+    new Chart(gheeOrderTrendCtx, {
+      type: 'line',
+      data: {
+        labels: gheeLabels,
+        datasets: gheeDatasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 10
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 25,
+              boxWidth: 12,
+              boxHeight: 12
+            },
+            position: 'top',
+            margin: {
+              top: 0,
+              bottom: 0
+            }
+          },
+          datalabels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+            font: {
+              weight: 'bold',
+              size: 10
+            },
+            formatter: function(value) {
+              return value > 0 ? value : '';
+            },
+            anchor: 'end',
+            align: 'top',
+            offset: 4
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            },
+            grid: {
+              color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+            }
+          }
+        }
+      }
+    });
+  }
+
+</script>
+
+<%- include('../../../partials/_footer') %>

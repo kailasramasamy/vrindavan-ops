@@ -1,0 +1,3188 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen pt-14">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-8">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          <li><a href="/" class="hover:text-gray-700 dark:hover:text-gray-300">Ops</a></li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/production" class="hover:text-gray-700 dark:hover:text-gray-300">Production</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-900 dark:text-white font-medium">Daily Production</span>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Daily Production Entry</h1>
+            <p class="text-gray-600 dark:text-gray-300">Record production quantities and track milk usage for each product</p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <input type="date" id="productionDate" value="<%= date || new Date().toISOString().split('T')[0] %>" 
+                   class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Milk Inventory Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Milk Inventory</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Track milk quantities for each type</p>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- A1 Milk Card -->
+            <div class="milk-inventory-card bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 relative" data-milk-type="A1">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 dark:bg-green-600 rounded-full mr-3"></div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">A1 Milk</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="edit-milk-btn p-1.5 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-lg transition-colors"
+                          data-milk-type="A1" title="Edit Milk Inventory" onclick="openEditMilkModal('A1')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button class="add-milk-btn bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg hover:bg-green-700 transition-colors hidden"
+                          data-milk-type="A1" onclick="openAddMilkModal('A1')">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Milk
+                  </button>
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Available:</span>
+                  <span class="text-lg font-semibold text-green-600 dark:text-green-400 milk-available">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Used:</span>
+                  <span class="text-lg font-semibold text-green-600 dark:text-green-400 milk-used">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Wasted:</span>
+                  <span class="text-lg font-semibold text-red-600 dark:text-red-400 milk-wasted">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-green-200 dark:border-green-800">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Remaining:</span>
+                  <span class="text-lg font-semibold text-gray-900 dark:text-white milk-remaining">0.0 L</span>
+                </div>
+              </div>
+
+              <!-- Usage Breakdown Section -->
+              <div class="mt-4 pt-3 border-t border-green-200 dark:border-green-800">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Breakdown</h4>
+                  <button class="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 toggle-breakdown-btn" data-milk-type="A1">
+                    <span class="show-text hidden">Show Details</span>
+                    <span class="hide-text">Hide Details</span>
+                  </button>
+                </div>
+                <div class="usage-breakdown text-xs space-y-2">
+                  <div class="breakdown-content">
+                    <!-- Pool Allocations -->
+                    <div class="mb-2">
+                      <div class="font-medium text-gray-600 dark:text-gray-300 mb-1">Pool Allocations:</div>
+                      <div class="pool-breakdown space-y-1">
+                        <div class="text-gray-500 dark:text-gray-400 italic">No pool allocations</div>
+                      </div>
+                    </div>
+                    <!-- Product Production -->
+                    <div>
+                      <div class="font-medium text-gray-600 dark:text-gray-300 mb-1">Product Production:</div>
+                      <div class="product-breakdown space-y-1">
+                        <div class="text-gray-500 dark:text-gray-400 italic">No product production</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- A2 Milk Card -->
+            <div class="milk-inventory-card bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 relative" data-milk-type="A2">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-orange-500 dark:bg-orange-600 rounded-full mr-3"></div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">A2 Milk</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="edit-milk-btn p-1.5 text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg transition-colors"
+                          data-milk-type="A2" title="Edit Milk Inventory" onclick="openEditMilkModal('A2')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button class="add-milk-btn bg-orange-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg hover:bg-orange-700 transition-colors hidden"
+                          data-milk-type="A2" onclick="openAddMilkModal('A2')">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Milk
+                  </button>
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Available:</span>
+                  <span class="text-lg font-semibold text-orange-600 dark:text-orange-400 milk-available">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Used:</span>
+                  <span class="text-lg font-semibold text-orange-600 dark:text-orange-400 milk-used">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Wasted:</span>
+                  <span class="text-lg font-semibold text-red-600 dark:text-red-400 milk-wasted">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-orange-200 dark:border-orange-800">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Remaining:</span>
+                  <span class="text-lg font-semibold text-gray-900 dark:text-white milk-remaining">0.0 L</span>
+                </div>
+              </div>
+
+              <!-- Usage Breakdown Section -->
+              <div class="mt-4 pt-3 border-t border-orange-200 dark:border-orange-800">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Breakdown</h4>
+                  <button class="text-xs text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 toggle-breakdown-btn" data-milk-type="A2">
+                    <span class="show-text hidden">Show Details</span>
+                    <span class="hide-text">Hide Details</span>
+                  </button>
+                </div>
+                <div class="usage-breakdown text-xs space-y-2">
+                  <div class="breakdown-content">
+                    <!-- Pool Allocations -->
+                    <div class="mb-2">
+                      <div class="font-medium text-gray-600 dark:text-gray-300 mb-1">Pool Allocations:</div>
+                      <div class="pool-breakdown space-y-1">
+                        <div class="text-gray-500 dark:text-gray-400 italic">No pool allocations</div>
+                      </div>
+                    </div>
+                    <!-- Product Production -->
+                    <div>
+                      <div class="font-medium text-gray-600 dark:text-gray-300 mb-1">Product Production:</div>
+                      <div class="product-breakdown space-y-1">
+                        <div class="text-gray-500 dark:text-gray-400 italic">No product production</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Buffalo Milk Card -->
+            <div class="milk-inventory-card bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 relative" data-milk-type="Buffalo">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-blue-500 dark:bg-blue-600 rounded-full mr-3"></div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Buffalo Milk</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="edit-milk-btn p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-colors"
+                          data-milk-type="Buffalo" title="Edit Milk Inventory" onclick="openEditMilkModal('Buffalo')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button class="add-milk-btn bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg hover:bg-blue-700 transition-colors hidden"
+                          data-milk-type="Buffalo" onclick="openAddMilkModal('Buffalo')">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Milk
+                  </button>
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Available:</span>
+                  <span class="text-lg font-semibold text-blue-600 dark:text-blue-400 milk-available">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Used:</span>
+                  <span class="text-lg font-semibold text-blue-600 dark:text-blue-400 milk-used">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Wasted:</span>
+                  <span class="text-lg font-semibold text-red-600 dark:text-red-400 milk-wasted">0.0 L</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-blue-200 dark:border-blue-800">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Remaining:</span>
+                  <span class="text-lg font-semibold text-gray-900 dark:text-white milk-remaining">0.0 L</span>
+                </div>
+              </div>
+
+              <!-- Usage Breakdown Section -->
+              <div class="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Breakdown</h4>
+                  <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 toggle-breakdown-btn" data-milk-type="Buffalo">
+                    <span class="show-text hidden">Show Details</span>
+                    <span class="hide-text">Hide Details</span>
+                  </button>
+            </div>
+                <div class="usage-breakdown text-xs space-y-2">
+                  <div class="breakdown-content">
+                    <!-- Pool Allocations -->
+                    <div class="mb-2">
+                      <div class="font-medium text-gray-600 dark:text-gray-300 mb-1">Pool Allocations:</div>
+                      <div class="pool-breakdown space-y-1">
+                        <div class="text-gray-500 dark:text-gray-400 italic">No pool allocations</div>
+                      </div>
+                    </div>
+                    <!-- Product Production -->
+                    <div>
+                      <div class="font-medium text-gray-600 dark:text-gray-300 mb-1">Product Production:</div>
+                      <div class="product-breakdown space-y-1">
+                        <div class="text-gray-500 dark:text-gray-400 italic">No product production</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <!-- Pool Allocations Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pool Allocations</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Allocate milk to production pools for batch processing</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-6">
+            <div id="poolAllocationsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Pool allocation cards will be dynamically loaded here -->
+              <div class="col-span-full text-center py-8">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Loading Pool Allocations...</h3>
+                <p class="text-gray-600 dark:text-gray-300">Fetching available pools for allocation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- Production Entries -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Production Entries</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Enter quantities produced for each product</p>
+        </div>
+        <div class="p-6">
+          <% if (categories && categories.length > 0) { %>
+            <% 
+              // Group all products by milk type
+              const productsByMilkType = { A1: [], A2: [], Buffalo: [] };
+              categories.forEach(category => {
+                if (category.products && category.products.length > 0) {
+                  category.products.forEach(product => {
+                    if (productsByMilkType[product.milk_type]) {
+                      productsByMilkType[product.milk_type].push(product);
+                    }
+                  });
+                }
+              });
+              
+              // Define product order: milk, curd, paneer, butter, ghee
+              const productOrder = ['milk', 'curd', 'paneer', 'butter', 'ghee'];
+              
+              // Sort products within each milk type by category/name
+              Object.keys(productsByMilkType).forEach(milkType => {
+                productsByMilkType[milkType].sort((a, b) => {
+                  // Get product name in lowercase for comparison
+                  const nameA = (a.name || '').toLowerCase();
+                  const nameB = (b.name || '').toLowerCase();
+                  
+                  // Get category name in lowercase if available
+                  const categoryA = (a.category_name || '').toLowerCase();
+                  const categoryB = (b.category_name || '').toLowerCase();
+                  
+                  // Find index in product order (check both name and category)
+                  let indexA = -1;
+                  let indexB = -1;
+                  
+                  for (let i = 0; i < productOrder.length; i++) {
+                    const orderTerm = productOrder[i];
+                    if (indexA === -1 && (nameA.includes(orderTerm) || categoryA.includes(orderTerm))) {
+                      indexA = i;
+                    }
+                    if (indexB === -1 && (nameB.includes(orderTerm) || categoryB.includes(orderTerm))) {
+                      indexB = i;
+                    }
+                    if (indexA !== -1 && indexB !== -1) break;
+                  }
+                  
+                  // If both found in order, sort by order
+                  if (indexA !== -1 && indexB !== -1) {
+                    return indexA - indexB;
+                  }
+                  // If only one found, prioritize it
+                  if (indexA !== -1) return -1;
+                  if (indexB !== -1) return 1;
+                  // If neither found, sort alphabetically
+                  return nameA.localeCompare(nameB);
+                });
+              });
+              
+              // Define the milk types order
+              const milkTypes = ['A1', 'A2', 'Buffalo'];
+            %>
+            
+            <% milkTypes.forEach(milkType => { %>
+              <% if (productsByMilkType[milkType].length > 0) { %>
+                <!-- Milk Type Section -->
+                <div class="mb-8 last:mb-0">
+                  <div class="mb-4 flex items-center">
+                    <% 
+                      const typeColorScheme = milkType === 'A1' ? {
+                        bg: 'bg-green-50 dark:bg-green-900/20',
+                        text: 'text-green-700 dark:text-green-300',
+                        icon: 'text-green-500 dark:text-green-400'
+                      } : milkType === 'A2' ? {
+                        bg: 'bg-orange-50 dark:bg-orange-900/20',
+                        text: 'text-orange-700 dark:text-orange-300',
+                        icon: 'text-orange-500 dark:text-orange-400'
+                      } : {
+                        bg: 'bg-blue-50 dark:bg-blue-900/20',
+                        text: 'text-blue-700 dark:text-blue-300',
+                        icon: 'text-blue-500 dark:text-blue-400'
+                      };
+                    %>
+                    <div class="flex items-center <%= typeColorScheme.bg %> <%= typeColorScheme.text %> px-4 py-2 rounded-lg font-semibold">
+                      <svg class="w-5 h-5 mr-2 <%= typeColorScheme.icon %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                      </svg>
+                      <%= milkType %> Milk Products
+                    </div>
+                    <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700 ml-4"></div>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <% productsByMilkType[milkType].forEach(product => { %>
+                      <% 
+                        // Define color scheme based on milk type
+                        const colorScheme = product.milk_type === 'A1' ? {
+                          bg: 'bg-green-50 dark:bg-green-900/15',
+                          border: 'border-green-200 dark:border-green-800/60',
+                          hoverBorder: 'hover:border-green-300 dark:hover:border-green-700/80',
+                          badge: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/60',
+                          quantity: 'text-green-700 dark:text-green-400',
+                          milk: 'text-green-700 dark:text-green-400',
+                          addBtn: 'bg-green-500 dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-600',
+                          editBtn: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                        } : product.milk_type === 'A2' ? {
+                          bg: 'bg-orange-50 dark:bg-orange-900/15',
+                          border: 'border-orange-200 dark:border-orange-800/60',
+                          hoverBorder: 'hover:border-orange-300 dark:hover:border-orange-700/80',
+                          badge: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/60',
+                          quantity: 'text-orange-700 dark:text-orange-400',
+                          milk: 'text-orange-700 dark:text-orange-400',
+                          addBtn: 'bg-orange-500 dark:bg-orange-700 hover:bg-orange-600 dark:hover:bg-orange-600',
+                          editBtn: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50'
+                        } : {
+                          bg: 'bg-blue-50 dark:bg-blue-900/15',
+                          border: 'border-blue-200 dark:border-blue-800/60',
+                          hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-700/80',
+                          badge: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60',
+                          quantity: 'text-blue-700 dark:text-blue-400',
+                          milk: 'text-blue-700 dark:text-blue-400',
+                          addBtn: 'bg-blue-500 dark:bg-blue-700 hover:bg-blue-600 dark:hover:bg-blue-600',
+                          editBtn: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                        };
+                      %>
+                      <div class="product-card <%= colorScheme.bg %> border-2 <%= colorScheme.border %> rounded-xl p-4 hover:shadow-lg <%= colorScheme.hoverBorder %> transition-all duration-200 relative"
+                           data-product-id="<%= product.id %>" data-milk-type="<%= product.milk_type %>" data-milk-source="<%= product.milk_source || 'direct' %>" data-pool-id="<%= product.pool_id || '' %>">
+                        
+                        <!-- Product Info Row: Image Left, Name Right -->
+                        <div class="flex items-start mb-3">
+                          <!-- Product Image (Left) -->
+                          <div class="flex-shrink-0 mr-4">
+                            <% if (product.image_url) { %>
+                              <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden">
+                                <img src="<%= product.image_url %>" alt="<%= product.name %>" class="w-full h-full object-cover">
+                              </div>
+                            <% } else { %>
+                              <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                              </div>
+                            <% } %>
+                            <!-- Milk Type Badge (Below Product Image) -->
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold shadow-sm <%= colorScheme.badge %> mt-2 w-full">
+                              <%= product.milk_type %>
+                            </span>
+                          </div>
+                          
+                          <!-- Product Name and Unit Size (Right) -->
+                          <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1 leading-tight"><%= product.name %></h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300"><%= product.unit_size %></p>
+                            <!-- Available Milk/Pool Volume -->
+                            <div class="mt-2">
+                              <% if (product.milk_source === 'pool' && product.pool_id) { %>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                  <span class="font-medium">Pool:</span> <span class="pool-volume" data-pool-id="<%= product.pool_id %>">Not allocated</span>
+                                </div>
+                              <% } else { %>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                  <span class="font-medium">Direct:</span> <span class="direct-volume" data-milk-type="<%= product.milk_type %>" data-product-id="<%= product.id %>">Loading...</span>
+                                </div>
+                              <% } %>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Production Data Display -->
+                        <div class="production-data mb-3 hidden">
+                          <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-600 dark:text-gray-300">Quantity:</span>
+                            <span class="text-xl font-bold <%= colorScheme.quantity %> production-quantity">0</span>
+                          </div>
+                          <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-300">Milk Used:</span>
+                            <span class="text-lg font-semibold <%= colorScheme.milk %> production-milk">0.0 L</span>
+                          </div>
+                        </div>
+                        
+                        <!-- Add Data Button -->
+                        <button class="add-data-btn w-full <%= colorScheme.addBtn %> text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors"
+                                data-product-id="<%= product.id %>">
+                          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                          </svg>
+                          Add Production Data
+                        </button>
+                        
+                        <!-- Action Buttons (hidden initially) -->
+                        <div class="action-buttons flex gap-2 justify-end hidden">
+             <!-- Edit Data Button -->
+             <button class="edit-data-btn <%= colorScheme.editBtn %> p-2 rounded-lg transition-colors"
+                     data-product-id="<%= product.id %>" title="Edit Production Data">
+               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+               </svg>
+             </button>
+             
+             <!-- Delete Data Button -->
+             <button class="delete-data-btn bg-red-100 text-red-500 p-2 rounded-lg hover:bg-red-200 transition-colors"
+                     data-product-id="<%= product.id %>" title="Delete Production Data">
+               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+               </svg>
+             </button>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                </div>
+              <% } %>
+            <% }) %>
+          <% } else { %>
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Products Found</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">You need to add products before you can record production.</p>
+              <a href="/production/products" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                Manage Products
+                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Add Production Data Modal -->
+      <div id="addProductionModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50" style="background-color: rgba(15, 23, 42, 0.75);">
+        <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-11/12 sm:w-5/6 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Add Production Data</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-300">Record production data for this product</p>
+                </div>
+              </div>
+              <button id="closeAddProductionModal" class="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <form id="addProductionForm" class="space-y-3 sm:space-y-4">
+              <input type="hidden" id="addProductId" name="product_id">
+              <input type="hidden" id="addProductionDate" name="production_date">
+              
+              <!-- Product Info -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <div class="flex items-center">
+                  <div id="addProductImage" class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mr-3 flex-shrink-0 hidden">
+                    <img id="addProductImageSrc" src="" alt="" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <h4 id="addProductName" class="font-medium text-gray-900 dark:text-white"></h4>
+                    <p id="addProductDetails" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                  </div>
+                  <span id="addProductMilkType" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"></span>
+                </div>
+              </div>
+              
+              <!-- Quantity -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Quantity Produced</label>
+                <input type="number" id="addQuantity" name="quantity" step="0.1" min="0" required
+                       class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter quantity">
+              </div>
+              
+              <!-- Milk Used (for manual entry products) -->
+              <div id="addMilkUsedSection" class="hidden">
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Milk Used (Liters)</label>
+                <input type="number" id="addMilkUsed" name="milk_used" step="0.1" min="0"
+                       class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter milk used">
+              </div>
+              
+              <!-- Auto-calculated Milk Display -->
+              <div id="addAutoMilkSection" class="hidden">
+                <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-blue-800 dark:text-blue-300">Milk Used (Auto-calculated):</span>
+                    <span id="addAutoMilkAmount" class="text-sm font-semibold text-blue-900 dark:text-blue-200">0.0 L</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Notes -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Notes (Optional)</label>
+                <textarea id="addNotes" name="notes" rows="3"
+                          class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Add any notes about this production..."></textarea>
+              </div>
+              
+              <!-- Modal Actions -->
+              <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3 sm:pt-4">
+                <button type="button" id="cancelAddProduction" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                  Save Production Data
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Production Data Modal -->
+      <div id="editProductionModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50" style="background-color: rgba(15, 23, 42, 0.75);">
+        <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-11/12 sm:w-5/6 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-2xl shadow-lg rounded-md bg-white">
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 border-b border-gray-200">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Edit Production Data</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-300">Adjust production data for this product</p>
+                </div>
+              </div>
+              <button id="closeEditProductionModal" class="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <form id="editProductionForm" class="space-y-3 sm:space-y-4">
+              <input type="hidden" id="editProductId" name="product_id">
+              <input type="hidden" id="editProductionDate" name="production_date">
+              
+              <!-- Product Info -->
+              <div class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <div class="flex items-center">
+                  <div id="editProductImage" class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden mr-3 flex-shrink-0 hidden">
+                    <img id="editProductImageSrc" src="" alt="" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <h4 id="editProductName" class="font-medium text-gray-900 dark:text-white"></h4>
+                    <p id="editProductDetails" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                  </div>
+                  <span id="editProductMilkType" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"></span>
+                </div>
+              </div>
+              
+              <!-- Current Production Data -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <h4 class="text-sm font-semibold text-blue-800 mb-2">Current Production Data</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span class="text-blue-700">Quantity Produced:</span>
+                    <span id="editCurrentQuantity" class="font-medium text-blue-900 ml-1">0</span>
+                  </div>
+                  <div>
+                    <span class="text-blue-700">Milk Used:</span>
+                    <span id="editCurrentMilkUsed" class="font-medium text-blue-900 ml-1">0.0 L</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Action Type -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Action</label>
+                <div class="flex space-x-4">
+                  <label class="flex items-center">
+                    <input type="radio" id="editActionAdd" name="editProductionAction" value="add" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600" checked>
+                    <span class="ml-2 text-sm text-gray-700">Add to production</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" id="editActionRemove" name="editProductionAction" value="remove" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
+                    <span class="ml-2 text-sm text-gray-700">Remove from production</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Quantity Adjustment -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Quantity Adjustment</label>
+                <div class="space-y-3">
+                  
+                  <!-- Adjustment Amount -->
+                  <div>
+                    <input type="number" id="editQuantityAdjustment" name="quantity_adjustment" step="0.1" min="0" required
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter adjustment amount">
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Milk Used Adjustment (for manual entry products) -->
+              <div id="editMilkUsedSection" class="hidden">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Milk Used Adjustment (Liters)</label>
+                <input type="number" id="editMilkUsedAdjustment" name="milk_used_adjustment" step="0.1" min="0"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter milk used adjustment">
+              </div>
+              
+              <!-- Auto-calculated Milk Adjustment Display -->
+              <div id="editAutoMilkSection" class="hidden">
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-orange-800">Milk Adjustment (Auto-calculated):</span>
+                    <span id="editAutoMilkAdjustment" class="text-sm font-semibold text-orange-900">0.0 L</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Notes -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Notes (Optional)</label>
+                <textarea id="editNotes" name="notes" rows="3"
+                          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Add any notes about this adjustment..."></textarea>
+              </div>
+              
+              <!-- Modal Actions -->
+              <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3 sm:pt-4">
+                <button type="button" id="cancelEditProduction" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors">
+                  Update Production Data
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Milk Modal -->
+      <div id="addMilkModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50" style="background-color: rgba(15, 23, 42, 0.75);">
+        <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border border-gray-200 dark:border-gray-700 w-11/12 sm:w-5/6 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Add Initial Milk Inventory</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-300">Enter initial milk inventory for production</p>
+                </div>
+              </div>
+              <button id="closeAddMilkModal" class="text-slate-400 dark:text-gray-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <form id="addMilkForm" class="space-y-3 sm:space-y-4">
+              <input type="hidden" id="addMilkType" name="milk_type">
+              <input type="hidden" id="addMilkProductionDate" name="production_date">
+              
+              <!-- Milk Type Info -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <div class="flex items-center">
+                  <div id="addMilkTypeIndicator" class="w-4 h-4 rounded-full mr-3"></div>
+                  <div class="flex-1">
+                    <h4 id="addMilkTypeName" class="font-medium text-gray-900 dark:text-white"></h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Enter initial milk inventory for this type</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Initial Available Milk -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Initial Available Milk (Liters)</label>
+                <input type="number" id="addAvailableMilk" name="available" step="0.1" min="0" required
+                       class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       placeholder="Enter initial available milk quantity">
+              </div>
+              
+              <!-- Wasted Milk -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Wasted Milk (Liters)</label>
+                <input type="number" id="addWastedMilk" name="wasted" step="0.1" min="0"
+                       class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       placeholder="Enter wasted milk quantity">
+              </div>
+              
+              <!-- Notes -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Notes (Optional)</label>
+                <textarea id="addMilkNotes" name="notes" rows="3"
+                          class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Add any notes about this milk inventory..."></textarea>
+              </div>
+              
+              <!-- Modal Actions -->
+              <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3 sm:pt-4">
+                <button type="button" id="cancelAddMilk" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-green-600 dark:bg-green-700 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors">
+                  Add Milk Inventory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Milk Modal -->
+      <div id="editMilkModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50" style="background-color: rgba(15, 23, 42, 0.75);">
+        <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border border-gray-200 dark:border-gray-700 w-11/12 sm:w-5/6 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Edit Milk Inventory</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-300">Modify existing milk inventory</p>
+                </div>
+              </div>
+              <button id="closeEditMilkModal" class="text-slate-400 dark:text-gray-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <form id="editMilkForm" class="space-y-3 sm:space-y-4">
+              <input type="hidden" id="editMilkType" name="milk_type">
+              <input type="hidden" id="editMilkProductionDate" name="production_date">
+              
+              <!-- Current Volume Display -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Volume</h4>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Available:</span>
+                    <span id="editCurrentAvailable" class="ml-2 font-semibold text-gray-900 dark:text-white">0.0 L</span>
+                  </div>
+                  <div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Remaining:</span>
+                    <span id="editCurrentRemaining" class="ml-2 font-semibold text-gray-900 dark:text-white">0.0 L</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Milk Type Info -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <div class="flex items-center">
+                  <div id="editMilkTypeIndicator" class="w-4 h-4 rounded-full mr-3"></div>
+                  <div class="flex-1">
+                    <h4 id="editMilkTypeName" class="font-medium text-gray-900 dark:text-white"></h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Modify milk inventory for this type</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Volume Adjustment -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Volume Adjustment (Liters)</label>
+                <input type="number" id="editVolumeChange" name="volume_change" step="0.1" min="0" required
+                       class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter volume to add or remove">
+              </div>
+              
+              <!-- Action Type -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Action</label>
+                <div class="flex space-x-4">
+                  <label class="flex items-center">
+                    <input type="radio" id="editActionAdd" name="editMilkAction" value="add" class="h-4 w-4 text-green-600 dark:text-green-500 focus:ring-green-500 border-gray-300 dark:border-gray-600" checked>
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Add to available volume</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" id="editActionRemove" name="editMilkAction" value="remove" class="h-4 w-4 text-red-600 dark:text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600">
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Remove from available volume</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Wasted Milk -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Wasted Milk (Liters)</label>
+                <input type="number" id="editWastedMilk" name="wasted" step="0.1" min="0"
+                       class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter wasted milk quantity">
+              </div>
+              
+              <!-- Notes -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Notes (Optional)</label>
+                <textarea id="editMilkNotes" name="notes" rows="3"
+                          class="w-full border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Add any notes about this milk inventory..."></textarea>
+              </div>
+              
+              <!-- Modal Actions -->
+              <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3 sm:pt-4">
+                <button type="button" id="cancelEditMilk" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-700 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                  Update Milk Inventory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteProductionModal" class="fixed inset-0 bg-slate-900 overflow-y-auto h-full w-full hidden z-50 transition-opacity duration-300" style="background-color: rgba(15, 23, 42, 0.7);">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 lg:w-1/4 xl:w-1/5 max-w-sm shadow-2xl rounded-lg bg-white ring-1 ring-slate-200 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-slate-900">Delete Production Data</h3>
+          <button id="closeDeleteProductionModal" class="text-slate-400 hover:text-slate-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <h4 class="text-lg font-semibold text-slate-900 mb-2">Are you sure?</h4>
+          <p class="text-slate-600 mb-6">This action cannot be undone. This will permanently delete the production data and update milk inventory accordingly.</p>
+          
+          <div class="flex justify-center space-x-3">
+            <button id="cancelDeleteProductionBtn" class="px-4 py-2 bg-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-400 transition-colors">
+              Cancel
+            </button>
+            <button id="confirmDeleteProductionBtn" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+              Delete Production Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Pool Allocation Modal -->
+  <div id="addPoolAllocationModal" class="fixed inset-0 bg-slate-900 z-[9999] flex items-center justify-center p-4" style="background-color: rgba(15, 23, 42, 0.75) !important; display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; z-index: 9999 !important; align-items: center !important; justify-content: center !important; padding: 1rem !important;">
+    <div class="relative p-4 sm:p-5 border border-gray-200 dark:border-gray-700 w-11/12 sm:w-5/6 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800" style="position: relative !important; padding: 1rem !important; width: 90% !important; max-width: 32rem !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; border-radius: 0.5rem !important;">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Pool Allocation</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Allocate milk to this production pool</p>
+            </div>
+          </div>
+          <button id="closeAddPoolModal" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="addPoolForm" class="space-y-4 sm:space-y-6">
+          <input type="hidden" id="addPoolId" name="poolId">
+          
+          <!-- Pool Information Display -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+            <h4 class="font-medium text-gray-900 dark:text-white mb-2">Pool Information</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Pool Name:</span>
+                <span id="addPoolName" class="ml-2 font-medium text-gray-900 dark:text-white"></span>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Milk Type:</span>
+                <span id="addPoolMilkType" class="ml-2 font-medium text-gray-900 dark:text-white"></span>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Remaining Milk:</span>
+                <span id="addPoolRemainingMilk" class="ml-2 font-medium text-gray-900 dark:text-white"></span>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Current Allocation:</span>
+                <span id="addPoolCurrentAllocation" class="ml-2 font-medium text-gray-900 dark:text-white">0 L</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allocation Amount -->
+          <div>
+            <label for="addMilkAllocated" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Milk Allocation Amount (L) <span class="text-red-500 dark:text-red-400">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="addMilkAllocated" 
+              name="milkAllocated" 
+              step="0.1" 
+              min="0" 
+              max="1000"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter amount in liters"
+              required
+            >
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter the amount of milk to allocate to this pool</p>
+          </div>
+
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button 
+              type="button" 
+              id="cancelAddPool" 
+              class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 transition-colors"
+              style="padding: 0.5rem 1rem !important; height: 2.5rem !important; min-height: 2.5rem !important; display: flex !important; align-items: center !important; justify-content: center !important;"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-green-500 transition-colors"
+              style="padding: 0.5rem 1rem !important; height: 2.5rem !important; min-height: 2.5rem !important; display: flex !important; align-items: center !important; justify-content: center !important;"
+            >
+              Add Allocation
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Pool Allocation Modal -->
+  <div id="editPoolAllocationModal" class="fixed inset-0 bg-slate-900 z-[9999] flex items-center justify-center p-4" style="background-color: rgba(15, 23, 42, 0.75) !important; display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; z-index: 9999 !important; align-items: center !important; justify-content: center !important; padding: 1rem !important;">
+    <div class="relative p-4 sm:p-5 border w-11/12 sm:w-5/6 md:w-3/4 lg:w-2/3 xl:w-1/2 max-w-2xl shadow-lg rounded-md bg-white" style="position: relative !important; padding: 1rem !important; border: 1px solid #e5e7eb !important; width: 90% !important; max-width: 32rem !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; border-radius: 0.5rem !important; background-color: white !important;">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4 sm:mb-6 pb-3 border-b border-gray-200">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg sm:text-xl font-semibold text-slate-900" id="editPoolModalTitle">Edit Pool Allocation</h3>
+              <p class="text-sm text-gray-600">Update milk allocation for this pool</p>
+            </div>
+          </div>
+          <button id="closeEditPoolModal" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <form id="editPoolForm" class="space-y-3 sm:space-y-4">
+          <input type="hidden" id="editPoolId" name="pool_id">
+          <input type="hidden" id="editPoolDate" name="allocation_date">
+          
+          <!-- Pool Info -->
+          <div class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+            <div class="flex items-center">
+              <div id="editPoolIndicator" class="w-4 h-4 rounded-full mr-3"></div>
+              <div class="flex-1">
+                <h4 id="editPoolName" class="font-medium text-gray-900"></h4>
+                <p id="editPoolDescription" class="text-sm text-gray-600"></p>
+              </div>
+              <span id="editPoolMilkType" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"></span>
+            </div>
+          </div>
+          
+          <!-- Milk Allocated -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Milk Allocated (Liters)</label>
+            <input type="number" id="editMilkAllocated" name="milk_allocated" step="0.1" min="0" required
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="Enter milk allocation amount">
+          </div>
+          
+          <!-- Notes -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Notes (Optional)</label>
+            <textarea id="editPoolNotes" name="notes" rows="3"
+                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Add any notes about this allocation..."></textarea>
+          </div>
+          
+          <!-- Modal Actions -->
+          <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3 sm:pt-4">
+            <button type="button" id="cancelEditPool" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+              Update Allocation
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Pool Allocation Modal -->
+  <div id="deletePoolAllocationModal" class="fixed inset-0 bg-slate-900 hidden z-50 transition-opacity duration-300 flex items-center justify-center p-4" style="background-color: rgba(15, 23, 42, 0.7);">
+    <div class="relative p-5 border w-11/12 md:w-1/3 lg:w-1/4 xl:w-1/5 max-w-sm shadow-2xl rounded-lg bg-white ring-1 ring-slate-200 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-slate-900">Delete Pool Allocation</h3>
+          <button id="closeDeletePoolModal" class="text-slate-400 hover:text-slate-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </div>
+          <h4 class="text-lg font-semibold text-slate-900 mb-2">Are you sure?</h4>
+          <p class="text-slate-600 mb-6">This will remove the milk allocation from this pool. The milk will be available for other allocations.</p>
+          
+          <div class="flex justify-center space-x-3">
+            <button id="cancelDeletePoolBtn" class="px-4 py-2 bg-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-400 transition-colors">
+              Cancel
+            </button>
+            <button id="confirmDeletePoolBtn" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+              Delete Allocation
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <%- include('../../../partials/_footer') %>
+  <%- include('../../../partials/_toast') %>
+
+  <script>
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeProductionEntry();
+      loadExistingData();
+      loadPoolAllocations();
+      updateProductVolumes();
+    });
+
+    function initializeProductionEntry() {
+      // Add data button handlers
+      document.querySelectorAll('.add-data-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const productId = this.dataset.productId;
+          openAddProductionModal(productId);
+        });
+      });
+
+      // Edit data button handlers
+      document.querySelectorAll('.edit-data-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const productId = this.dataset.productId;
+          openEditProductionModal(productId);
+        });
+      });
+
+      // Delete data button handlers
+      document.querySelectorAll('.delete-data-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const productId = this.dataset.productId;
+          deleteProductionData(productId);
+        });
+      });
+
+      // Add milk button handlers
+      document.querySelectorAll('.add-milk-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const milkType = this.dataset.milkType;
+          openAddMilkModal(milkType);
+        });
+      });
+
+      // Edit milk button handlers
+      document.querySelectorAll('.edit-milk-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const milkType = this.dataset.milkType;
+          openEditMilkModal(milkType);
+        });
+      });
+
+      // Modal close handlers
+      const closeAddProductionModalEl = document.getElementById('closeAddProductionModal');
+      if (closeAddProductionModalEl) closeAddProductionModalEl.addEventListener('click', closeAddProductionModal);
+      
+      const cancelAddProductionEl = document.getElementById('cancelAddProduction');
+      if (cancelAddProductionEl) cancelAddProductionEl.addEventListener('click', closeAddProductionModal);
+      
+      const closeEditProductionModalEl = document.getElementById('closeEditProductionModal');
+      if (closeEditProductionModalEl) closeEditProductionModalEl.addEventListener('click', closeEditProductionModal);
+      
+      const cancelEditProductionEl = document.getElementById('cancelEditProduction');
+      if (cancelEditProductionEl) cancelEditProductionEl.addEventListener('click', closeEditProductionModal);
+      
+      // Delete modal handlers
+      const closeDeleteProductionModalEl = document.getElementById('closeDeleteProductionModal');
+      if (closeDeleteProductionModalEl) closeDeleteProductionModalEl.addEventListener('click', closeDeleteProductionModal);
+      
+      const cancelDeleteProductionBtnEl = document.getElementById('cancelDeleteProductionBtn');
+      if (cancelDeleteProductionBtnEl) cancelDeleteProductionBtnEl.addEventListener('click', closeDeleteProductionModal);
+      
+      const confirmDeleteProductionBtnEl = document.getElementById('confirmDeleteProductionBtn');
+      if (confirmDeleteProductionBtnEl) confirmDeleteProductionBtnEl.addEventListener('click', confirmDeleteProduction);
+
+      // Pool allocation modal handlers
+      const closeAddPoolModalEl = document.getElementById('closeAddPoolModal');
+      if (closeAddPoolModalEl) closeAddPoolModalEl.addEventListener('click', closeAddPoolModal);
+      
+      const cancelAddPoolEl = document.getElementById('cancelAddPool');
+      if (cancelAddPoolEl) cancelAddPoolEl.addEventListener('click', closeAddPoolModal);
+      
+      const closeEditPoolModalEl = document.getElementById('closeEditPoolModal');
+      if (closeEditPoolModalEl) closeEditPoolModalEl.addEventListener('click', closeEditPoolModal);
+      
+      const cancelEditPoolEl = document.getElementById('cancelEditPool');
+      if (cancelEditPoolEl) cancelEditPoolEl.addEventListener('click', closeEditPoolModal);
+      
+      const closeDeletePoolModalEl = document.getElementById('closeDeletePoolModal');
+      if (closeDeletePoolModalEl) closeDeletePoolModalEl.addEventListener('click', closeDeletePoolModal);
+      
+      const cancelDeletePoolBtnEl = document.getElementById('cancelDeletePoolBtn');
+      if (cancelDeletePoolBtnEl) cancelDeletePoolBtnEl.addEventListener('click', closeDeletePoolModal);
+      
+      const confirmDeletePoolBtnEl = document.getElementById('confirmDeletePoolBtn');
+      if (confirmDeletePoolBtnEl) confirmDeletePoolBtnEl.addEventListener('click', confirmDeletePool);
+      
+      const addPoolFormEl = document.getElementById('addPoolForm');
+      if (addPoolFormEl) addPoolFormEl.addEventListener('submit', saveAddPoolAllocation);
+      
+      const editPoolFormEl = document.getElementById('editPoolForm');
+      if (editPoolFormEl) editPoolFormEl.addEventListener('submit', saveEditPoolAllocation);
+
+      // Milk modal close button handlers
+      const closeAddMilkModalEl = document.getElementById('closeAddMilkModal');
+      if (closeAddMilkModalEl) closeAddMilkModalEl.addEventListener('click', closeAddMilkModal);
+      
+      const cancelAddMilkEl = document.getElementById('cancelAddMilk');
+      if (cancelAddMilkEl) cancelAddMilkEl.addEventListener('click', closeAddMilkModal);
+      
+      const closeEditMilkModalEl = document.getElementById('closeEditMilkModal');
+      if (closeEditMilkModalEl) closeEditMilkModalEl.addEventListener('click', closeEditMilkModal);
+      
+      const cancelEditMilkEl = document.getElementById('cancelEditMilk');
+      if (cancelEditMilkEl) cancelEditMilkEl.addEventListener('click', closeEditMilkModal);
+
+      // Form submission handlers
+      const addProductionFormEl = document.getElementById('addProductionForm');
+      if (addProductionFormEl) addProductionFormEl.addEventListener('submit', saveAddProductionData);
+      
+      const editProductionFormEl = document.getElementById('editProductionForm');
+      if (editProductionFormEl) editProductionFormEl.addEventListener('submit', saveEditProductionData);
+      
+      const addMilkFormEl = document.getElementById('addMilkForm');
+      if (addMilkFormEl) addMilkFormEl.addEventListener('submit', saveAddMilkData);
+      
+      const editMilkFormEl = document.getElementById('editMilkForm');
+      if (editMilkFormEl) editMilkFormEl.addEventListener('submit', saveEditMilkData);
+
+      // Usage breakdown toggle handlers
+      document.querySelectorAll('.toggle-breakdown-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const milkType = this.dataset.milkType;
+          const breakdown = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"] .usage-breakdown`);
+          const showText = this.querySelector('.show-text');
+          const hideText = this.querySelector('.hide-text');
+          
+          if (breakdown.classList.contains('hidden')) {
+            breakdown.classList.remove('hidden');
+            showText.classList.add('hidden');
+            hideText.classList.remove('hidden');
+          } else {
+            breakdown.classList.add('hidden');
+            showText.classList.remove('hidden');
+            hideText.classList.add('hidden');
+          }
+        });
+      });
+
+      // Quantity change handler for auto-calculate (Add Production Modal)
+      const addQuantityEl = document.getElementById('addQuantity');
+      if (addQuantityEl) {
+        addQuantityEl.addEventListener('input', function() {
+          const productId = document.getElementById('addProductId').value;
+          const product = getProductById(productId);
+          
+          if (product && product.auto_calculate_milk) {
+            const quantity = parseFloat(this.value) || 0;
+            const milkUsed = quantity * product.milk_per_unit;
+            
+            const autoMilkAmount = document.getElementById('addAutoMilkAmount');
+            if (autoMilkAmount) {
+              autoMilkAmount.textContent = `${milkUsed.toFixed(1)} L`;
+            }
+          }
+        });
+      }
+
+      // Date change handler
+      const productionDateEl = document.getElementById('productionDate');
+      if (productionDateEl) {
+        productionDateEl.addEventListener('change', function() {
+          const newDate = this.value;
+          window.location.href = `/production/daily-production?date=${newDate}`;
+        });
+      }
+
+      // Load existing data
+      loadExistingData();
+
+    }
+
+    function getProductById(productId) {
+      // Get product data from server data
+      const categories = <%- JSON.stringify(categories || []) %>;
+      
+      for (const category of categories) {
+        if (category.products) {
+          const product = category.products.find(p => p.id == productId);
+          if (product) {
+            const result = {
+              id: product.id,
+              name: product.name,
+              unit_size: product.unit_size,
+              milk_type: product.milk_type,
+              image_url: product.image_url,
+              auto_calculate_milk: product.auto_calculate_milk,
+              milk_per_unit: product.milk_per_unit || 0.5
+            };
+            return result;
+          }
+        }
+      }
+      return null;
+    }
+
+    function loadExistingData() {
+      // Load existing production data for the selected date
+      const existingProduction = <%- JSON.stringify(existingProduction || []) %>;
+
+      // Update product cards with existing production data
+      existingProduction.forEach(entry => {
+        updateProductCard(entry.product_id, entry);
+      });
+
+      // Update milk inventory cards
+      updateMilkInventoryCards();
+    }
+
+    function openAddProductionModal(productId) {
+      const product = getProductById(productId);
+      if (!product) return;
+
+      // Check pool allocation for pool-dependent products
+      const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (productCard) {
+        const milkSource = productCard.dataset.milkSource;
+        
+        if (milkSource === 'pool') {
+          const poolId = productCard.dataset.poolId;
+          if (!poolId) {
+            showErrorToast('No pool assigned to this product');
+            return;
+          }
+          
+          const poolCard = document.querySelector(`[data-pool-id="${poolId}"]`);
+          if (!poolCard) {
+            showErrorToast('Pool not found');
+            return;
+          }
+          
+          const allocatedSpan = poolCard.querySelector('.pool-allocated');
+          if (!allocatedSpan) {
+            showErrorToast('Pool allocation data not found');
+            return;
+          }
+          
+          const allocatedAmount = parseFloat(allocatedSpan.textContent) || 0;
+          if (allocatedAmount <= 0) {
+            showErrorToast('Pool is not allocated yet. Please allocate milk to the pool first before adding production data.');
+            return;
+          }
+        }
+      }
+
+      // Set product info
+      document.getElementById('addProductId').value = productId;
+      document.getElementById('addProductionDate').value = document.getElementById('productionDate').value;
+      
+      // Set product details
+      document.getElementById('addProductName').textContent = product.name;
+      document.getElementById('addProductDetails').textContent = `${product.unit_size} • ${product.milk_type}`;
+      
+      // Set milk type badge
+      const milkTypeBadge = document.getElementById('addProductMilkType');
+      milkTypeBadge.textContent = product.milk_type;
+      milkTypeBadge.className = `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+        product.milk_type === 'A1' ? 'bg-green-100 text-green-800' : 
+        product.milk_type === 'A2' ? 'bg-red-100 text-red-800' : 
+        'bg-blue-100 text-blue-800'
+      }`;
+
+      // Show/hide product image
+      const productImage = document.getElementById('addProductImage');
+      const productImageSrc = document.getElementById('addProductImageSrc');
+      if (product.image_url) {
+        productImageSrc.src = product.image_url;
+        productImageSrc.alt = product.name;
+        productImage.classList.remove('hidden');
+      } else {
+        productImage.classList.add('hidden');
+      }
+
+      // Show/hide milk input sections
+      const milkUsedSection = document.getElementById('addMilkUsedSection');
+      const autoMilkSection = document.getElementById('addAutoMilkSection');
+      
+      if (product.auto_calculate_milk) {
+        milkUsedSection.classList.add('hidden');
+        autoMilkSection.classList.remove('hidden');
+        document.getElementById('addAutoMilkAmount').textContent = '0.0 L';
+      } else {
+        milkUsedSection.classList.remove('hidden');
+        autoMilkSection.classList.add('hidden');
+      }
+
+      // Clear form
+      document.getElementById('addQuantity').value = '';
+      document.getElementById('addMilkUsed').value = '';
+      document.getElementById('addNotes').value = '';
+
+      // Show modal
+      document.getElementById('addProductionModal').classList.remove('hidden');
+    }
+
+    async function openEditProductionModal(productId) {
+      const product = getProductById(productId);
+      if (!product) return;
+
+      // Set product info
+      document.getElementById('editProductId').value = productId;
+      document.getElementById('editProductionDate').value = document.getElementById('productionDate').value;
+      
+      // Set product details
+      document.getElementById('editProductName').textContent = product.name;
+      document.getElementById('editProductDetails').textContent = `${product.unit_size} • ${product.milk_type}`;
+      
+      // Set milk type badge
+      const milkTypeBadge = document.getElementById('editProductMilkType');
+      milkTypeBadge.textContent = product.milk_type;
+      milkTypeBadge.className = `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+        product.milk_type === 'A1' ? 'bg-green-100 text-green-800' : 
+        product.milk_type === 'A2' ? 'bg-red-100 text-red-800' : 
+        'bg-blue-100 text-blue-800'
+      }`;
+
+      // Show/hide product image
+      const productImage = document.getElementById('editProductImage');
+      const productImageSrc = document.getElementById('editProductImageSrc');
+      if (product.image_url) {
+        productImageSrc.src = product.image_url;
+        productImageSrc.alt = product.name;
+        productImage.classList.remove('hidden');
+      } else {
+        productImage.classList.add('hidden');
+      }
+
+      // Show/hide milk input sections
+      const milkUsedSection = document.getElementById('editMilkUsedSection');
+      const autoMilkSection = document.getElementById('editAutoMilkSection');
+      
+      if (product.auto_calculate_milk) {
+        milkUsedSection.classList.add('hidden');
+        autoMilkSection.classList.remove('hidden');
+      } else {
+        milkUsedSection.classList.remove('hidden');
+        autoMilkSection.classList.add('hidden');
+      }
+
+      // Fetch current production data from API
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        const response = await fetch(`/production/daily-production/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.production) {
+          const existingData = result.production.find(entry => entry.product_id == productId);
+          if (existingData) {
+            // Set current production data
+            document.getElementById('editCurrentQuantity').textContent = existingData.quantity_produced || '0';
+            document.getElementById('editCurrentMilkUsed').textContent = `${parseFloat(existingData.milk_used || 0).toFixed(1)} L`;
+            
+            // Clear adjustment fields
+            const quantityAdjustment = document.getElementById('editQuantityAdjustment');
+            const milkUsedAdjustment = document.getElementById('editMilkUsedAdjustment');
+            const notes = document.getElementById('editNotes');
+            
+            if (quantityAdjustment) quantityAdjustment.value = '';
+            if (milkUsedAdjustment) milkUsedAdjustment.value = '';
+            if (notes) notes.value = '';
+            
+            // Set default action to "add"
+            const addRadio = document.querySelector('input[name="editProductionAction"][value="add"]');
+            if (addRadio) {
+              addRadio.checked = true;
+            }
+            
+            if (product.auto_calculate_milk) {
+              const autoMilkAdjustment = document.getElementById('editAutoMilkAdjustment');
+              if (autoMilkAdjustment) {
+                autoMilkAdjustment.textContent = '0.0 L';
+              }
+            }
+          } else {
+            showErrorToast('No existing production data found for this product');
+            return;
+          }
+        } else {
+          throw new Error(result.error || 'Failed to fetch production data');
+        }
+      } catch (error) {
+        console.error('Error fetching production data for edit modal:', error);
+        showErrorToast('Failed to load current production data');
+        return;
+      }
+
+      // Add event listener for quantity adjustment to update auto-calculated milk
+      const quantityAdjustmentInput = document.getElementById('editQuantityAdjustment');
+      const actionRadios = document.querySelectorAll('input[name="editProductionAction"]');
+      
+      const updateMilkAdjustment = () => {
+        if (product.auto_calculate_milk && quantityAdjustmentInput) {
+          const adjustment = parseFloat(quantityAdjustmentInput.value) || 0;
+          const actionRadio = document.querySelector('input[name="editProductionAction"]:checked');
+          if (actionRadio) {
+            const action = actionRadio.value;
+            const milkAdjustment = adjustment * product.milk_per_unit;
+            const displayAdjustment = action === 'remove' ? -milkAdjustment : milkAdjustment;
+            const autoMilkElement = document.getElementById('editAutoMilkAdjustment');
+            if (autoMilkElement) {
+              autoMilkElement.textContent = `${displayAdjustment.toFixed(1)} L`;
+            }
+          }
+        }
+      };
+      
+      if (quantityAdjustmentInput) {
+        quantityAdjustmentInput.addEventListener('input', updateMilkAdjustment);
+      }
+      actionRadios.forEach(radio => {
+        if (radio) {
+          radio.addEventListener('change', updateMilkAdjustment);
+        }
+      });
+
+      // Show modal
+      document.getElementById('editProductionModal').classList.remove('hidden');
+    }
+
+    function closeAddProductionModal() {
+      document.getElementById('addProductionModal').classList.add('hidden');
+    }
+
+    function closeEditProductionModal() {
+      document.getElementById('editProductionModal').classList.add('hidden');
+    }
+
+    function getExistingProductionData(productId) {
+      const existingProduction = <%- JSON.stringify(existingProduction || []) %>;
+      return existingProduction.find(entry => entry.product_id == productId);
+    }
+
+    function getExistingProductionDataFromDOM(productId) {
+      const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (!card) return null;
+
+      const productionData = card.querySelector('.production-data');
+      if (!productionData || productionData.classList.contains('hidden')) {
+        return null; // No production data exists
+      }
+
+      const quantitySpan = card.querySelector('.production-quantity');
+      const milkSpan = card.querySelector('.production-milk');
+
+      if (!quantitySpan || !milkSpan) return null;
+
+      const quantity = parseFloat(quantitySpan.textContent) || 0;
+      const milkUsed = parseFloat(milkSpan.textContent) || 0;
+
+      return {
+        product_id: productId,
+        quantity_produced: quantity,
+        milk_used: milkUsed
+      };
+    }
+
+    function updateProductCard(productId, data) {
+      const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (!card) return;
+
+      const productionData = card.querySelector('.production-data');
+      const addBtn = card.querySelector('.add-data-btn');
+      const actionButtons = card.querySelector('.action-buttons');
+      const quantitySpan = card.querySelector('.production-quantity');
+      const milkSpan = card.querySelector('.production-milk');
+
+      if (data && data.quantity_produced > 0) {
+        // Show production data
+        productionData.classList.remove('hidden');
+        quantitySpan.textContent = data.quantity_produced;
+        milkSpan.textContent = `${data.milk_used || 0} L`;
+        
+        // Show action buttons, hide add button
+        addBtn.classList.add('hidden');
+        actionButtons.classList.remove('hidden');
+      } else {
+        // Hide production data
+        productionData.classList.add('hidden');
+        
+        // Show add button, hide action buttons
+        addBtn.classList.remove('hidden');
+        actionButtons.classList.add('hidden');
+      }
+    }
+
+    async function saveAddProductionData(event) {
+      if (event) event.preventDefault();
+      
+      
+      const productId = document.getElementById('addProductId').value;
+      const quantity = parseFloat(document.getElementById('addQuantity').value) || 0;
+      const milkUsed = parseFloat(document.getElementById('addMilkUsed').value) || 0;
+      const notes = document.getElementById('addNotes').value;
+      const productionDate = document.getElementById('addProductionDate').value;
+      
+      
+      if (quantity <= 0) {
+        showErrorToast('Please enter a valid quantity');
+        return;
+      }
+
+      // Get product data for validation
+      const product = getProductById(productId);
+      if (!product) {
+        showErrorToast('Product not found');
+        return;
+      }
+      
+      // Calculate final milk usage
+      let finalMilkUsed = milkUsed;
+      if (product.auto_calculate_milk) {
+        finalMilkUsed = quantity * product.milk_per_unit;
+      }
+
+      // Validate available milk/pool volume
+      const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (!productCard) {
+        showErrorToast('Product card not found');
+        return;
+      }
+
+      const milkSource = productCard.dataset.milkSource;
+      
+      if (milkSource === 'pool') {
+        const poolId = productCard.dataset.poolId;
+        if (!poolId) {
+          showErrorToast('No pool assigned to this product');
+          return;
+        }
+        
+        const poolCard = document.querySelector(`[data-pool-id="${poolId}"]`);
+        if (!poolCard) {
+          showErrorToast('Pool not found');
+          return;
+        }
+        
+        const allocatedSpan = poolCard.querySelector('.pool-allocated');
+        if (!allocatedSpan) {
+          showErrorToast('Pool allocation data not found');
+          return;
+        }
+        
+        const availableVolume = parseFloat(allocatedSpan.textContent) || 0;
+        if (availableVolume <= 0) {
+          showErrorToast('No milk allocated to this pool. Please allocate milk to the pool first.');
+          return;
+        }
+        
+        if (finalMilkUsed > availableVolume) {
+          showErrorToast(`Insufficient pool volume. Available: ${availableVolume.toFixed(1)}L, Required: ${finalMilkUsed.toFixed(1)}L`);
+          return;
+        }
+      } else {
+        // Direct milk source
+        const milkType = productCard.dataset.milkType;
+        const milkCard = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+        if (!milkCard) {
+          showErrorToast('Milk inventory not found');
+          return;
+        }
+        
+        const remainingSpan = milkCard.querySelector('.milk-remaining');
+        if (!remainingSpan) {
+          showErrorToast('Milk inventory data not found');
+          return;
+        }
+        
+        const availableVolume = parseFloat(remainingSpan.textContent) || 0;
+        if (availableVolume <= 0) {
+          showErrorToast('No milk available in inventory. Please add milk to inventory first.');
+          return;
+        }
+        
+        if (finalMilkUsed > availableVolume) {
+          showErrorToast(`Insufficient milk in inventory. Available: ${availableVolume.toFixed(1)}L, Required: ${finalMilkUsed.toFixed(1)}L`);
+          return;
+        }
+      }
+
+      const productionData = {
+        product_id: productId,
+        quantity_produced: quantity,
+        milk_used: finalMilkUsed,
+        notes: notes,
+        production_date: productionDate
+      };
+
+      try {
+        const response = await fetch('/production/daily-production', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productionData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast('Production data saved successfully');
+          closeAddProductionModal();
+          updateProductCard(productId, productionData);
+          updateMilkInventoryAfterProduction(productId, finalMilkUsed);
+        } else {
+          throw new Error(result.error || 'Failed to save production data');
+        }
+      } catch (error) {
+        console.error('Error saving production data:', error);
+        showErrorToast('Failed to save production data: ' + error.message);
+      }
+    }
+
+    async function saveEditProductionData(event) {
+      if (event) event.preventDefault();
+      
+      
+      const productId = document.getElementById('editProductId').value;
+      const quantityAdjustment = parseFloat(document.getElementById('editQuantityAdjustment').value) || 0;
+      const action = document.querySelector('input[name="editProductionAction"]:checked').value;
+      const milkUsedAdjustment = parseFloat(document.getElementById('editMilkUsedAdjustment').value) || 0;
+      const notes = document.getElementById('editNotes').value;
+      const productionDate = document.getElementById('editProductionDate').value;
+      
+      
+      if (quantityAdjustment <= 0) {
+        showErrorToast('Please enter a valid adjustment amount');
+        return;
+      }
+
+      // Get product data for validation
+      const product = getProductById(productId);
+      if (!product) {
+        showErrorToast('Product not found');
+        return;
+      }
+
+      // Get current production data from API
+      let currentData;
+      try {
+        const response = await fetch(`/production/daily-production/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.production) {
+          currentData = result.production.find(entry => entry.product_id == productId);
+          if (!currentData) {
+            showErrorToast('No existing production data found for this product');
+            return;
+          }
+        } else {
+          throw new Error(result.error || 'Failed to fetch production data');
+        }
+      } catch (error) {
+        console.error('Error fetching current production data:', error);
+        showErrorToast('Failed to load current production data');
+        return;
+      }
+
+      // For remove operations, validate that we don't remove more than available
+      if (action === 'remove') {
+        const currentQuantity = parseFloat(currentData.quantity_produced || 0);
+        if (quantityAdjustment > currentQuantity) {
+          showErrorToast(`Cannot remove ${quantityAdjustment} units. Only ${currentQuantity} units available.`);
+          return;
+        }
+      }
+
+      // Calculate new quantities
+      let newQuantity;
+      if (action === 'add') {
+        newQuantity = parseFloat(currentData.quantity_produced || 0) + quantityAdjustment;
+      } else {
+        newQuantity = Math.max(0, parseFloat(currentData.quantity_produced || 0) - quantityAdjustment);
+      }
+
+      // Calculate milk adjustment
+      let milkAdjustment;
+      if (product.auto_calculate_milk) {
+        // Auto-calculate based on quantity adjustment
+        milkAdjustment = quantityAdjustment * product.milk_per_unit;
+      } else {
+        // Use manual milk adjustment
+        milkAdjustment = milkUsedAdjustment;
+      }
+
+      // Apply action to milk adjustment
+      if (action === 'remove') {
+        milkAdjustment = -milkAdjustment;
+      }
+
+      const newMilkUsed = Math.max(0, parseFloat(currentData.milk_used || 0) + milkAdjustment);
+
+      // Validate available milk/pool volume for the adjustment
+      const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (!productCard) {
+        showErrorToast('Product card not found');
+        return;
+      }
+
+      const milkSource = productCard.dataset.milkSource;
+      
+      if (milkSource === 'pool') {
+        const poolId = productCard.dataset.poolId;
+        if (!poolId) {
+          showErrorToast('No pool assigned to this product');
+          return;
+        }
+        
+        const poolCard = document.querySelector(`[data-pool-id="${poolId}"]`);
+        if (!poolCard) {
+          showErrorToast('Pool not found');
+          return;
+        }
+        
+        const allocatedSpan = poolCard.querySelector('.pool-allocated');
+        if (!allocatedSpan) {
+          showErrorToast('Pool allocation data not found');
+          return;
+        }
+        
+        const availableVolume = parseFloat(allocatedSpan.textContent) || 0;
+        if (availableVolume <= 0) {
+          showErrorToast('No milk allocated to this pool. Please allocate milk to the pool first.');
+          return;
+        }
+        
+        // For add operations, check if we have enough additional milk in pool
+        // For remove operations, we don't need to check (we're freeing up milk)
+        if (action === 'add' && milkAdjustment > availableVolume) {
+          showErrorToast(`Insufficient pool volume. Available: ${availableVolume.toFixed(1)}L, Additional Required: ${milkAdjustment.toFixed(1)}L`);
+          return;
+        }
+      } else {
+        // Direct milk source
+        const milkType = productCard.dataset.milkType;
+        const milkCard = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+        if (!milkCard) {
+          showErrorToast('Milk inventory not found');
+          return;
+        }
+        
+        const remainingSpan = milkCard.querySelector('.milk-remaining');
+        if (!remainingSpan) {
+          showErrorToast('Milk inventory data not found');
+          return;
+        }
+        
+        const availableVolume = parseFloat(remainingSpan.textContent) || 0;
+        if (availableVolume <= 0) {
+          showErrorToast('No milk available in inventory. Please add milk to inventory first.');
+          return;
+        }
+        
+        // For add operations, check if we have enough additional milk
+        // For remove operations, we don't need to check (we're freeing up milk)
+        if (action === 'add' && milkAdjustment > availableVolume) {
+          showErrorToast(`Insufficient milk in inventory. Available: ${availableVolume.toFixed(1)}L, Additional Required: ${milkAdjustment.toFixed(1)}L`);
+          return;
+        }
+      }
+
+      const productionData = {
+        product_id: productId,
+        quantity_produced: newQuantity,
+        milk_used: newMilkUsed,
+        notes: notes,
+        production_date: productionDate
+      };
+
+      try {
+        const response = await fetch('/production/daily-production', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productionData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast(`Production data updated successfully (${action === 'add' ? '+' : '-'}${quantityAdjustment} units)`);
+          closeEditProductionModal();
+          updateProductCard(productId, productionData);
+          updateMilkInventoryAfterProduction(productId, newMilkUsed);
+        } else {
+          throw new Error(result.error || 'Failed to update production data');
+        }
+      } catch (error) {
+        console.error('Error updating production data:', error);
+        showErrorToast('Failed to update production data: ' + error.message);
+      }
+    }
+
+    let currentDeleteProductId = null;
+
+    function deleteProductionData(productId) {
+      currentDeleteProductId = productId;
+      showDeleteProductionModal();
+    }
+
+    function showDeleteProductionModal() {
+      const modal = document.getElementById('deleteProductionModal');
+      
+      // Show modal with animation
+      modal.classList.remove('hidden');
+      
+      // Trigger animation after a small delay to ensure the modal is visible
+      setTimeout(() => {
+        const modalContent = modal.querySelector('.relative');
+        if (modalContent) {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }
+      }, 10);
+    }
+
+    function closeDeleteProductionModal() {
+      const modal = document.getElementById('deleteProductionModal');
+      const modalContent = modal.querySelector('.relative');
+      
+      if (modalContent) {
+        // Animate out
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        
+        // Hide modal after animation completes
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 300);
+      }
+      
+      currentDeleteProductId = null;
+    }
+
+    async function confirmDeleteProduction() {
+      if (!currentDeleteProductId) return;
+
+      // Store the product ID in a local variable to prevent it from being reset
+      const productIdToDelete = currentDeleteProductId;
+
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        
+        // Get existing data BEFORE deletion for milk inventory update
+        const existingData = getExistingProductionDataFromDOM(productIdToDelete);
+        const product = getProductById(productIdToDelete);
+        
+        const response = await fetch('/production/daily-production', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            product_id: productIdToDelete,
+            production_date: productionDate
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast('Production data deleted successfully');
+          closeDeleteProductionModal();
+          
+          // Reset the product card to fresh state
+          resetProductCard(productIdToDelete);
+          
+          // Refresh milk inventory display (server already updated the inventory)
+          await refreshMilkInventoryCards();
+        } else {
+          throw new Error(result.error || 'Failed to delete production data');
+        }
+      } catch (error) {
+        console.error('Error deleting production data:', error);
+        showErrorToast('Failed to delete production data: ' + error.message);
+        closeDeleteProductionModal();
+      }
+    }
+
+    function resetProductCard(productId) {
+      const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (!card) return;
+
+      const productionData = card.querySelector('.production-data');
+      const addBtn = card.querySelector('.add-data-btn');
+      const actionButtons = card.querySelector('.action-buttons');
+
+      // Hide production data
+      if (productionData) {
+        productionData.classList.add('hidden');
+      }
+      
+      // Show add button, hide action buttons
+      if (addBtn) {
+        addBtn.classList.remove('hidden');
+      }
+      if (actionButtons) {
+        actionButtons.classList.add('hidden');
+      }
+    }
+
+    async function updateMilkInventoryAfterDeletion(productId, milkUsed) {
+      // Get the product to determine milk type
+      const product = getProductById(productId);
+      if (!product) return;
+
+      // Refresh the milk inventory cards with updated breakdown
+      await refreshMilkInventoryCards();
+      
+      // Update product volumes
+      updateProductVolumes();
+    }
+
+    async function updateMilkInventoryAfterProduction(productId, milkUsed) {
+      // Get the product to determine milk type
+      const product = getProductById(productId);
+      if (!product) return;
+
+      // Refresh the milk inventory cards with updated breakdown
+      await refreshMilkInventoryCards();
+      
+      // Update product volumes
+      updateProductVolumes();
+    }
+
+    // Pool Allocation Functions
+    async function loadPoolAllocations() {
+      try {
+        // Load available pools
+        const poolsResponse = await fetch('/production/milk-pools/api');
+        const poolsResult = await poolsResponse.json();
+        
+        // Load existing allocations for the date
+        const productionDate = document.getElementById('productionDate').value;
+        const allocationsResponse = await fetch(`/production/pool-allocations/api?date=${productionDate}`);
+        const allocationsResult = await allocationsResponse.json();
+        
+        if (poolsResult.success) {
+          renderPoolAllocations(poolsResult.pools, allocationsResult.success ? allocationsResult.allocations : []);
+        } else {
+          console.error('Error loading pools:', poolsResult.error);
+          renderPoolAllocations([], []);
+        }
+      } catch (error) {
+        console.error('Error loading pool allocations:', error);
+        renderPoolAllocations([], []);
+      }
+    }
+
+    function renderPoolAllocations(pools, allocations) {
+      const container = document.getElementById('poolAllocationsContainer');
+      
+      // Store pools globally for modal functions
+      window.availablePools = pools;
+      
+      if (!pools || pools.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-8">
+            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Pools Available</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Create pools first in Pool Management to allocate milk.</p>
+            <a href="/production/pool-management" class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors inline-block">
+              Go to Pool Management
+            </a>
+          </div>
+        `;
+        return;
+      }
+      
+      // Create a map of existing allocations for quick lookup
+      const allocationMap = {};
+      allocations.forEach(allocation => {
+        allocationMap[allocation.pool_id] = allocation;
+      });
+      
+      container.innerHTML = pools.map(pool => {
+        const existingAllocation = allocationMap[pool.id];
+        const allocatedAmount = existingAllocation ? parseFloat(existingAllocation.milk_allocated) || 0 : 0;
+        const hasAllocation = allocatedAmount > 0;
+        
+        // Define color scheme based on milk type
+        const colorScheme = pool.milk_type === 'A1' ? {
+          bg: 'bg-green-50 dark:bg-green-900/20',
+          border: 'border-green-200 dark:border-green-800',
+          hoverBorder: 'hover:border-green-300 dark:hover:border-green-700',
+          badge: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800',
+          allocated: 'text-green-600 dark:text-green-400',
+          addBtn: 'bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600',
+          editBtn: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/60'
+        } : pool.milk_type === 'A2' ? {
+          bg: 'bg-orange-50 dark:bg-orange-900/20',
+          border: 'border-orange-200 dark:border-orange-800',
+          hoverBorder: 'hover:border-orange-300 dark:hover:border-orange-700',
+          badge: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800',
+          allocated: 'text-orange-600 dark:text-orange-400',
+          addBtn: 'bg-orange-600 dark:bg-orange-700 hover:bg-orange-700 dark:hover:bg-orange-600',
+          editBtn: 'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/60'
+        } : {
+          bg: 'bg-blue-50 dark:bg-blue-900/20',
+          border: 'border-blue-200 dark:border-blue-800',
+          hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-700',
+          badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
+          allocated: 'text-blue-600 dark:text-blue-400',
+          addBtn: 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600',
+          editBtn: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60'
+        };
+        
+        return `
+          <div class="pool-allocation-card ${colorScheme.bg} border-2 ${colorScheme.border} rounded-xl p-4 hover:shadow-lg ${colorScheme.hoverBorder} transition-all duration-200 relative" data-pool-id="${pool.id}">
+            
+            <!-- Milk Type Badge (Top Right) -->
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm ${colorScheme.badge}"
+                  style="position: absolute !important; top: 12px !important; right: 12px !important; z-index: 10 !important;">
+              ${pool.milk_type}
+            </span>
+            
+            <!-- Pool Header -->
+            <div class="mb-3">
+              <h3 class="font-bold text-gray-900 dark:text-white text-lg mb-1 leading-tight">${pool.name}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">${pool.description || 'No description'}</p>
+            </div>
+            
+            <!-- Pool Data Display -->
+            <div class="pool-data-display">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm text-gray-600 dark:text-gray-300">Allocated (L):</span>
+                <span class="text-lg font-semibold ${colorScheme.allocated} pool-allocated">${allocatedAmount.toFixed(1)}</span>
+              </div>
+              
+              <!-- Action Buttons -->
+              <div class="flex justify-end space-x-2">
+                <button onclick="addPoolAllocation(${pool.id})" class="${colorScheme.addBtn} text-white px-3 py-1.5 text-sm rounded transition-colors pool-add-btn ${hasAllocation ? 'hidden' : ''}">
+                  Add Allocation
+                </button>
+                <button onclick="editPoolAllocation(${pool.id})" class="${colorScheme.editBtn} p-2 rounded-lg transition-colors pool-edit-btn ${hasAllocation ? '' : 'hidden'}" title="Edit Allocation">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </button>
+                <button onclick="deletePoolAllocation(${pool.id})" class="bg-red-100 dark:bg-red-900/40 text-red-500 dark:text-red-400 p-2 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors pool-delete-btn ${hasAllocation ? '' : 'hidden'}" title="Delete Allocation">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Individual Pool Allocation Functions
+    function addPoolAllocation(poolId) {
+      // Get pool data from the rendered pools
+      const pools = window.availablePools || [];
+      const pool = pools.find(p => p.id == poolId);
+      
+      if (!pool) {
+        console.error('Pool not found:', poolId);
+        showErrorToast('Pool not found');
+        return;
+      }
+      
+      // Check if modal elements exist
+      const modal = document.getElementById('addPoolAllocationModal');
+      
+      if (!modal) {
+        console.error('Add pool modal not found');
+        showErrorToast('Add modal not found');
+        return;
+      }
+      
+      // Set modal data
+      document.getElementById('addPoolId').value = poolId;
+      document.getElementById('addPoolName').textContent = pool.name;
+      document.getElementById('addPoolMilkType').textContent = pool.milk_type;
+      
+      // Get remaining milk from the current milk inventory card
+      const milkCard = document.querySelector(`.milk-inventory-card[data-milk-type="${pool.milk_type}"]`);
+      let remainingMilk = 0;
+      if (milkCard) {
+        const remainingSpan = milkCard.querySelector('.milk-remaining');
+        if (remainingSpan) {
+          remainingMilk = parseFloat(remainingSpan.textContent) || 0;
+        }
+      }
+      document.getElementById('addPoolRemainingMilk').textContent = `${remainingMilk.toFixed(1)} L`;
+      
+      document.getElementById('addPoolCurrentAllocation').textContent = '0 L';
+      
+      // Clear form fields
+      document.getElementById('addMilkAllocated').value = '';
+      
+      // Show modal
+      modal.style.display = 'flex';
+      modal.style.visibility = 'visible';
+      modal.style.opacity = '1';
+      modal.style.zIndex = '9999';
+      
+      // Focus on the first input
+      setTimeout(() => {
+        document.getElementById('addMilkAllocated').focus();
+      }, 100);
+    }
+    
+    function editPoolAllocation(poolId) {
+      // Get pool data from the rendered pools
+      const pools = window.availablePools || [];
+      const pool = pools.find(p => p.id == poolId);
+      
+      if (!pool) {
+        console.error('Pool not found for ID:', poolId);
+        showErrorToast('Pool not found');
+        return;
+      }
+      
+      // Get current allocation data
+      const card = document.querySelector(`[data-pool-id="${poolId}"]`);
+      
+      if (!card) {
+        console.error('Pool card not found for ID:', poolId);
+        showErrorToast('Pool card not found');
+        return;
+      }
+      
+      const currentAmountElement = card.querySelector('.pool-allocated');
+      if (!currentAmountElement) {
+        console.error('Pool allocated element not found');
+        showErrorToast('Could not find current allocation amount');
+        return;
+      }
+      
+      const currentAmount = currentAmountElement.textContent;
+      
+      // Check if modal elements exist
+      const modal = document.getElementById('editPoolAllocationModal');
+      
+      if (!modal) {
+        console.error('Edit pool modal not found');
+        showErrorToast('Edit modal not found');
+        return;
+      }
+      
+      // Set modal data
+      document.getElementById('editPoolId').value = poolId;
+      document.getElementById('editPoolDate').value = document.getElementById('productionDate').value;
+      document.getElementById('editPoolName').textContent = pool.name;
+      document.getElementById('editPoolDescription').textContent = pool.description || 'No description';
+      document.getElementById('editMilkAllocated').value = currentAmount;
+      document.getElementById('editPoolNotes').value = '';
+      
+      // Set milk type badge
+      const milkTypeBadge = document.getElementById('editPoolMilkType');
+      milkTypeBadge.textContent = pool.milk_type;
+      milkTypeBadge.className = `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+        pool.milk_type === 'A1' ? 'bg-green-100 text-green-800' : 
+        pool.milk_type === 'A2' ? 'bg-orange-100 text-orange-800' : 
+        'bg-blue-100 text-blue-800'
+      }`;
+      
+      // Set milk type indicator
+      const indicator = document.getElementById('editPoolIndicator');
+      if (pool.milk_type === 'A1') {
+        indicator.className = 'w-4 h-4 bg-green-500 rounded-full mr-3';
+      } else if (pool.milk_type === 'A2') {
+        indicator.className = 'w-4 h-4 bg-orange-500 rounded-full mr-3';
+      } else {
+        indicator.className = 'w-4 h-4 bg-blue-500 rounded-full mr-3';
+      }
+      
+      // Show modal
+      modal.style.display = 'flex';
+      modal.style.visibility = 'visible';
+      modal.style.opacity = '1';
+    }
+    
+    function deletePoolAllocation(poolId) {
+      // Store the pool ID for deletion
+      window.currentDeletePoolId = poolId;
+      
+      // Get pool data for display
+      const pools = window.availablePools || [];
+      const pool = pools.find(p => p.id == poolId);
+      
+      if (!pool) {
+        showErrorToast('Pool not found');
+        return;
+      }
+      
+      // Show delete modal
+      showDeletePoolModal();
+    }
+    
+    async function savePoolAllocation(poolId, allocatedAmount) {
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        
+        const allocation = {
+          allocation_date: productionDate,
+          pool_id: parseInt(poolId),
+          milk_allocated: allocatedAmount,
+          notes: ''
+        };
+        
+        const response = await fetch('/production/pool-allocations/api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(allocation)
+        });
+        
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to save allocation');
+        }
+        
+        // Update the UI immediately
+        updatePoolAllocationCard(poolId, allocatedAmount);
+        
+        // Refresh pool allocations to ensure they're fully rendered
+        await refreshPoolAllocations();
+        
+        // Refresh milk inventory cards to reflect pool allocations
+        await refreshMilkInventoryCards();
+        
+        // Update product volumes after both pool allocations and milk inventory are refreshed
+        updateProductVolumes();
+        
+        if (allocatedAmount > 0) {
+          showSuccessToast('Pool allocation saved successfully');
+        }
+        // Note: For deletion (allocatedAmount === 0), toast is handled by the calling function
+      } catch (error) {
+        console.error('Error saving pool allocation:', error);
+        showErrorToast('Error saving pool allocation');
+      }
+    }
+    
+    function updatePoolAllocationCard(poolId, allocatedAmount) {
+      const card = document.querySelector(`[data-pool-id="${poolId}"]`);
+      if (!card) return;
+      
+      const allocatedSpan = card.querySelector('.pool-allocated');
+      const addBtn = card.querySelector('.pool-add-btn');
+      const editBtn = card.querySelector('.pool-edit-btn');
+      const deleteBtn = card.querySelector('.pool-delete-btn');
+      
+      if (allocatedSpan) {
+        allocatedSpan.textContent = allocatedAmount.toFixed(1);
+      }
+      
+      const hasAllocation = allocatedAmount > 0;
+      
+      if (addBtn) {
+        addBtn.classList.toggle('hidden', hasAllocation);
+      }
+      if (editBtn) {
+        editBtn.classList.toggle('hidden', !hasAllocation);
+      }
+      if (deleteBtn) {
+        deleteBtn.classList.toggle('hidden', !hasAllocation);
+      }
+    }
+
+    async function loadAvailablePools() {
+      try {
+        const response = await fetch('/production/milk-pools/api');
+        const result = await response.json();
+        
+        const poolSelect = document.getElementById('poolSelection');
+        poolSelect.innerHTML = '<option value="">Select a pool</option>';
+        
+        if (result.success && result.pools) {
+          result.pools.forEach(pool => {
+            const option = document.createElement('option');
+            option.value = pool.id;
+            option.textContent = `${pool.name} (${pool.milk_type} Milk)`;
+            poolSelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading pools:', error);
+        showErrorToast('Failed to load available pools');
+      }
+    }
+
+    function closePoolAllocationModal() {
+      const modal = document.getElementById('poolAllocationModal');
+      modal.classList.add('hidden');
+    }
+
+
+    // Milk Inventory Functions
+    function openAddMilkModal(milkType) {
+      // Set milk type info
+      document.getElementById('addMilkType').value = milkType;
+      document.getElementById('addMilkProductionDate').value = document.getElementById('productionDate').value;
+      
+      // Set milk type name and indicator
+      document.getElementById('addMilkTypeName').textContent = `${milkType} Milk`;
+      
+      const indicator = document.getElementById('addMilkTypeIndicator');
+      if (milkType === 'A1') {
+        indicator.className = 'w-4 h-4 bg-green-500 rounded-full mr-3';
+      } else if (milkType === 'A2') {
+        indicator.className = 'w-4 h-4 bg-orange-500 rounded-full mr-3';
+      } else {
+        indicator.className = 'w-4 h-4 bg-blue-500 rounded-full mr-3';
+      }
+
+      // Clear form for new entry
+      document.getElementById('addAvailableMilk').value = '';
+      document.getElementById('addWastedMilk').value = '';
+      document.getElementById('addMilkNotes').value = '';
+
+      // Show modal
+      document.getElementById('addMilkModal').classList.remove('hidden');
+    }
+
+    async function openEditMilkModal(milkType) {
+      // Set milk type info
+      document.getElementById('editMilkType').value = milkType;
+      document.getElementById('editMilkProductionDate').value = document.getElementById('productionDate').value;
+      
+      // Set milk type name and indicator
+      document.getElementById('editMilkTypeName').textContent = `${milkType} Milk`;
+      
+      const indicator = document.getElementById('editMilkTypeIndicator');
+      if (milkType === 'A1') {
+        indicator.className = 'w-4 h-4 bg-green-500 rounded-full mr-3';
+      } else if (milkType === 'A2') {
+        indicator.className = 'w-4 h-4 bg-orange-500 rounded-full mr-3';
+      } else {
+        indicator.className = 'w-4 h-4 bg-blue-500 rounded-full mr-3';
+      }
+
+      // Fetch current milk inventory data from API
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        const response = await fetch(`/production/milk-inventory/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.milkInventory) {
+          const existingData = result.milkInventory.find(inventory => inventory.milk_type === milkType);
+        if (existingData) {
+            document.getElementById('editCurrentAvailable').textContent = `${parseFloat(existingData.quantity_available || 0).toFixed(1)} L`;
+            document.getElementById('editCurrentRemaining').textContent = `${parseFloat(existingData.quantity_remaining || 0).toFixed(1)} L`;
+            document.getElementById('editWastedMilk').value = existingData.quantity_wasted || '';
+            document.getElementById('editMilkNotes').value = existingData.notes || '';
+        } else {
+            // No existing data found
+            document.getElementById('editCurrentAvailable').textContent = '0.0 L';
+            document.getElementById('editCurrentRemaining').textContent = '0.0 L';
+            document.getElementById('editWastedMilk').value = '';
+            document.getElementById('editMilkNotes').value = '';
+        }
+      } else {
+          throw new Error(result.error || 'Failed to fetch milk inventory');
+        }
+      } catch (error) {
+        console.error('Error fetching milk inventory for edit modal:', error);
+        showErrorToast('Failed to load current milk inventory data');
+        return;
+      }
+
+          // Clear volume change field
+          document.getElementById('editVolumeChange').value = '';
+
+
+          // Show modal
+          document.getElementById('editMilkModal').classList.remove('hidden');
+    }
+
+    function closeAddMilkModal() {
+      document.getElementById('addMilkModal').classList.add('hidden');
+    }
+
+    function closeEditMilkModal() {
+      document.getElementById('editMilkModal').classList.add('hidden');
+    }
+
+
+    function getExistingMilkInventoryData(milkType) {
+      const milkInventory = <%- JSON.stringify(milkInventory || []) %>;
+      return milkInventory.find(inventory => inventory.milk_type === milkType);
+    }
+
+    function calculateUsedMilkForType(milkType) {
+      const existingProduction = <%- JSON.stringify(existingProduction || []) %>;
+      const categories = <%- JSON.stringify(categories || []) %>;
+      
+      let totalUsed = 0;
+      
+      // Get all products of this milk type
+      const productsOfType = [];
+      categories.forEach(category => {
+        if (category.products) {
+          category.products.forEach(product => {
+            if (product.milk_type === milkType) {
+              productsOfType.push(product.id);
+            }
+          });
+        }
+      });
+
+      // Sum up milk used for products of this type
+      existingProduction.forEach(entry => {
+        if (productsOfType.includes(entry.product_id)) {
+          totalUsed += parseFloat(entry.milk_used) || 0;
+        }
+      });
+
+      return totalUsed;
+    }
+
+    async function saveAddMilkData(event) {
+      if (event) event.preventDefault();
+      
+      const milkType = document.getElementById('addMilkType').value;
+      const available = parseFloat(document.getElementById('addAvailableMilk').value) || 0;
+      const wasted = parseFloat(document.getElementById('addWastedMilk').value) || 0;
+      const notes = document.getElementById('addMilkNotes').value;
+      const productionDate = document.getElementById('addMilkProductionDate').value;
+      
+      if (available <= 0) {
+        showErrorToast('Please enter a valid available milk quantity');
+        return;
+      }
+
+      const milkData = {
+        milk_type: milkType,
+        quantity_available: available,
+        quantity_used: 0, // For new entries, used is 0
+        quantity_wasted: wasted,
+        notes: notes,
+        inventory_date: productionDate
+      };
+
+      try {
+        const response = await fetch('/production/daily-production', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            date: productionDate,
+            milkInventory: [milkData]
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast('Milk inventory added successfully');
+          closeAddMilkModal();
+          // Refresh milk inventory cards from API to get updated remaining values
+          await refreshMilkInventoryCards();
+          // Update Production Entry cards with new remaining milk values
+          updateProductVolumes();
+        } else {
+          throw new Error(result.error || 'Failed to add milk inventory');
+        }
+      } catch (error) {
+        console.error('Error adding milk inventory:', error);
+        showErrorToast('Failed to add milk inventory: ' + error.message);
+      }
+    }
+
+    async function saveEditMilkData(event) {
+      if (event) event.preventDefault();
+      
+      const milkType = document.getElementById('editMilkType').value;
+      const volumeChange = parseFloat(document.getElementById('editVolumeChange').value) || 0;
+      const actionRadio = document.querySelector('input[name="editMilkAction"]:checked');
+      if (!actionRadio) {
+        showErrorToast('Please select an action (Add or Remove)');
+        return;
+      }
+      const action = actionRadio.value;
+      const wasted = parseFloat(document.getElementById('editWastedMilk').value) || 0;
+      const notes = document.getElementById('editMilkNotes').value;
+      const productionDate = document.getElementById('editMilkProductionDate').value;
+      
+      if (volumeChange <= 0) {
+        showErrorToast('Please enter a valid volume adjustment');
+        return;
+      }
+
+      // Get current inventory data from API
+      let existingData;
+      try {
+        const response = await fetch(`/production/milk-inventory/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.milkInventory) {
+          existingData = result.milkInventory.find(inventory => inventory.milk_type === milkType);
+        }
+        
+        if (!existingData) {
+          showErrorToast('No existing milk inventory found for this type');
+          return;
+        }
+      } catch (error) {
+        console.error('Error fetching current milk inventory:', error);
+        showErrorToast('Failed to fetch current milk inventory data');
+        return;
+      }
+
+          // Calculate new available volume based on action
+          const currentAvailable = parseFloat(existingData.quantity_available || 0);
+          let newAvailable;
+          if (action === 'add') {
+            newAvailable = currentAvailable + volumeChange;
+          } else {
+            newAvailable = Math.max(0, currentAvailable - volumeChange);
+          }
+
+      const milkData = {
+        milk_type: milkType,
+        quantity_available: newAvailable,
+        quantity_used: parseFloat(existingData.quantity_used || 0), // Keep existing used amount
+        quantity_wasted: wasted,
+        notes: notes,
+        inventory_date: productionDate
+      };
+
+      try {
+        const response = await fetch('/production/daily-production', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            date: productionDate,
+            milkInventory: [milkData]
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast(`Milk inventory updated successfully (${action === 'add' ? '+' : '-'}${volumeChange}L)`);
+          closeEditMilkModal();
+          // Refresh milk inventory cards from API to get updated remaining values
+          await refreshMilkInventoryCards();
+          // Update Production Entry cards with new remaining milk values
+          updateProductVolumes();
+        } else {
+          throw new Error(result.error || 'Failed to update milk inventory');
+        }
+      } catch (error) {
+        console.error('Error updating milk inventory:', error);
+        showErrorToast('Failed to update milk inventory: ' + error.message);
+      }
+    }
+
+    function updateMilkInventoryCard(milkType, milkData) {
+      const card = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+      if (!card) return;
+
+      const availableSpan = card.querySelector('.milk-available');
+      const usedSpan = card.querySelector('.milk-used');
+      const wastedSpan = card.querySelector('.milk-wasted');
+      const remainingSpan = card.querySelector('.milk-remaining');
+      const addBtn = card.querySelector('.add-milk-btn');
+      const editBtn = card.querySelector('.edit-milk-btn');
+
+      // Convert string values to numbers
+      const available = parseFloat(milkData.quantity_available) || 0;
+      const used = parseFloat(milkData.quantity_used) || 0;
+      const wasted = parseFloat(milkData.quantity_wasted) || 0;
+      const remaining = parseFloat(milkData.quantity_remaining) || 0;
+
+      if (availableSpan) availableSpan.textContent = `${available.toFixed(1)} L`;
+      if (usedSpan) usedSpan.textContent = `${used.toFixed(1)} L`;
+      if (wastedSpan) wastedSpan.textContent = `${wasted.toFixed(1)} L`;
+      if (remainingSpan) remainingSpan.textContent = `${remaining.toFixed(1)} L`;
+
+      // Show/hide buttons based on available milk
+      if (addBtn) {
+        if (available === 0) {
+          addBtn.classList.remove('hidden');
+        } else {
+          addBtn.classList.add('hidden');
+        }
+      }
+
+      if (editBtn) {
+        if (available === 0) {
+          editBtn.classList.add('hidden');
+        } else {
+          editBtn.classList.remove('hidden');
+        }
+      }
+
+      // Update usage breakdown if available
+      if (milkData.usage_breakdown) {
+        updateUsageBreakdown(milkType, milkData.usage_breakdown);
+      }
+
+              // Update product cards with remaining milk for direct source products
+              updateProductCardsWithAvailableMilk(milkType, remaining);
+    }
+
+    function updateUsageBreakdown(milkType, breakdown) {
+      const card = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+      if (!card) return;
+
+      const poolBreakdown = card.querySelector('.pool-breakdown');
+      const productBreakdown = card.querySelector('.product-breakdown');
+
+      // Update pool allocations
+      if (poolBreakdown) {
+        if (breakdown.pool_allocations.items.length > 0) {
+          poolBreakdown.innerHTML = breakdown.pool_allocations.items.map(item => 
+            `<div class="flex justify-between">
+              <span>${item.name}</span>
+              <span class="font-medium">${item.amount.toFixed(1)}L</span>
+            </div>`
+          ).join('');
+        } else {
+          poolBreakdown.innerHTML = '<div class="text-gray-500 italic">No pool allocations</div>';
+        }
+      }
+
+      // Update product production
+      if (productBreakdown) {
+        if (breakdown.product_production.items.length > 0) {
+          productBreakdown.innerHTML = breakdown.product_production.items.map(item => 
+            `<div class="flex justify-between">
+              <span>${item.name}</span>
+              <span class="font-medium">${item.amount.toFixed(1)}L</span>
+            </div>`
+          ).join('');
+        } else {
+          productBreakdown.innerHTML = '<div class="text-gray-500 italic">No product production</div>';
+        }
+      }
+    }
+
+    // Update available volumes for products
+    function updateProductVolumes() {
+      // Update direct milk volumes
+      document.querySelectorAll('.direct-volume').forEach(element => {
+        const milkType = element.dataset.milkType;
+        const milkCard = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+        if (milkCard) {
+          const remainingSpan = milkCard.querySelector('.milk-remaining');
+          if (remainingSpan) {
+            const remaining = parseFloat(remainingSpan.textContent) || 0;
+            element.textContent = `${remaining.toFixed(1)}L`;
+            // Preserve the direct-volume class and add color classes
+            element.className = `direct-volume ${remaining > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}`;
+          }
+        }
+      });
+
+      // Update pool volumes by fetching allocation data from API
+      updatePoolVolumesFromAPI();
+    }
+
+    // Update pool volumes by fetching allocation data from API
+    async function updatePoolVolumesFromAPI() {
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        
+        // Fetch current pool allocations from API
+        const response = await fetch(`/production/pool-allocations/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.allocations) {
+          // Create a map of pool allocations for quick lookup
+          const allocationMap = {};
+          result.allocations.forEach(allocation => {
+            allocationMap[allocation.pool_id] = allocation;
+          });
+          
+          // Instead of looking for .pool-volume elements, find product cards with pool source
+          // and update their pool volume display directly
+          const poolProductCards = document.querySelectorAll('.product-card[data-milk-source="pool"]');
+          
+          poolProductCards.forEach(productCard => {
+            const poolId = productCard.dataset.poolId;
+            const allocation = allocationMap[poolId];
+            
+            // Find the pool volume element within this product card
+            let poolVolumeElement = productCard.querySelector('.pool-volume');
+            
+            // If the pool-volume element doesn't exist, find the element that should contain it
+            if (!poolVolumeElement) {
+              // Look for the span that might have the pool volume text
+              const poolSpans = productCard.querySelectorAll('span');
+              for (const span of poolSpans) {
+                if (span.textContent.includes('Not allocated') || span.textContent.includes('L') || span.textContent.includes('Pool:')) {
+                  poolVolumeElement = span;
+                  // Add the pool-volume class and data-pool-id if missing
+                  if (!poolVolumeElement.classList.contains('pool-volume')) {
+                    poolVolumeElement.classList.add('pool-volume');
+                    poolVolumeElement.setAttribute('data-pool-id', poolId);
+                  }
+                  break;
+                }
+              }
+            }
+            
+            // If we still don't have a pool volume element, create one
+            if (!poolVolumeElement) {
+              // Find the container where pool volume should be displayed
+              const poolContainer = productCard.querySelector('div:has(> .font-medium)') || 
+                                  productCard.querySelector('.text-xs.text-gray-500');
+              if (poolContainer) {
+                poolVolumeElement = document.createElement('span');
+                poolVolumeElement.className = 'pool-volume';
+                poolVolumeElement.setAttribute('data-pool-id', poolId);
+                
+                // Create the full structure
+                poolContainer.innerHTML = `<span class="font-medium">Pool:</span> <span class="pool-volume" data-pool-id="${poolId}">Not allocated</span>`;
+                poolVolumeElement = poolContainer.querySelector('.pool-volume');
+              }
+            }
+            
+            // Update the pool volume element
+            if (poolVolumeElement) {
+              if (allocation && allocation.milk_allocated > 0) {
+                poolVolumeElement.textContent = `${parseFloat(allocation.milk_allocated).toFixed(1)}L`;
+                poolVolumeElement.className = 'pool-volume text-green-600 font-medium';
+              } else {
+                poolVolumeElement.textContent = 'Not allocated';
+                poolVolumeElement.className = 'pool-volume text-red-600 font-medium';
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error updating pool volumes from API:', error);
+      }
+    }
+
+    // Update product cards with remaining milk for a specific milk type
+    function updateProductCardsWithAvailableMilk(milkType, remaining) {
+      // Wait for DOM to be ready if needed
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          updateProductCardsWithAvailableMilk(milkType, remaining);
+        });
+        return;
+      }
+      
+      // Update direct volume elements for this milk type
+      const selector = `.direct-volume[data-milk-type="${milkType}"]`;
+      const elements = document.querySelectorAll(selector);
+      
+      elements.forEach((element) => {
+        element.textContent = `${remaining.toFixed(1)}L`;
+        // Preserve the direct-volume class and add color classes
+        element.className = `direct-volume ${remaining > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}`;
+      });
+    }
+
+    function updateMilkInventoryCards() {
+      const milkInventory = <%- JSON.stringify(milkInventory || []) %>;
+      
+      milkInventory.forEach(inventory => {
+        updateMilkInventoryCard(inventory.milk_type, inventory);
+      });
+
+      // Show/hide buttons based on available milk
+      ['A1', 'A2', 'Buffalo'].forEach(milkType => {
+        const card = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+        const addBtn = card?.querySelector('.add-milk-btn');
+        const editBtn = card?.querySelector('.edit-milk-btn');
+        const availableSpan = card?.querySelector('.milk-available');
+        
+        if (availableSpan) {
+          const available = parseFloat(availableSpan.textContent) || 0;
+          
+          // Add button: show when no milk available
+          if (addBtn) {
+          if (available === 0) {
+            addBtn.classList.remove('hidden');
+          } else {
+            addBtn.classList.add('hidden');
+            }
+          }
+          
+          // Edit button: hide when no milk available
+          if (editBtn) {
+            if (available === 0) {
+              editBtn.classList.add('hidden');
+            } else {
+              editBtn.classList.remove('hidden');
+            }
+          }
+        }
+      });
+
+      // Update product cards with available milk volumes
+      updateProductVolumes();
+    }
+
+    async function refreshMilkInventoryCards() {
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        
+        // Fetch updated milk inventory data from API
+        const response = await fetch(`/production/milk-inventory/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.milkInventory) {
+          // Update each milk inventory card
+          result.milkInventory.forEach(inventory => {
+            updateMilkInventoryCard(inventory.milk_type, inventory);
+          });
+          
+          // Update button visibility based on available milk
+          ['A1', 'A2', 'Buffalo'].forEach(milkType => {
+            const card = document.querySelector(`.milk-inventory-card[data-milk-type="${milkType}"]`);
+            const addBtn = card?.querySelector('.add-milk-btn');
+            const editBtn = card?.querySelector('.edit-milk-btn');
+            const availableSpan = card?.querySelector('.milk-available');
+            
+            if (availableSpan) {
+              const available = parseFloat(availableSpan.textContent) || 0;
+              
+              // Add button: show when no milk available
+              if (addBtn) {
+                if (available === 0) {
+                  addBtn.classList.remove('hidden');
+                } else {
+                  addBtn.classList.add('hidden');
+                }
+              }
+              
+              // Edit button: hide when no milk available
+              if (editBtn) {
+                if (available === 0) {
+                  editBtn.classList.add('hidden');
+                } else {
+                  editBtn.classList.remove('hidden');
+                }
+              }
+            }
+          });
+
+          // Update product cards with available milk volumes
+          updateProductVolumes();
+        } else {
+          throw new Error(result.error || 'Failed to fetch milk inventory');
+        }
+      } catch (error) {
+        console.error('Error refreshing milk inventory cards:', error);
+        showErrorToast('Failed to refresh milk inventory');
+      }
+    }
+
+    async function refreshPoolAllocations() {
+      try {
+        const productionDate = document.getElementById('productionDate').value;
+        
+        // Fetch updated pool allocations data from API
+        const response = await fetch(`/production/pool-allocations/api?date=${productionDate}`);
+        const result = await response.json();
+        
+        if (result.success && result.allocations) {
+          // Re-render pool allocation cards with updated data
+          const pools = window.availablePools || [];
+          renderPoolAllocations(pools, result.allocations);
+        } else {
+          throw new Error(result.error || 'Failed to fetch pool allocations');
+        }
+      } catch (error) {
+        console.error('Error refreshing pool allocations:', error);
+        showErrorToast('Failed to refresh pool allocations');
+      }
+    }
+
+    // Pool Allocation Modal Functions
+    function closeAddPoolModal() {
+      const modal = document.getElementById('addPoolAllocationModal');
+      modal.style.display = 'none';
+    }
+
+    function closeEditPoolModal() {
+      const modal = document.getElementById('editPoolAllocationModal');
+      modal.style.display = 'none';
+    }
+
+    function closeDeletePoolModal() {
+      const modal = document.getElementById('deletePoolAllocationModal');
+      const modalContent = modal.querySelector('.relative');
+      
+      if (modalContent) {
+        // Animate out
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        
+        // Hide modal after animation completes
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 300);
+      }
+      
+      window.currentDeletePoolId = null;
+    }
+
+    function showDeletePoolModal() {
+      const modal = document.getElementById('deletePoolAllocationModal');
+      
+      // Show modal with animation
+      modal.classList.remove('hidden');
+      
+      // Trigger animation after a small delay to ensure the modal is visible
+      setTimeout(() => {
+        const modalContent = modal.querySelector('.relative');
+        if (modalContent) {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }
+      }, 10);
+    }
+
+    async function saveAddPoolAllocation(event) {
+      if (event) event.preventDefault();
+      
+      const poolId = document.getElementById('addPoolId').value;
+      const allocatedAmount = parseFloat(document.getElementById('addMilkAllocated').value) || 0;
+      
+      if (allocatedAmount <= 0) {
+        showErrorToast('Please enter a valid positive number');
+        return;
+      }
+      
+      try {
+        await savePoolAllocation(poolId, allocatedAmount);
+        closeAddPoolModal();
+        // Success toast is already shown by savePoolAllocation()
+      } catch (error) {
+        console.error('Error saving pool allocation:', error);
+        showErrorToast('Failed to save pool allocation');
+      }
+    }
+
+    async function saveEditPoolAllocation(event) {
+      if (event) event.preventDefault();
+      
+      const poolId = document.getElementById('editPoolId').value;
+      const allocatedAmount = parseFloat(document.getElementById('editMilkAllocated').value) || 0;
+      const notes = document.getElementById('editPoolNotes').value;
+      
+      if (allocatedAmount < 0) {
+        showErrorToast('Please enter a valid non-negative number');
+        return;
+      }
+      
+      try {
+        await savePoolAllocation(poolId, allocatedAmount);
+        closeEditPoolModal();
+      } catch (error) {
+        console.error('Error saving pool allocation:', error);
+        showErrorToast('Failed to save pool allocation');
+      }
+    }
+
+    async function confirmDeletePool() {
+      if (!window.currentDeletePoolId) return;
+
+      const poolIdToDelete = window.currentDeletePoolId;
+      const productionDate = document.getElementById('productionDate').value;
+
+      try {
+        const response = await fetch('/production/pool-allocations/api', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            allocation_date: productionDate,
+            pool_id: poolIdToDelete
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Update the UI to reflect the deletion
+          updatePoolAllocationCard(poolIdToDelete, 0);
+          
+          // Refresh pool allocations and milk inventory
+          await refreshPoolAllocations();
+          await refreshMilkInventoryCards();
+          
+          // Update product volumes
+          updateProductVolumes();
+          
+          closeDeletePoolModal();
+          showSuccessToast('Pool allocation deleted successfully');
+        } else {
+          throw new Error(result.error || 'Failed to delete pool allocation');
+        }
+      } catch (error) {
+        console.error('Error deleting pool allocation:', error);
+        showErrorToast('Failed to delete pool allocation');
+        closeDeletePoolModal();
+      }
+    }
+
+
+
+  </script>
+</body>
+</html>

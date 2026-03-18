@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-brand-bg dark:bg-gray-900 text-brand-ink dark:text-gray-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %>
+      <%- include('../../../partials/_subnav', { title: 'Admin · MP', user }) %>
+      <main class="flex-1">
+        <section class="max-w-6xl mx-auto px-4 py-10">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Admin — MP</h1>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <input id="mpSearch" placeholder="Search by name or location" class="flex-1 sm:w-80 border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+              <button type="button" class="btn btn-primary" id="btnOpenAddMp">Add MP</button>
+            </div>
+          </div>
+          <div class="card card--white dark:bg-gray-800 dark:border-gray-700 p-4">
+            <h2 class="font-semibold mb-3 text-gray-900 dark:text-white">MP List</h2>
+            <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <% (rows||[]).forEach(m => { %>
+                <div class="mp-card border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 flex flex-col gap-1.5" data-name="<%- m.name %>" data-location="<%- m.location||'' %>" data-status="<%- m.status %>">
+                  <div class="text-lg font-semibold break-words text-gray-900 dark:text-white"><%= m.name %></div>
+                  <div class="text-sm text-slate-600 dark:text-gray-300 break-words">Location: <%= m.location||'—' %></div>
+                  <div class="text-sm text-slate-600 dark:text-gray-300">Rent: ₹<%= Number(m.rent||0).toFixed(2) %></div>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-xs px-2 py-1 rounded-full border <%= m.status==='active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700' : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600' %>"><%= m.status %></span>
+                    <button type="button" class="p-2 rounded hover:bg-slate-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 btn-edit-mp" aria-label="Edit"
+                      data-id="<%= m.id %>"
+                      data-name="<%= m.name %>"
+                      data-location="<%= m.location || '' %>"
+                      data-rent="<%= m.rent || 0 %>"
+                      data-status="<%= m.status %>">
+                      <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- Edit MP Modal -->
+          <div id="editMpModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel bg-white dark:bg-gray-800 rounded-xl shadow-2xl border dark:border-gray-700">
+              <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit MP</h3>
+              <form id="editMpForm" method="post">
+                <div class="grid md:grid-cols-2 gap-3">
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Name</label>
+                    <input name="name" id="m_name" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" required />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Location</label>
+                    <input name="location" id="m_location" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Rent</label>
+                    <input type="number" step="0.01" name="rent" id="m_rent" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Status</label>
+                    <select name="status" id="m_status" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700">
+                      <option value="active">active</option>
+                      <option value="inactive">inactive</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-2">
+                  <button type="button" class="btn btn-ghost dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600" data-close="modal">Cancel</button>
+                  <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Add MP Modal -->
+          <div id="addMpModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel bg-white dark:bg-gray-800 rounded-xl shadow-2xl border dark:border-gray-700">
+              <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add MP</h3>
+              <form method="post" action="/admin/mp" class="space-y-3">
+                <input name="name" placeholder="Name" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" required />
+                <input name="location" placeholder="Location" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                <input name="rent" type="number" step="0.01" placeholder="Rent" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                <div class="flex justify-end gap-2 pt-2">
+                  <button type="button" class="btn btn-ghost dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600" data-close="modal">Cancel</button>
+                  <button class="btn btn-primary">Create</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          </div>
+        </section>
+  </main>
+  <%- include('../../../partials/_footer') %>
+</div>
+<script>
+  (function(){
+    const addModal = document.getElementById('addMpModal');
+    const openAdd = document.getElementById('btnOpenAddMp');
+    function open(){ addModal.classList.remove('hidden'); addModal.classList.add('flex'); }
+    function close(){ addModal.classList.add('hidden'); addModal.classList.remove('flex'); }
+    openAdd?.addEventListener('click', open);
+    addModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', close));
+
+    // Edit modal
+    const editModal = document.getElementById('editMpModal');
+    const editForm = document.getElementById('editMpForm');
+    const m_name = document.getElementById('m_name');
+    const m_location = document.getElementById('m_location');
+    const m_rent = document.getElementById('m_rent');
+    const m_status = document.getElementById('m_status');
+    function openEdit(){ editModal.classList.remove('hidden'); editModal.classList.add('flex'); }
+    function closeEdit(){ editModal.classList.add('hidden'); editModal.classList.remove('flex'); }
+    editModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', closeEdit));
+    document.querySelectorAll('.btn-edit-mp').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        m_name.value = btn.getAttribute('data-name') || '';
+        m_location.value = btn.getAttribute('data-location') || '';
+        m_rent.value = btn.getAttribute('data-rent') || '0';
+        m_status.value = btn.getAttribute('data-status') || 'active';
+        editForm.setAttribute('action', `/admin/mp/${id}`);
+        openEdit();
+      });
+    });
+
+    // Search filter
+    const search = document.getElementById('mpSearch');
+    const cards = Array.from(document.querySelectorAll('.mp-card'));
+    function norm(s){ return (s||'').toString().toLowerCase(); }
+    function matches(card, q){ const txt = [card.dataset.name, card.dataset.location, card.dataset.status].map(norm).join(' '); return txt.includes(q); }
+    search?.addEventListener('input', () => { const q = norm(search.value); cards.forEach(c => { c.style.display = q ? (matches(c,q)?'':'none') : ''; }); });
+  })();
+  </script>
+  <script src="/assets/js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Billing Management - Vrindavan Farm</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+      /* Normalize date input and select styling */
+      input[type="date"],
+      select {
+        height: 48px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .card {
+        @apply bg-white rounded-lg shadow-sm border border-gray-200;
+      }
+      .card--white {
+        @apply bg-white;
+      }
+      /* Dark mode overrides for legacy utility classes used in this page */
+      .dark .card {
+        background-color: #1f2937; /* slate-800 */
+        border-color: #334155; /* slate-700 */
+      }
+      .dark .card--white { background-color: #1f2937; }
+      .dark .bg-white { background-color: #0f172a !important; }
+      .dark .bg-gray-50 { background-color: #1f2937 !important; }
+      .dark .border-gray-200 { border-color: #334155 !important; }
+      .dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
+      .dark .text-gray-900 { color: #e5e7eb !important; }
+      .dark .text-gray-700 { color: #cbd5e1 !important; }
+      .dark .text-gray-600 { color: #94a3b8 !important; }
+      .dark .text-gray-500 { color: #94a3b8 !important; }
+      .dark .text-gray-400 { color: #94a3b8 !important; }
+      .dark table thead { background-color: #1f2937; }
+      .dark table tbody { background-color: #0f172a; }
+      .dark input,
+      .dark select,
+      .dark textarea {
+        background-color: #334155 !important;
+        color: #e5e7eb !important;
+        border-color: #475569 !important;
+      }
+      .dark .bg-blue-100 { background-color: rgba(59,130,246,0.15) !important; }
+      .dark .bg-green-100 { background-color: rgba(16,185,129,0.15) !important; }
+      .dark .bg-yellow-100 { background-color: rgba(234,179,8,0.15) !important; }
+      .dark .bg-red-100 { background-color: rgba(239,68,68,0.15) !important; }
+      /* Adjust pill text colors in dark */
+      .dark .text-blue-800 { color: #93c5fd !important; }
+      .dark .text-green-800 { color: #86efac !important; }
+      .dark .text-yellow-800 { color: #fde68a !important; }
+      .dark .text-red-800 { color: #fca5a5 !important; }
+      .dark .text-purple-800 { color: #d8b4fe !important; }
+      /* Hover row color for dark mode */
+      @media (hover:hover) {
+        .dark .hover\:bg-gray-50:hover { background-color: #334155 !important; }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-900 text-slate-100">
+    <div class="min-h-screen">
+      <%- include('../../../partials/_head') %> <%- include('../../../partials/_subnav', { section: 'Procurement', subsection: 'Billing', page: 'Billing Management', user }) %>
+
+      <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold mb-2 text-slate-100">Billing Management</h1>
+          <p class="text-slate-400">Manage billing status, payments, and financial records</p>
+        </div>
+
+        
+
+        <!-- Billing Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div class="card p-6 bg-slate-800 border border-slate-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-400">Pending Bills</p>
+                <p class="text-2xl font-bold text-yellow-400" id="pendingBills">0</p>
+              </div>
+              <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-6 bg-slate-800 border border-slate-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-400">Approved Bills</p>
+                <p class="text-2xl font-bold text-green-400" id="approvedBills">0</p>
+              </div>
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check text-green-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-6 bg-slate-800 border border-slate-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-400">Completed Payments</p>
+                <p class="text-2xl font-bold text-blue-400" id="completedPayments">0</p>
+              </div>
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-blue-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-6 bg-slate-800 border border-slate-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-400">Overdue Payments</p>
+                <p class="text-2xl font-bold text-red-400" id="overduePayments">0</p>
+              </div>
+              <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bills Management -->
+        <div class="card p-6">
+          <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6">
+            <h2 class="text-xl font-semibold mb-4 lg:mb-0">Bills Management</h2>
+
+            <!-- Desktop Filters -->
+            <div class="space-x-4" id="desktopFilters">
+              <select id="yearFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
+              <select id="monthFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
+              <select id="periodFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="H1">H1 (1st Half)</option>
+                <option value="H2">H2 (2nd Half)</option>
+              </select>
+              <select id="entityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">All Entities</option>
+                <option value="farmers">Farmers</option>
+                <option value="cpp">CPP</option>
+                <option value="rcc">RCC</option>
+                <option value="mp">MP</option>
+              </select>
+              <select id="milkTypeFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="all" selected>All Milk Types</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="Buffalo">Buffalo</option>
+              </select>
+              <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">All Statuses</option>
+                <option value="1">Pending</option>
+                <option value="2">Approved</option>
+                <option value="9">Completed</option>
+                <option value="3">Rejected</option>
+                <option value="4">Cancelled</option>
+              </select>
+              <button id="refreshBills" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Refresh
+              </button>
+              <button id="regenAllBills" class="px-4 py-2 bg-orange-600 text-white rounded-md text-sm hover:bg-orange-700">Regenerate Bills</button>
+            </div>
+          </div>
+
+          <!-- Mobile Filters Card -->
+          <div class="lg:hidden mb-6" id="mobileFilters">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="text-sm font-medium text-gray-700 mb-3">Filters</h3>
+              <div class="grid grid-cols-1 gap-3">
+              <div class="grid grid-cols-2 gap-2">
+                  <select id="yearFilterMobile" class="px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
+                  <select id="monthFilterMobile" class="px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <select id="periodFilterMobile" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="H1">H1 (1st Half)</option>
+                    <option value="H2">H2 (2nd Half)</option>
+                  </select>
+                  <select id="entityFilterMobile" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="">All Entities</option>
+                    <option value="farmers">Farmers</option>
+                    <option value="cpp">CPP</option>
+                    <option value="rcc">RCC</option>
+                    <option value="mp">MP</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <select id="milkTypeFilterMobile" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="all" selected>All Milk Types</option>
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="Buffalo">Buffalo</option>
+                  </select>
+                  <div></div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <select id="statusFilterMobile" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="">All Statuses</option>
+                    <option value="1">Pending</option>
+                    <option value="2">Approved</option>
+                    <option value="9">Completed</option>
+                    <option value="3">Rejected</option>
+                    <option value="4">Cancelled</option>
+                  </select>
+                  <button id="refreshBillsMobile" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter-based Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6" id="summaryCards">
+            <div class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-600 truncate">Pending Bills</p>
+                  <p class="text-lg font-bold text-yellow-600" id="summaryPendingBills">0</p>
+                </div>
+                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                  <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-600 truncate">Completed Payments</p>
+                  <p class="text-lg font-bold text-green-600" id="summaryCompletedPayments">0</p>
+                </div>
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                  <i class="fas fa-check-circle text-green-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-600 truncate">Total Due Amount</p>
+                  <p class="text-lg font-bold text-blue-600" id="summaryTotalDue">₹0</p>
+                </div>
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                  <i class="fas fa-rupee-sign text-blue-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-600 truncate">Pending Due Amount</p>
+                  <p class="text-lg font-bold text-red-600" id="summaryPendingDue">₹0</p>
+                </div>
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                  <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="overflow-x-auto" id="desktopTableView">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Billing Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="billsTableBody" class="bg-white divide-y divide-gray-200">
+                <!-- Bills will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div id="billsCardContainer" class="lg:hidden space-y-4">
+            <!-- Bills will be loaded here as cards -->
+          </div>
+
+          <div id="billsLoading" class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+            <p class="text-gray-500 mt-2">Loading bills...</p>
+          </div>
+
+          <div id="noBills" class="text-center py-8 hidden">
+            <i class="fas fa-file-invoice text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-400 mb-4">No bills found for the selected criteria.</p>
+            <div class="flex items-center justify-center">
+              <button id="generateBillsBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Generate Bills
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      
+    </div>
+
+    <!-- Edit Bill Modal -->
+    <div id="editBillModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+      <div class="relative top-20 mx-auto p-5 border border-slate-700 w-96 shadow-lg rounded-md bg-slate-800 text-slate-100">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-slate-100">Edit Bill</h3>
+            <button id="closeEditModal" class="text-slate-400 hover:text-slate-200">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form id="editBillForm">
+            <input type="hidden" id="editBillId" name="billId" />
+            <input type="hidden" id="editEntityType" name="entityType" />
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Billing Status</label>
+              <select id="editBillingStatus" name="billingStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="1">Pending</option>
+                <option value="2">Approved</option>
+                <option value="9">Completed</option>
+                <option value="3">Rejected</option>
+                <option value="4">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+              <input type="date" id="editDueDate" name="dueDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+              <textarea id="editNotes" name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Add any notes..."></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+              <button type="button" id="cancelEdit" class="px-4 py-2 bg-slate-700 text-slate-200 rounded-md hover:bg-slate-600">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Update Bill</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div id="recordPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+      <div class="relative top-10 mx-auto p-5 border border-slate-700 w-11/12 max-w-2xl shadow-lg rounded-md bg-slate-800 text-slate-100">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-slate-100">Record Payment</h3>
+            <button id="closePaymentModal" class="text-slate-400 hover:text-slate-200">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <form id="recordPaymentForm">
+            <input type="hidden" id="paymentBillId" name="billId" />
+            <input type="hidden" id="paymentEntityType" name="entityType" />
+
+            <!-- Bill Information Section -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+              <h4 class="text-lg font-medium text-gray-900 mb-3">Bill Information</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Entity</label>
+                  <div id="paymentEntityInfo" class="text-sm text-gray-900">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Current Status</label>
+                  <div id="paymentCurrentStatus" class="text-sm">
+                    <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                  <div id="paymentTotalAmount" class="text-sm font-semibold text-gray-900">₹0.00</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Due Amount</label>
+                  <div class="text-lg font-bold text-red-600">
+                    ₹
+                    <span id="dueAmount">0.00</span>
+                  </div>
+                </div>
+                <div id="paymentCompleteDateSection" class="hidden">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Payment Complete Date</label>
+                  <div id="paymentCompleteDate" class="text-sm text-gray-900">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Details Section -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-medium text-gray-900">Payment Details</h4>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Payment Type</label>
+                  <div class="flex space-x-4">
+                    <label class="flex items-center">
+                      <input type="radio" id="paymentTypeFull" name="paymentType" value="full" checked class="mr-2" />
+                      <span class="text-sm">Full Payment</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" id="paymentTypePartial" name="paymentType" value="partial" class="mr-2" />
+                      <span class="text-sm">Partial Payment</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Payment Amount (₹)</label>
+                  <input type="number" id="paymentAmount" name="paymentAmount" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" />
+                  <div id="balanceAmount" class="mt-1 text-sm text-gray-600 hidden">
+                    Balance: ₹
+                    <span id="balanceValue">0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                  <select id="paymentMethod" name="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <option value="">Select Payment Method</option>
+                    <option value="1">Cash</option>
+                    <option value="2">Bank Transfer</option>
+                    <option value="3">Check</option>
+                    <option value="4">UPI</option>
+                    <option value="5">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Payment Date</label>
+                  <input type="date" id="paymentDate" name="paymentDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reference Number</label>
+                <input type="text" id="paymentReference" name="paymentReference" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Transaction ID, Check number, etc." />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea id="paymentNotes" name="paymentNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Add any payment notes..."></textarea>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6 pr-4" style="align-items: flex-start">
+              <button type="button" id="cancelPayment" class="w-full sm:w-auto px-4 py-2 bg-slate-700 text-slate-200 rounded-md hover:bg-slate-600 transition-colors flex items-center justify-center" style="height: 40px; line-height: 1; font-size: 14px; border: none; outline: none; box-sizing: border-box; margin: 0 12px 0 0; padding: 8px 16px">
+                <i class="fas fa-times mr-2" style="font-size: 14px; line-height: 1"></i>
+                <span style="font-size: 14px; line-height: 1">Cancel</span>
+              </button>
+              <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center justify-center" style="height: 40px; line-height: 1; font-size: 14px; border: none; outline: none; box-sizing: border-box; margin: 0; padding: 8px 16px">
+                <i class="fas fa-credit-card mr-2" style="font-size: 14px; line-height: 1"></i>
+                <span id="submitButtonText" style="font-size: 14px; line-height: 1">Record Payment</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Bill Modal -->
+    <div id="viewBillModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+      <div class="relative top-10 mx-auto p-5 border border-slate-700 w-11/12 max-w-4xl shadow-lg rounded-md bg-slate-800 text-slate-100">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-slate-100">Bill Details</h3>
+            <button id="closeViewModal" class="text-slate-400 hover:text-slate-200">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Bill Header (with Status Pills moved here) -->
+            <div class="bg-gray-50 dark:bg-slate-700 rounded-lg p-4 border border-transparent dark:border-slate-600">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Bill ID</label>
+                  <div class="mt-1 text-sm text-gray-900 dark:text-slate-100" id="viewBillId">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Entity Type</label>
+                  <div class="mt-1 text-sm text-gray-900 dark:text-slate-100" id="viewEntityType">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Entity Name</label>
+                  <div class="mt-1 text-sm text-gray-900 dark:text-slate-100" id="viewEntityName">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-yellow-700 dark:text-slate-300">Billing Status</label>
+                  <div class="mt-1">
+                    <span id="viewBillingStatus" class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:text-yellow-300">-</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-blue-700 dark:text-slate-300">Payment Status</label>
+                  <div class="mt-1">
+                    <span id="viewPaymentStatus" class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:text-blue-300">-</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Village/Location</label>
+                  <div class="mt-1 text-sm text-gray-900 dark:text-slate-100" id="viewVillage">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Billing Period & Dates (merged) -->
+            <div class="bg-blue-50 dark:bg-slate-700 rounded-lg p-4 border border-transparent dark:border-slate-600">
+              <h4 class="text-md font-semibold text-blue-900 dark:text-slate-100 mb-3">Billing Period & Dates</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-blue-700 dark:text-slate-300">Period Type</label>
+                  <div class="mt-1 text-sm text-blue-900 dark:text-slate-100" id="viewPeriodType">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-blue-700 dark:text-slate-300">Start Date</label>
+                  <div class="mt-1 text-sm text-blue-900 dark:text-slate-100" id="viewPeriodStart">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-blue-700 dark:text-slate-300">End Date</label>
+                  <div class="mt-1 text-sm text-blue-900 dark:text-slate-100" id="viewPeriodEnd">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 dark:text-slate-300">Billing Date</label>
+                  <div class="mt-1 text-sm text-purple-900 dark:text-slate-100" id="viewBillingDate">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 dark:text-slate-300">Due Date</label>
+                  <div class="mt-1 text-sm text-purple-900 dark:text-slate-100" id="viewDueDate">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 dark:text-slate-300">Payment Date</label>
+                  <div class="mt-1 text-sm text-purple-900 dark:text-slate-100" id="viewPaymentDate">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Financial Details -->
+            <div class="bg-green-50 dark:bg-slate-700 rounded-lg p-4 border border-transparent dark:border-slate-600">
+              <h4 class="text-md font-semibold text-green-900 dark:text-slate-100 mb-3">Financial Details</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-green-700 dark:text-slate-300">Total Quantity (Liters)</label>
+                  <div class="mt-1 text-lg font-semibold text-green-900 dark:text-slate-100" id="viewTotalQuantity">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-green-700 dark:text-slate-300">Milk Rate (₹/L)</label>
+                  <div class="mt-1 text-lg font-semibold text-green-900 dark:text-slate-100" id="viewRate">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-green-700 dark:text-slate-300">Milk Cost (₹)</label>
+                  <div class="mt-1 text-lg font-semibold text-green-900 dark:text-slate-100" id="viewMilkCost">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-green-700 dark:text-slate-300">Salary / Commission (₹)</label>
+                  <div class="mt-1 text-lg font-semibold text-green-900 dark:text-slate-100" id="viewSalary">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-green-700 dark:text-slate-300">Total (₹)</label>
+                  <div class="mt-1 text-lg font-semibold text-green-900 dark:text-slate-100" id="viewTotalAmount">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Removed separate Status Information and Important Dates (merged above) -->
+
+            <!-- Payment Details (merged with Confirmation) -->
+            <div class="bg-indigo-50 dark:bg-slate-700 rounded-lg p-4 border border-transparent dark:border-slate-600">
+              <h4 class="text-md font-semibold text-indigo-900 dark:text-slate-100 mb-3">Payment Details</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-indigo-700 dark:text-slate-300">Payment Reference</label>
+                  <div class="mt-1 text-sm text-indigo-900 dark:text-slate-100" id="viewPaymentReference">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-indigo-700 dark:text-slate-300">Notes</label>
+                  <div class="mt-1 text-sm text-indigo-900 dark:text-slate-100" id="viewNotes">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-emerald-700 dark:text-slate-300">Payment Method</label>
+                  <div class="mt-1 text-sm text-emerald-900 dark:text-slate-100" id="viewPaymentMethod">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-emerald-700 dark:text-slate-300">Payment Amount</label>
+                  <div class="mt-1 text-sm text-emerald-900 dark:text-slate-100" id="viewPaymentAmount">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-emerald-700 dark:text-slate-300">Confirmation Date</label>
+                  <div class="mt-1 text-sm text-emerald-900 dark:text-slate-100" id="viewPaymentConfirmationDate">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end mt-6">
+            <button id="closeViewModalBtn" class="px-4 py-2 bg-slate-700 text-slate-200 rounded-md hover:bg-slate-600">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+      // Toast notification system
+      function showToast(message, type = "info", duration = 5000) {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+
+        const bgColor = type === "success" ? "bg-green-500" : type === "error" ? "bg-red-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500";
+
+        toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center justify-between min-w-80 max-w-96 transform transition-all duration-300 ease-in-out translate-x-full`;
+
+        toast.innerHTML = `
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              ${type === "success" ? '<i class="fas fa-check-circle"></i>' : type === "error" ? '<i class="fas fa-exclamation-circle"></i>' : type === "warning" ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-info-circle"></i>'}
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium">${message}</p>
+            </div>
+          </div>
+          <button onclick="this.parentElement.remove()" class="ml-4 flex-shrink-0 text-white hover:text-gray-200">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => {
+          toast.classList.remove("translate-x-full");
+        }, 100);
+
+        // Auto remove
+        setTimeout(() => {
+          toast.classList.add("translate-x-full");
+          setTimeout(() => {
+            if (toast.parentElement) {
+              toast.remove();
+            }
+          }, 300);
+        }, duration);
+      }
+
+      // Test function
+      function testFunction() {
+        // alert("JavaScript is working!"); // Removed alert for better UX
+      }
+
+      // Copy amount to clipboard (numeric value only, without rupee symbol)
+      async function copyAmountToClipboard(amount) {
+        try {
+          // Ensure amount is a clean numeric string
+          const numericValue = parseFloat(amount).toFixed(2);
+          await navigator.clipboard.writeText(numericValue);
+          showToast(`Amount copied: ${numericValue}`, "success", 2000);
+        } catch (error) {
+          console.error("Failed to copy amount:", error);
+          showToast("Failed to copy amount", "error", 2000);
+        }
+      }
+
+      // Load all bills
+      function loadBills() {
+        // Hide loading and show table
+        const loading = document.getElementById("billsLoading");
+        const tbody = document.getElementById("billsTableBody");
+        const cardContainer = document.getElementById("billsCardContainer");
+
+        if (loading) {
+          loading.classList.add("hidden");
+        }
+
+        // Get filter values (check both desktop and mobile filters)
+        const monthFilter = document.getElementById("monthFilter") ? document.getElementById("monthFilter").value : document.getElementById("monthFilterMobile") ? document.getElementById("monthFilterMobile").value : "";
+        const yearFilter = document.getElementById("yearFilter") ? document.getElementById("yearFilter").value : document.getElementById("yearFilterMobile") ? document.getElementById("yearFilterMobile").value : "";
+        const periodFilter = document.getElementById("periodFilter") ? document.getElementById("periodFilter").value : document.getElementById("periodFilterMobile") ? document.getElementById("periodFilterMobile").value : "";
+        const entityFilter = document.getElementById("entityFilter") ? document.getElementById("entityFilter").value : document.getElementById("entityFilterMobile") ? document.getElementById("entityFilterMobile").value : "";
+        const statusFilter = document.getElementById("statusFilter") ? document.getElementById("statusFilter").value : document.getElementById("statusFilterMobile") ? document.getElementById("statusFilterMobile").value : "";
+
+        // Show loading message
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-blue-600">Loading bills... Please wait.</td></tr>';
+        }
+        if (cardContainer) {
+          cardContainer.innerHTML = '<div class="text-center py-4 text-blue-600">Loading bills... Please wait.</div>';
+        }
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (monthFilter) params.append("month", monthFilter);
+        if (yearFilter) params.append("year", yearFilter);
+        if (periodFilter) params.append("period", periodFilter);
+        if (entityFilter) params.append("entityType", entityFilter);
+        if (statusFilter) params.append("status", statusFilter);
+        const milkType = document.getElementById("milkTypeFilter") ? document.getElementById("milkTypeFilter").value : (document.getElementById("milkTypeFilterMobile") ? document.getElementById("milkTypeFilterMobile").value : "all");
+        if (milkType) params.append("milkType", milkType);
+
+        const url = `/api/billing/bills?${params.toString()}`;
+
+        // Make the API call
+        fetch(url)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.success) {
+              displayBills(data.bills);
+            } else {
+              console.error("Error loading bills:", data.error);
+              if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-red-600">Error loading bills: ' + data.error + "</td></tr>";
+              }
+              if (cardContainer) {
+                cardContainer.innerHTML = '<div class="text-center py-4 text-red-600">Error loading bills: ' + data.error + "</div>";
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error loading bills:", error);
+            if (tbody) {
+              tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-red-600">Error loading bills: ' + error.message + "</td></tr>";
+            }
+            if (cardContainer) {
+              cardContainer.innerHTML = '<div class="text-center py-4 text-red-600">Error loading bills: ' + error.message + "</div>";
+            }
+          });
+      }
+
+      // Display bills in table and cards
+      function displayBills(bills) {
+        const tbody = document.getElementById("billsTableBody");
+        const cardContainer = document.getElementById("billsCardContainer");
+        const loading = document.getElementById("billsLoading");
+        const noBills = document.getElementById("noBills");
+
+        loading.classList.add("hidden");
+
+        if (bills.length === 0) {
+          noBills.classList.remove("hidden");
+          if (tbody) tbody.innerHTML = "";
+          if (cardContainer) cardContainer.innerHTML = "";
+          return;
+        }
+
+        noBills.classList.add("hidden");
+
+        // Handle responsive display
+        const desktopTable = document.getElementById("desktopTableView");
+        const mobileCards = document.getElementById("billsCardContainer");
+        const desktopFilters = document.getElementById("desktopFilters");
+        const mobileFilters = document.getElementById("mobileFilters");
+
+        if (window.innerWidth >= 1024) {
+          // Desktop view - show table and desktop filters, hide cards and mobile filters
+          if (desktopTable) desktopTable.style.display = "block";
+          if (mobileCards) mobileCards.style.display = "none";
+          if (desktopFilters) desktopFilters.style.display = "flex";
+          if (mobileFilters) mobileFilters.style.display = "none";
+        } else {
+          // Mobile view - hide table and desktop filters, show cards and mobile filters
+          if (desktopTable) desktopTable.style.display = "none";
+          if (mobileCards) mobileCards.style.display = "block";
+          if (desktopFilters) desktopFilters.style.display = "none";
+          if (mobileFilters) mobileFilters.style.display = "block";
+        }
+
+        // Display desktop table
+        if (tbody) {
+          tbody.innerHTML = bills
+            .map(
+              (bill) => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-slate-700">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bill.entity_type === "farmers" ? "bg-blue-100 text-blue-800" : bill.entity_type === "cpp" ? "bg-green-100 text-green-800" : bill.entity_type === "rcc" ? "bg-yellow-100 text-yellow-800" : "bg-purple-100 text-purple-800"}">
+                  ${bill.entity_type.toUpperCase()}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${bill.entity_name}</div>
+                <div class="text-sm text-gray-500">${bill.village || ""}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                ${new Date(bill.billing_period_start).toLocaleDateString()} to ${new Date(bill.billing_period_end).toLocaleDateString()}
+                <div class="text-xs text-gray-500">${bill.period_type}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                ${Number(bill.total_quantity).toFixed(1)}L
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <div class="flex items-center gap-2 group/amount">
+                  <span>₹${(Number(bill.total_amount) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <button onclick="copyAmountToClipboard('${(Number(bill.total_amount) || 0).toFixed(2)}')" class="opacity-0 group-hover/amount:opacity-100 transition-opacity cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" title="Copy amount">
+                    <i class="fas fa-copy text-xs"></i>
+                  </button>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bill.billing_status === "pending" ? "bg-yellow-100 text-yellow-800" : bill.billing_status === "approved" ? "bg-green-100 text-green-800" : bill.billing_status === "completed" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"}">
+                  ${bill.billing_status || "Pending"}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bill.payment_status === "pending" ? "bg-yellow-100 text-yellow-800" : bill.payment_status === "partial" ? "bg-orange-100 text-orange-800" : bill.payment_status === "completed" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}">
+                  ${bill.payment_status || "Pending"}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                ${new Date(bill.due_date).toLocaleDateString()}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button class="text-blue-600 hover:text-blue-900" onclick="viewBill('${bill.entity_type}', ${bill.id})">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="text-green-600 hover:text-green-900" onclick="editBill('${bill.entity_type}', ${bill.id})">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="text-purple-600 hover:text-purple-900" onclick="recordPayment('${bill.entity_type}', ${bill.id})">
+                    <i class="fas fa-credit-card"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `,
+            )
+            .join("");
+        }
+
+        // Display mobile cards
+        if (cardContainer) {
+          cardContainer.innerHTML = bills
+            .map(
+              (bill) => `
+            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center space-x-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bill.entity_type === "farmers" ? "bg-blue-100 text-blue-800" : bill.entity_type === "cpp" ? "bg-green-100 text-green-800" : bill.entity_type === "rcc" ? "bg-yellow-100 text-yellow-800" : "bg-purple-100 text-purple-800"}">
+                    ${bill.entity_type.toUpperCase()}
+                  </span>
+                  <span class="text-sm font-medium text-gray-900">${bill.entity_name}</span>
+                </div>
+                <div class="flex space-x-1">
+                  <button onclick="viewBill('${bill.entity_type}', ${bill.id})" class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-full" title="View Bill">
+                    <i class="fas fa-eye text-sm"></i>
+                  </button>
+                  <button onclick="editBill('${bill.entity_type}', ${bill.id})" class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full" title="Edit Bill">
+                    <i class="fas fa-edit text-sm"></i>
+                  </button>
+                  <button onclick="recordPayment('${bill.entity_type}', ${bill.id})" class="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full" title="Record Payment">
+                    <i class="fas fa-credit-card text-sm"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Period:</span>
+                  <span class="text-gray-900">${new Date(bill.billing_period_start).toLocaleDateString()} - ${new Date(bill.billing_period_end).toLocaleDateString()}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Type:</span>
+                  <span class="text-gray-900">${bill.period_type}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Quantity:</span>
+                  <span class="text-gray-900">${Number(bill.total_quantity).toFixed(1)}L</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Amount:</span>
+                  <div class="flex items-center gap-2 group/amount">
+                    <span class="text-gray-900 font-semibold">₹${(Number(bill.total_amount) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <button onclick="copyAmountToClipboard('${(Number(bill.total_amount) || 0).toFixed(2)}')" class="opacity-0 group-hover/amount:opacity-100 transition-opacity cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" title="Copy amount">
+                      <i class="fas fa-copy text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Billing Status:</span>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bill.billing_status === "pending" ? "bg-yellow-100 text-yellow-800" : bill.billing_status === "approved" ? "bg-green-100 text-green-800" : bill.billing_status === "completed" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"}">
+                    ${bill.billing_status || "Pending"}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Payment Status:</span>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bill.payment_status === "pending" ? "bg-yellow-100 text-yellow-800" : bill.payment_status === "partial" ? "bg-orange-100 text-orange-800" : bill.payment_status === "completed" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}">
+                    ${bill.payment_status || "Pending"}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Due Date:</span>
+                  <span class="text-gray-900">${new Date(bill.due_date).toLocaleDateString()}</span>
+                </div>
+                ${
+                  bill.village
+                    ? `
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Location:</span>
+                  <span class="text-gray-900">${bill.village}</span>
+                </div>
+                `
+                    : ""
+                }
+              </div>
+            </div>
+          `,
+            )
+            .join("");
+        }
+      }
+
+      // Action functions
+      function viewBill(entityType, billId) {
+        // Open view modal
+        document.getElementById("viewBillId").value = billId;
+        document.getElementById("viewEntityType").value = entityType;
+
+        // Show modal first
+        document.getElementById("viewBillModal").classList.remove("hidden");
+
+        // Load bill data for viewing
+        loadBillDataForView(entityType, billId);
+      }
+
+      function editBill(entityType, billId) {
+        // Open edit modal
+        document.getElementById("editBillId").value = billId;
+        document.getElementById("editEntityType").value = entityType;
+
+        // Show modal first
+        document.getElementById("editBillModal").classList.remove("hidden");
+
+        // Load current bill data after modal is shown
+        loadBillData(entityType, billId);
+      }
+
+      function recordPayment(entityType, billId) {
+        // Open payment recording modal
+        document.getElementById("paymentBillId").value = billId;
+        document.getElementById("paymentEntityType").value = entityType;
+
+        // Set today's date as default
+        document.getElementById("paymentDate").value = new Date().toISOString().split("T")[0];
+
+        // Load bill data for payment
+        loadBillDataForPayment(entityType, billId);
+
+        // Show modal
+        document.getElementById("recordPaymentModal").classList.remove("hidden");
+      }
+
+      // Load bill data for editing
+      async function loadBillData(entityType, billId) {
+        try {
+          const response = await fetch(`/api/billing/bills/${billId}?entityType=${entityType}`);
+          const data = await response.json();
+
+          if (data.success && data.bill) {
+            const bill = data.bill;
+
+            // Add a small delay to ensure DOM elements are ready
+            setTimeout(() => {
+              // Set billing status
+              const billingStatusSelect = document.getElementById("editBillingStatus");
+              if (billingStatusSelect) {
+                billingStatusSelect.value = bill.billing_status_id || 1;
+              }
+
+              // Set due date
+              const dueDateInput = document.getElementById("editDueDate");
+              if (dueDateInput) {
+                dueDateInput.value = bill.due_date ? new Date(bill.due_date).toISOString().split("T")[0] : "";
+              }
+
+              // Set notes
+              const notesTextarea = document.getElementById("editNotes");
+              if (notesTextarea) {
+                notesTextarea.value = bill.notes || "";
+              }
+            }, 100);
+          } else {
+            console.error("Failed to load bill data:", data);
+          }
+        } catch (error) {
+          console.error("Error loading bill data:", error);
+        }
+      }
+
+      // Load bill data for viewing
+      async function loadBillDataForView(entityType, billId) {
+        try {
+          const response = await fetch(`/api/billing/bills/${billId}?entityType=${entityType}`);
+          const data = await response.json();
+
+          if (data.success && data.bill) {
+            const bill = data.bill;
+
+            // Fetch payment details
+            let paymentDetails = null;
+            try {
+              const paymentResponse = await fetch(`/api/billing/${entityType}/${billId}/payments`);
+              const paymentData = await paymentResponse.json();
+              if (paymentData.success && paymentData.payments && paymentData.payments.length > 0) {
+                paymentDetails = paymentData.payments[0]; // Get the first (most recent) payment
+              }
+            } catch (paymentError) {}
+
+            // Add a small delay to ensure DOM elements are ready
+            setTimeout(() => {
+              // Set basic information
+              document.getElementById("viewBillId").textContent = bill.id;
+              document.getElementById("viewEntityType").textContent = bill.entity_type.toUpperCase();
+              document.getElementById("viewEntityName").textContent = bill.entity_name || "-";
+              document.getElementById("viewVillage").textContent = bill.village || "-";
+
+              // Set billing period
+              document.getElementById("viewPeriodType").textContent = bill.period_type || "-";
+              document.getElementById("viewPeriodStart").textContent = bill.billing_period_start ? new Date(bill.billing_period_start).toLocaleDateString() : "-";
+              document.getElementById("viewPeriodEnd").textContent = bill.billing_period_end ? new Date(bill.billing_period_end).toLocaleDateString() : "-";
+
+              // Set financial details
+              document.getElementById("viewTotalQuantity").textContent = bill.total_quantity ? parseFloat(bill.total_quantity).toFixed(1) + " L" : "-";
+            document.getElementById("viewTotalAmount").textContent = bill.total_amount !== undefined && bill.total_amount !== null ? `₹${(parseFloat(bill.total_amount) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-";
+              // Rate and Salary
+              const rateEl = document.getElementById("viewRate");
+              const salaryEl = document.getElementById("viewSalary");
+              const milkCostEl = document.getElementById("viewMilkCost");
+              if (rateEl) {
+                let rateVal = null;
+                if (bill.rate !== undefined && bill.rate !== null) {
+                  rateVal = parseFloat(bill.rate);
+                } else if (bill.total_amount && bill.total_quantity) {
+                  const qty = parseFloat(bill.total_quantity);
+                  const amt = parseFloat(bill.total_amount);
+                  if (qty && qty > 0) {
+                    rateVal = amt / qty;
+                  }
+                }
+                rateEl.textContent = rateVal !== null ? `₹${(rateVal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-";
+              }
+
+              // Milk Cost: prefer DB milk_cost for CPP; else compute qty * rate
+              if (milkCostEl) {
+                let milkCostVal = null;
+                if (bill.milk_cost !== undefined && bill.milk_cost !== null) {
+                  milkCostVal = parseFloat(bill.milk_cost) || 0;
+                } else {
+                  const qty = parseFloat(bill.total_quantity || 0) || 0;
+                  let rateVal = null;
+                  if (bill.rate !== undefined && bill.rate !== null) {
+                    rateVal = parseFloat(bill.rate);
+                  }
+                  if (!rateVal && bill.total_amount && qty > 0) {
+                    // if we don't have explicit rate, approximate milk cost as total - salary if salary known, else amt/qty
+                    const amt = parseFloat(bill.total_amount) || 0;
+                    // will refine below after salary computed
+                    rateVal = amt / qty;
+                  }
+                  if (qty > 0 && rateVal) {
+                    milkCostVal = qty * rateVal;
+                  }
+                }
+                milkCostEl.textContent = milkCostVal !== null ? `₹${(milkCostVal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-";
+              }
+              if (salaryEl) {
+                let salaryVal = null;
+                if (bill.entity_type === 'cpp') {
+                  if (bill.computed_salary !== undefined && bill.computed_salary !== null) {
+                    salaryVal = parseFloat(bill.computed_salary) || 0;
+                  } else {
+                  const st = (bill.salary_type || '').toLowerCase();
+                  const sa = parseFloat(bill.salary_amount || 0) || 0;
+                  const qty = parseFloat(bill.total_quantity || 0) || 0;
+                  if (st === 'fixed' || st === 'flat') {
+                    salaryVal = sa;
+                  } else if (st === 'commission') {
+                    salaryVal = sa * qty; // salary_amount treated as per-litre commission
+                  }
+                  }
+                }
+                salaryEl.textContent = salaryVal !== null ? `₹${(salaryVal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-";
+              }
+
+              // Set status information
+              const billingStatusElement = document.getElementById("viewBillingStatus");
+              billingStatusElement.textContent = bill.billing_status || "Pending";
+              billingStatusElement.className = `px-2 py-1 text-xs rounded-full ${bill.billing_status === "completed" ? "bg-green-100 text-green-800" : bill.billing_status === "approved" ? "bg-blue-100 text-blue-800" : bill.billing_status === "rejected" ? "bg-red-100 text-red-800" : bill.billing_status === "cancelled" ? "bg-gray-100 text-gray-800" : "bg-yellow-100 text-yellow-800"}`;
+
+              const paymentStatusElement = document.getElementById("viewPaymentStatus");
+              paymentStatusElement.textContent = bill.payment_status || "Pending";
+              paymentStatusElement.className = `px-2 py-1 text-xs rounded-full ${bill.payment_status === "completed" ? "bg-green-100 text-green-800" : bill.payment_status === "partial" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`;
+
+              // Set dates
+              document.getElementById("viewBillingDate").textContent = bill.billing_date ? new Date(bill.billing_date).toLocaleDateString() : "-";
+              document.getElementById("viewDueDate").textContent = bill.due_date ? new Date(bill.due_date).toLocaleDateString() : "-";
+              document.getElementById("viewPaymentDate").textContent = bill.payment_date ? new Date(bill.payment_date).toLocaleDateString() : "-";
+
+              // Set payment details - use payment confirmation data if available
+              if (paymentDetails) {
+                document.getElementById("viewPaymentReference").textContent = paymentDetails.payment_reference || "-";
+                document.getElementById("viewNotes").textContent = paymentDetails.notes || bill.notes || "-";
+
+                // Update payment details section with confirmation data
+                document.getElementById("viewPaymentMethod").textContent = paymentDetails.payment_method || "-";
+                document.getElementById("viewPaymentAmount").textContent = paymentDetails.payment_amount !== undefined && paymentDetails.payment_amount !== null ? `₹${(parseFloat(paymentDetails.payment_amount) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-";
+                document.getElementById("viewPaymentConfirmationDate").textContent = paymentDetails.payment_date ? new Date(paymentDetails.payment_date).toLocaleDateString() : "-";
+              } else {
+                document.getElementById("viewPaymentReference").textContent = bill.payment_reference || "-";
+                document.getElementById("viewNotes").textContent = bill.notes || "-";
+                document.getElementById("viewPaymentMethod").textContent = "-";
+                document.getElementById("viewPaymentAmount").textContent = "-";
+                document.getElementById("viewPaymentConfirmationDate").textContent = "-";
+              }
+            }, 100);
+          } else {
+            console.error("Failed to load bill data:", data);
+            showToast("Failed to load bill details", "error");
+          }
+        } catch (error) {
+          console.error("Error loading bill data:", error);
+          showToast("Error loading bill details", "error");
+        }
+      }
+
+      // Load bill data for payment
+      async function loadBillDataForPayment(entityType, billId) {
+        try {
+          // Get the specific bill by ID
+          const response = await fetch(`/api/billing/bills/${billId}?entityType=${entityType}`);
+          const data = await response.json();
+
+          if (data.success && data.bill) {
+            const bill = data.bill;
+
+            const totalAmount = parseFloat(bill.total_amount);
+
+            // Check if payment is completed
+            const status = bill.billing_status || "pending";
+            const isCompleted = status.toLowerCase() === "completed";
+
+            // Get existing payments for this bill
+            const paymentResponse = await fetch(`/api/billing/${entityType}/${billId}/payments`);
+            const paymentData = await paymentResponse.json();
+
+            let totalPaid = 0;
+            if (paymentData.success && paymentData.payments) {
+              totalPaid = paymentData.payments.reduce((sum, payment) => sum + parseFloat(payment.payment_amount), 0);
+            }
+
+            // Calculate due amount - for completed payments, due should be 0
+            let dueAmount = totalAmount - totalPaid;
+            if (isCompleted) {
+              dueAmount = 0; // Completed payments have no due amount
+            }
+
+            // Update bill information section
+            document.getElementById("paymentEntityInfo").textContent = bill.entity_name || "-";
+            document.getElementById("paymentTotalAmount").textContent = `₹${(totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById("dueAmount").textContent = dueAmount.toFixed(2);
+
+            // Update current status with appropriate styling
+            const statusElement = document.getElementById("paymentCurrentStatus");
+            let statusClass = "bg-yellow-100 text-yellow-800";
+            let statusText = "Pending";
+
+            switch (status.toLowerCase()) {
+              case "approved":
+                statusClass = "bg-green-100 text-green-800";
+                statusText = "Approved";
+                break;
+              case "completed":
+                statusClass = "bg-blue-100 text-blue-800";
+                statusText = "Completed";
+                break;
+              case "rejected":
+                statusClass = "bg-red-100 text-red-800";
+                statusText = "Rejected";
+                break;
+              case "cancelled":
+                statusClass = "bg-gray-100 text-gray-800";
+                statusText = "Cancelled";
+                break;
+            }
+
+            statusElement.innerHTML = `<span class="px-2 py-1 text-xs rounded-full ${statusClass}">${statusText}</span>`;
+
+            // Show/hide payment complete date section
+            const paymentCompleteDateSection = document.getElementById("paymentCompleteDateSection");
+            if (isCompleted && bill.payment_date) {
+              paymentCompleteDateSection.classList.remove("hidden");
+              document.getElementById("paymentCompleteDate").textContent = new Date(bill.payment_date).toLocaleDateString();
+            } else {
+              paymentCompleteDateSection.classList.add("hidden");
+            }
+
+            // Populate existing data if available
+            document.getElementById("paymentReference").value = bill.payment_reference || "";
+            document.getElementById("paymentNotes").value = bill.notes || "";
+
+            // Set payment date from existing payment or today's date
+            if (bill.payment_date) {
+              // Use the date string directly if it's already in YYYY-MM-DD format
+              const paymentDateStr = bill.payment_date.toString();
+              if (paymentDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                document.getElementById("paymentDate").value = paymentDateStr;
+              } else {
+                // Fallback to date conversion for other formats
+                const date = new Date(bill.payment_date);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                document.getElementById("paymentDate").value = `${year}-${month}-${day}`;
+              }
+            } else {
+              document.getElementById("paymentDate").value = new Date().toISOString().split("T")[0];
+            }
+
+            // Set payment method from existing payment
+            document.getElementById("paymentMethod").value = bill.payment_method_id || "";
+
+            // Handle payment amount field based on completion status
+            const paymentAmountField = document.getElementById("paymentAmount");
+            if (isCompleted) {
+              // For completed payments, show the paid amount (total amount since due is 0)
+              const paidAmount = totalAmount; // When completed, total amount equals paid amount
+              paymentAmountField.value = paidAmount.toFixed(2);
+              paymentAmountField.readOnly = true;
+              paymentAmountField.classList.add("bg-gray-100");
+              document.getElementById("submitButtonText").textContent = "Update Payment";
+
+              // Disable payment type selection for completed payments
+              document.getElementById("paymentTypeFull").disabled = true;
+              document.getElementById("paymentTypePartial").disabled = true;
+            } else {
+              // For pending payments, allow editing
+              paymentAmountField.value = dueAmount.toFixed(2);
+              paymentAmountField.readOnly = false;
+              paymentAmountField.classList.remove("bg-gray-100");
+              paymentAmountField.max = dueAmount;
+              document.getElementById("submitButtonText").textContent = "Record Payment";
+
+              // Enable payment type selection for pending payments
+              document.getElementById("paymentTypeFull").disabled = false;
+              document.getElementById("paymentTypePartial").disabled = false;
+            }
+
+            // Reset payment type to full
+            document.getElementById("paymentTypeFull").checked = true;
+            document.getElementById("paymentTypePartial").checked = false;
+
+            // Hide balance initially
+            document.getElementById("balanceAmount").classList.add("hidden");
+          } else {
+            showToast("Bill not found!", "error");
+          }
+        } catch (error) {
+          console.error("Error loading bill data for payment:", error);
+          showToast("Error loading bill data", "error");
+        }
+      }
+
+      // Handle edit bill form submission
+      async function handleEditBill(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const billId = formData.get("billId");
+        const entityType = formData.get("entityType");
+        const billingStatus = formData.get("billingStatus");
+        const dueDate = formData.get("dueDate");
+        const notes = formData.get("notes");
+
+        // Show loading spinner
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating Bill...';
+        submitButton.disabled = true;
+
+        try {
+          const response = await fetch(`/api/billing/${entityType}/${billId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              billing_status_id: parseInt(billingStatus),
+              due_date: dueDate,
+              notes: notes,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showToast("Bill updated successfully!", "success");
+            closeEditModal();
+            loadBills(); // Refresh the bills list
+            loadBillingStatus(); // Refresh all-time summary cards
+            loadSummaryCards(); // Refresh filter-based summary cards
+          } else {
+            showToast("Error updating bill: " + data.error, "error");
+          }
+        } catch (error) {
+          console.error("Error updating bill:", error);
+          showToast("Error updating bill: " + error.message, "error");
+        } finally {
+          // Reset button state
+          submitButton.innerHTML = originalText;
+          submitButton.disabled = false;
+        }
+      }
+
+      // Handle payment type change
+      function handlePaymentTypeChange() {
+        const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
+        const dueAmount = parseFloat(document.getElementById("dueAmount").textContent);
+        const paymentAmountInput = document.getElementById("paymentAmount");
+        const balanceDiv = document.getElementById("balanceAmount");
+        const balanceValue = document.getElementById("balanceValue");
+
+        // Skip if payment amount field is read-only (completed payment)
+        if (paymentAmountInput.readOnly) {
+          return;
+        }
+
+        if (paymentType === "full") {
+          // Set to full amount (only if due amount > 0)
+          if (dueAmount > 0) {
+            paymentAmountInput.value = dueAmount.toFixed(2);
+          } else {
+            paymentAmountInput.value = "";
+          }
+          paymentAmountInput.max = dueAmount;
+          balanceDiv.classList.add("hidden");
+        } else {
+          // Allow partial payment
+          paymentAmountInput.value = "";
+          paymentAmountInput.max = dueAmount;
+          balanceDiv.classList.remove("hidden");
+        }
+      }
+
+      // Handle payment amount change for partial payments
+      function handlePaymentAmountChange() {
+        const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
+
+        if (paymentType === "partial") {
+          const dueAmount = parseFloat(document.getElementById("dueAmount").textContent);
+          const paymentAmount = parseFloat(document.getElementById("paymentAmount").value) || 0;
+          const balance = dueAmount - paymentAmount;
+
+          document.getElementById("balanceValue").textContent = balance.toFixed(2);
+
+          // Show balance div
+          document.getElementById("balanceAmount").classList.remove("hidden");
+        }
+      }
+
+      // Handle record payment form submission
+      async function handleRecordPayment(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const billId = formData.get("billId");
+        const entityType = formData.get("entityType");
+        const paymentAmount = parseFloat(formData.get("paymentAmount"));
+        const paymentMethod = formData.get("paymentMethod");
+        const paymentDate = formData.get("paymentDate");
+        const paymentReference = formData.get("paymentReference");
+        const paymentNotes = formData.get("paymentNotes");
+        const paymentType = formData.get("paymentType");
+
+        // Check if this is a completed payment (read-only amount field)
+        const paymentAmountField = document.getElementById("paymentAmount");
+        const isCompletedPayment = paymentAmountField.readOnly;
+
+        // Validate payment amount only for non-completed payments
+        if (!isCompletedPayment) {
+          const dueAmount = parseFloat(document.getElementById("dueAmount").textContent);
+          if (paymentAmount > dueAmount) {
+            showToast("Payment amount cannot exceed due amount!", "error");
+            return;
+          }
+
+          if (paymentAmount <= 0) {
+            showToast("Payment amount must be greater than 0!", "error");
+            return;
+          }
+        }
+
+        // Show loading spinner
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Recording Payment...';
+        submitButton.disabled = true;
+
+        try {
+          const response = await fetch(`/api/billing/${entityType}/${billId}/payment`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              payment_amount: paymentAmount,
+              payment_method_id: parseInt(paymentMethod),
+              payment_date: paymentDate,
+              payment_reference: paymentReference,
+              notes: paymentNotes,
+              payment_type: paymentType,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            const remainingBalance = dueAmount - paymentAmount;
+            let successMessage;
+
+            if (remainingBalance > 0) {
+              successMessage = `Payment recorded successfully! Remaining balance: ₹${(remainingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else {
+              successMessage = "Payment recorded successfully! Bill is now fully paid.";
+
+              // If billing status also changed to completed, add that info
+              if (data.billing_status_changed && data.billing_status === "completed") {
+                successMessage += " Billing status updated to completed.";
+              }
+            }
+
+            showToast(successMessage, "success");
+            closePaymentModal();
+            loadBills(); // Refresh the bills list
+            loadBillingStatus(); // Refresh all-time summary cards
+            loadSummaryCards(); // Refresh filter-based summary cards
+          } else {
+            showToast("Error recording payment: " + data.error, "error");
+          }
+        } catch (error) {
+          console.error("Error recording payment:", error);
+          showToast("Error recording payment: " + error.message, "error");
+        } finally {
+          // Reset button state
+          submitButton.innerHTML = originalText;
+          submitButton.disabled = false;
+        }
+      }
+
+      // Modal functions
+      function closeEditModal() {
+        document.getElementById("editBillModal").classList.add("hidden");
+        document.getElementById("editBillForm").reset();
+      }
+
+      function closePaymentModal() {
+        document.getElementById("recordPaymentModal").classList.add("hidden");
+        document.getElementById("recordPaymentForm").reset();
+      }
+
+      function closeViewModal() {
+        document.getElementById("viewBillModal").classList.add("hidden");
+      }
+
+      // Load billing status data (all-time data, no filters)
+      async function loadBillingStatus() {
+        try {
+          // Load all-time data without any filters
+          const url = `/api/billing/summary`;
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            const summary = data.data;
+
+            // Update UI with real data
+            document.getElementById("pendingBills").textContent = summary.billing.pending || 0;
+            document.getElementById("approvedBills").textContent = summary.billing.approved || 0;
+            document.getElementById("completedPayments").textContent = summary.payment.completed || 0;
+
+            // Calculate overdue payments (bills that are not completed but past due date)
+            // For now, we'll use rejected + cancelled as overdue approximation
+            const overdueCount = (summary.billing.rejected || 0) + (summary.billing.cancelled || 0);
+            document.getElementById("overduePayments").textContent = overdueCount;
+          } else {
+            console.error("Error loading billing summary:", data.error);
+            // Fallback to 0 values
+            document.getElementById("pendingBills").textContent = "0";
+            document.getElementById("approvedBills").textContent = "0";
+            document.getElementById("completedPayments").textContent = "0";
+            document.getElementById("overduePayments").textContent = "0";
+          }
+        } catch (error) {
+          console.error("Error loading billing status:", error);
+          // Fallback to 0 values
+          document.getElementById("pendingBills").textContent = "0";
+          document.getElementById("approvedBills").textContent = "0";
+          document.getElementById("completedPayments").textContent = "0";
+          document.getElementById("overduePayments").textContent = "0";
+        }
+      }
+
+      // Load summary cards data
+      async function loadSummaryCards() {
+        try {
+          // Get current filter values (check both desktop and mobile filters)
+          const monthFilter = document.getElementById("monthFilter") ? document.getElementById("monthFilter").value : document.getElementById("monthFilterMobile") ? document.getElementById("monthFilterMobile").value : "";
+          const yearFilter = document.getElementById("yearFilter") ? document.getElementById("yearFilter").value : document.getElementById("yearFilterMobile") ? document.getElementById("yearFilterMobile").value : "";
+          const periodFilter = document.getElementById("periodFilter") ? document.getElementById("periodFilter").value : document.getElementById("periodFilterMobile") ? document.getElementById("periodFilterMobile").value : "";
+          const entityFilter = document.getElementById("entityFilter") ? document.getElementById("entityFilter").value : document.getElementById("entityFilterMobile") ? document.getElementById("entityFilterMobile").value : "";
+          const statusFilter = document.getElementById("statusFilter") ? document.getElementById("statusFilter").value : document.getElementById("statusFilterMobile") ? document.getElementById("statusFilterMobile").value : "";
+
+        // Build query parameters
+          const params = new URLSearchParams();
+          if (monthFilter) params.append("month", monthFilter);
+          if (yearFilter) params.append("year", yearFilter);
+          if (periodFilter) params.append("period", periodFilter);
+          if (entityFilter) params.append("entityType", entityFilter);
+          if (statusFilter) params.append("status", statusFilter);
+        const milkType = document.getElementById("milkTypeFilter") ? document.getElementById("milkTypeFilter").value : (document.getElementById("milkTypeFilterMobile") ? document.getElementById("milkTypeFilterMobile").value : "all");
+        if (milkType) params.append("milkType", milkType);
+
+          const url = `/api/billing/summary?${params.toString()}`;
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            const summary = data.data;
+
+            // Update summary cards
+            document.getElementById("summaryPendingBills").textContent = summary.billing.pending || 0;
+            document.getElementById("summaryCompletedPayments").textContent = summary.payment.completed || 0;
+            document.getElementById("summaryTotalDue").textContent = `₹${(summary.amounts.total || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById("summaryPendingDue").textContent = `₹${(summary.amounts.pending || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          } else {
+            console.error("Error loading summary cards:", data.error);
+            // Fallback to 0 values
+            document.getElementById("summaryPendingBills").textContent = "0";
+            document.getElementById("summaryCompletedPayments").textContent = "0";
+            document.getElementById("summaryTotalDue").textContent = "₹0";
+            document.getElementById("summaryPendingDue").textContent = "₹0";
+          }
+        } catch (error) {
+          console.error("Error loading summary cards:", error);
+          // Fallback to 0 values
+          document.getElementById("summaryPendingBills").textContent = "0";
+          document.getElementById("summaryCompletedPayments").textContent = "0";
+          document.getElementById("summaryTotalDue").textContent = "₹0";
+          document.getElementById("summaryPendingDue").textContent = "₹0";
+        }
+      }
+
+      // Load recent activity
+      function loadRecentActivity() {
+        const activityContainer = document.getElementById("recentActivity");
+        if (activityContainer) {
+          activityContainer.innerHTML = `
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-check text-green-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">Payment received from Farmer #123</p>
+                        <p class="text-xs text-gray-500">2 hours ago</p>
+                    </div>
+                    <span class="text-sm text-green-600 font-medium">₹5,000</span>
+                </div>
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-file-invoice text-yellow-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">Bill generated for CPP #5</p>
+                        <p class="text-xs text-gray-500">4 hours ago</p>
+                    </div>
+                    <span class="text-sm text-yellow-600 font-medium">Pending</span>
+                </div>
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-credit-card text-blue-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">Partial payment from RCC #2</p>
+                        <p class="text-xs text-gray-500">1 day ago</p>
+                    </div>
+                    <span class="text-sm text-blue-600 font-medium">₹15,000</span>
+                </div>
+            `;
+        } else {
+        }
+      }
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", function () {
+        // Test JavaScript execution
+        testFunction();
+
+        // Test if JavaScript is working
+        setTimeout(() => {
+          const loading = document.getElementById("billsLoading");
+          if (loading && !loading.classList.contains("hidden")) {
+            loading.innerHTML = '<p class="text-red-600">JavaScript Error - Check console for details</p>';
+          }
+        }, 2000);
+
+        // Set default entity to CPP and initialize date filters before initial loads
+        (function initDefaultEntity(){
+          const ef = document.getElementById('entityFilter');
+          const efm = document.getElementById('entityFilterMobile');
+          if (ef && !ef.value) ef.value = 'cpp';
+          if (efm && !efm.value) efm.value = 'cpp';
+        })();
+        // Ensure date defaults are set before initial loads as well
+        (function ensureDateDefaults(){
+          const now = new Date();
+          const currentYear = now.getFullYear();
+          const currentMonth = now.getMonth() + 1;
+          const currentPeriod = (now.getDate() <= 15) ? 'H1' : 'H2';
+          const yf = document.getElementById('yearFilter');
+          const mf = document.getElementById('monthFilter');
+          const pf = document.getElementById('periodFilter');
+          const yfm = document.getElementById('yearFilterMobile');
+          const mfm = document.getElementById('monthFilterMobile');
+          const pfm = document.getElementById('periodFilterMobile');
+          if (yf && !yf.value) yf.innerHTML = `<option value="${currentYear}" selected>${currentYear}</option>`;
+          if (yfm && !yfm.value) yfm.innerHTML = `<option value="${currentYear}" selected>${currentYear}</option>`;
+          if (mf && !mf.value) mf.innerHTML = `<option value="${currentMonth}" selected>${['January','February','March','April','May','June','July','August','September','October','November','December'][currentMonth-1]}</option>`;
+          if (mfm && !mfm.value) mfm.innerHTML = `<option value="${currentMonth}" selected>${['January','February','March','April','May','June','July','August','September','October','November','December'][currentMonth-1]}</option>`;
+          if (pf) pf.value = currentPeriod;
+          if (pfm) pfm.value = currentPeriod;
+        })();
+
+        loadBillingStatus();
+        loadSummaryCards();
+        loadRecentActivity();
+        loadBills();
+
+        // Set initial responsive display
+        const desktopTable = document.getElementById("desktopTableView");
+        const mobileCards = document.getElementById("billsCardContainer");
+        const desktopFilters = document.getElementById("desktopFilters");
+        const mobileFilters = document.getElementById("mobileFilters");
+
+        if (window.innerWidth >= 1024) {
+          // Desktop view - show table and desktop filters, hide cards and mobile filters
+          if (desktopTable) desktopTable.style.display = "block";
+          if (mobileCards) mobileCards.style.display = "none";
+          if (desktopFilters) desktopFilters.style.display = "flex";
+          if (mobileFilters) mobileFilters.style.display = "none";
+        } else {
+          // Mobile view - hide table and desktop filters, show cards and mobile filters
+          if (desktopTable) desktopTable.style.display = "none";
+          if (mobileCards) mobileCards.style.display = "block";
+          if (desktopFilters) desktopFilters.style.display = "none";
+          if (mobileFilters) mobileFilters.style.display = "block";
+        }
+
+        // Populate year/month selects with defaults
+        (function initDateFilters(){
+          const now = new Date();
+          const currentYear = now.getFullYear();
+          const currentMonth = now.getMonth() + 1;
+          const currentPeriod = (now.getDate() <= 15) ? 'H1' : 'H2';
+          function fillYear(select){
+            if (!select) return;
+            select.innerHTML = '';
+            for (let y = currentYear + 1; y >= 2020; y--) {
+              const opt = document.createElement('option');
+              opt.value = String(y);
+              opt.textContent = String(y);
+              if (y === currentYear) opt.selected = true;
+              select.appendChild(opt);
+            }
+          }
+          function fillMonth(select){
+            if (!select) return;
+            select.innerHTML = '';
+            const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            for (let i = 1; i <= 12; i++) {
+              const opt = document.createElement('option');
+              opt.value = String(i);
+              opt.textContent = names[i-1];
+              if (i === currentMonth) opt.selected = true;
+              select.appendChild(opt);
+            }
+          }
+          fillYear(document.getElementById('yearFilter'));
+          fillYear(document.getElementById('yearFilterMobile'));
+          fillMonth(document.getElementById('monthFilter'));
+          fillMonth(document.getElementById('monthFilterMobile'));
+          const periodDesktop = document.getElementById('periodFilter');
+          const periodMobile = document.getElementById('periodFilterMobile');
+          if (periodDesktop) periodDesktop.value = currentPeriod;
+          if (periodMobile) periodMobile.value = currentPeriod;
+        })();
+
+        // Add event listeners for filters
+        document.getElementById("monthFilter").addEventListener("change", () => {
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("yearFilter").addEventListener("change", () => {
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("periodFilter").addEventListener("change", () => {
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("entityFilter").addEventListener("change", () => {
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("milkTypeFilter").addEventListener("change", () => {
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("statusFilter").addEventListener("change", () => {
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("refreshBills").addEventListener("click", () => {
+          loadBills();
+          loadBillingStatus();
+          loadSummaryCards();
+        });
+        const regenAll = document.getElementById('regenAllBills');
+        if (regenAll) regenAll.addEventListener('click', () => triggerBillGeneration('regenerate'));
+
+        // Add event listeners for mobile filters
+        document.getElementById("monthFilterMobile").addEventListener("change", () => {
+          // Sync with desktop filter
+          document.getElementById("monthFilter").value = document.getElementById("monthFilterMobile").value;
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("yearFilterMobile").addEventListener("change", () => {
+          // Sync with desktop filter
+          document.getElementById("yearFilter").value = document.getElementById("yearFilterMobile").value;
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("periodFilterMobile").addEventListener("change", () => {
+          // Sync with desktop filter
+          document.getElementById("periodFilter").value = document.getElementById("periodFilterMobile").value;
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("entityFilterMobile").addEventListener("change", () => {
+          // Sync with desktop filter
+          document.getElementById("entityFilter").value = document.getElementById("entityFilterMobile").value;
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("milkTypeFilterMobile").addEventListener("change", () => {
+          document.getElementById("milkTypeFilter").value = document.getElementById("milkTypeFilterMobile").value;
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("statusFilterMobile").addEventListener("change", () => {
+          // Sync with desktop filter
+          document.getElementById("statusFilter").value = document.getElementById("statusFilterMobile").value;
+          loadBills();
+          loadSummaryCards();
+        });
+        document.getElementById("refreshBillsMobile").addEventListener("click", () => {
+          loadBills();
+          loadBillingStatus();
+          loadSummaryCards();
+        });
+        const genBtn = document.getElementById('generateBillsBtn');
+        const regenBtn = document.getElementById('regenerateBillsBtn');
+        if (genBtn) genBtn.addEventListener('click', () => triggerBillGeneration('generate'));
+        if (regenBtn) regenBtn.addEventListener('click', () => triggerBillGeneration('regenerate'));
+
+        // Handle window resize for responsive display
+        window.addEventListener("resize", () => {
+          const desktopTable = document.getElementById("desktopTableView");
+          const mobileCards = document.getElementById("billsCardContainer");
+          const desktopFilters = document.getElementById("desktopFilters");
+          const mobileFilters = document.getElementById("mobileFilters");
+
+          if (window.innerWidth >= 1024) {
+            // Desktop view - show table and desktop filters, hide cards and mobile filters
+            if (desktopTable) desktopTable.style.display = "block";
+            if (mobileCards) mobileCards.style.display = "none";
+            if (desktopFilters) desktopFilters.style.display = "flex";
+            if (mobileFilters) mobileFilters.style.display = "none";
+          } else {
+            // Mobile view - hide table and desktop filters, show cards and mobile filters
+            if (desktopTable) desktopTable.style.display = "none";
+            if (mobileCards) mobileCards.style.display = "block";
+            if (desktopFilters) desktopFilters.style.display = "none";
+            if (mobileFilters) mobileFilters.style.display = "block";
+          }
+        });
+
+        // Add event listeners for modals
+        document.getElementById("editBillForm").addEventListener("submit", handleEditBill);
+        document.getElementById("recordPaymentForm").addEventListener("submit", handleRecordPayment);
+
+        // Payment type and amount change listeners
+        document.querySelectorAll('input[name="paymentType"]').forEach((radio) => {
+          radio.addEventListener("change", handlePaymentTypeChange);
+        });
+        document.getElementById("paymentAmount").addEventListener("input", handlePaymentAmountChange);
+
+        // Modal close buttons
+        document.getElementById("closeEditModal").addEventListener("click", closeEditModal);
+        document.getElementById("cancelEdit").addEventListener("click", closeEditModal);
+        document.getElementById("closePaymentModal").addEventListener("click", closePaymentModal);
+        document.getElementById("cancelPayment").addEventListener("click", closePaymentModal);
+        document.getElementById("closeViewModal").addEventListener("click", closeViewModal);
+        document.getElementById("closeViewModalBtn").addEventListener("click", closeViewModal);
+
+        // Close modals when clicking outside
+        document.getElementById("editBillModal").addEventListener("click", function (e) {
+          if (e.target === this) closeEditModal();
+        });
+        document.getElementById("recordPaymentModal").addEventListener("click", function (e) {
+          if (e.target === this) closePaymentModal();
+        });
+        document.getElementById("viewBillModal").addEventListener("click", function (e) {
+          if (e.target === this) closeViewModal();
+        });
+      });
+
+      function getPeriodDates(year, month, period){
+        const startDay = period === 'H1' ? 1 : 16;
+        const endDay = period === 'H1' ? 15 : new Date(year, month, 0).getDate();
+        const pad = (n) => String(n).padStart(2,'0');
+        return {
+          start: `${year}-${pad(month)}-${pad(startDay)}`,
+          end: `${year}-${pad(month)}-${pad(endDay)}`
+        };
+      }
+
+      async function triggerBillGeneration(action){
+        try{
+          const y = document.getElementById('yearFilter')?.value || document.getElementById('yearFilterMobile')?.value;
+          const m = document.getElementById('monthFilter')?.value || document.getElementById('monthFilterMobile')?.value;
+          const p = document.getElementById('periodFilter')?.value || document.getElementById('periodFilterMobile')?.value || 'H1';
+          
+          // Validate inputs
+          if (!y || !m || y === '' || m === ''){ 
+            showToast('Select year and month first','warning'); 
+            return; 
+          }
+          
+          // Validate periodType
+          if (!p || p === '') {
+            showToast('Period type is required','warning');
+            return;
+          }
+          
+          const { start, end } = getPeriodDates(parseInt(y), parseInt(m), p);
+          
+          // Validate dates
+          if (!start || !end || start === '' || end === '') {
+            showToast('Invalid date range. Please check your filters.','error');
+            return;
+          }
+          
+          // show progress on buttons if present
+          const btn = action === 'regenerate' ? (document.getElementById('regenAllBills') || document.getElementById('regenerateBillsBtn')) : document.getElementById('generateBillsBtn');
+          const original = btn ? btn.innerHTML : '';
+          if (btn){ btn.disabled = true; btn.innerHTML = `<i class=\"fas fa-spinner fa-spin mr-2\"></i>${action==='regenerate'?'Regenerating…':'Generating…'}`; }
+          
+          const endpoint = action==='regenerate' ? '/api/bills/regenerate/all' : '/api/bills/generate/all';
+          const requestBody = { 
+            startDate: start, 
+            endDate: end, 
+            periodType: p 
+          };
+          
+          const res = await fetch(endpoint, { 
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body: JSON.stringify(requestBody) 
+          });
+          
+          const data = await res.json();
+          
+          if (!res.ok || data.success===false){ 
+            console.error('Error response:', data);
+            showToast(data.error||'Failed to process bills','error'); 
+          }
+          else { 
+            showToast('Bills processed successfully','success'); 
+            loadBills(); 
+            loadSummaryCards(); 
+          }
+          
+          if (btn){ btn.disabled=false; btn.innerHTML = original; }
+        }catch(err){ 
+          console.error('Error in triggerBillGeneration:', err); 
+          showToast('Failed to process bills: ' + (err.message || 'Unknown error'),'error'); 
+          const btn = action === 'regenerate' ? (document.getElementById('regenAllBills') || document.getElementById('regenerateBillsBtn')) : document.getElementById('generateBillsBtn');
+          if (btn){ btn.disabled=false; }
+        }
+      }
+    </script>
+  </body>
+</html>

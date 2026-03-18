@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-brand-bg dark:bg-gray-900 text-brand-ink dark:text-gray-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %>
+      <%- include('../../../partials/_subnav', { title: 'Admin · Farmers', user, section, subsection }) %>
+      <main class="flex-1">
+        <section class="max-w-6xl mx-auto px-4 py-10">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Admin — Farmers</h1>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <input id="farmerSearch" placeholder="Search by name, CPP, phone" class="flex-1 sm:w-80 border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+              <button type="button" class="btn btn-primary" id="btnOpenAddFarmer">Add Farmer</button>
+            </div>
+          </div>
+          <div class="grid gap-2 grid-cols-3 mb-4">
+            <div class="card card--white dark:bg-gray-800 dark:border-gray-700 p-3 text-center">
+              <div class="text-xs text-slate-500 dark:text-gray-400">Total</div>
+              <div class="text-xl font-bold text-gray-900 dark:text-white"><%= totals?.total || 0 %></div>
+            </div>
+            <div class="card card--white dark:bg-gray-800 dark:border-gray-700 p-3 text-center">
+              <div class="text-xs text-slate-500 dark:text-gray-400">Active</div>
+              <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400"><%= totals?.active || 0 %></div>
+            </div>
+            <div class="card card--white dark:bg-gray-800 dark:border-gray-700 p-3 text-center">
+              <div class="text-xs text-slate-500 dark:text-gray-400">Inactive</div>
+              <div class="text-xl font-bold text-slate-600 dark:text-gray-400"><%= totals?.inactive || 0 %></div>
+            </div>
+          </div>
+          <div class="card card--white dark:bg-gray-800 dark:border-gray-700 p-4">
+            <h2 class="font-semibold mb-3 text-gray-900 dark:text-white">Farmers List</h2>
+            <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <% (rows||[]).forEach(f => { %>
+                <div class="farmer-card border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 flex flex-col gap-1.5" data-id="<%- f.id %>" data-cpp-id="<%- f.cpp_id||'' %>" data-name="<%- f.name %>" data-village="<%- f.village||'' %>" data-cpp="<%- f.cpp_name||'' %>" data-phone="<%- f.phone||'' %>" data-status="<%- f.status %>" data-milk="<%- f.milk_type %>" data-rate-type="<%- f.rate_type||'flat' %>" data-flat-rate="<%- f.flat_rate||'' %>" data-rate-chart-id="<%- f.rate_chart_id||'' %>" data-rate-chart-name="<%- f.rate_chart_name||'' %>">
+                  <div class="flex items-center justify-between">
+                    <span class="pill dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700"><%= f.milk_type %></span>
+                    <span class="text-xs px-2 py-1 rounded-full border <%= f.status==='active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700' : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600' %>"><%= f.status %></span>
+                  </div>
+                  <div class="text-base font-semibold break-words text-gray-900 dark:text-white"><%= f.name %></div>
+                  <div class="text-xs text-slate-500 dark:text-gray-400">CPP: <%= f.cpp_name || '—' %></div>
+                  <div class="text-sm text-slate-600 dark:text-gray-300">Rate: 
+                    <% if (f.rate_type === 'flat') { %>
+                      Flat ₹<%= f.flat_rate || 0 %>
+                    <% } else { %>
+                      Chart: <%= f.rate_chart_name || 'Not assigned' %>
+                    <% } %>
+                  </div>
+                  <div class="flex items-center justify-between text-sm text-slate-600 dark:text-gray-300 mt-1">
+                    <span class="break-words"><% if (f.phone) { %>Phone: <%= f.phone %><% } else { %>&nbsp;<% } %></span>
+                    <div class="flex items-center gap-1">
+                      <button type="button" class="p-2 rounded hover:bg-slate-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 btn-edit-farmer" aria-label="Edit"
+                        data-id="<%= f.id %>">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                      </button>
+                      <button type="button" class="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 btn-delete-farmer" aria-label="Delete"
+                        data-id="<%= f.id %>" data-name="<%= f.name %>">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- Add Farmer Modal -->
+          <div id="addFarmerModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-xl w-full mx-4 border dark:border-gray-700">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                      <i data-lucide="user-plus" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Add New Farmer</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Create a new farmer profile</p>
+                    </div>
+                  </div>
+                  <button type="button" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-close="modal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <form method="post" action="/admin/farmers" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Collection Point (CPP) *</label>
+                    <select name="cpp_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                      <option value="">Select CPP</option>
+                      <% (cpps||[]).forEach(c => { %>
+                        <option value="<%= c.id %>"><%= c.name %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Farmer Name *</label>
+                    <input name="name" placeholder="Enter farmer name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Village</label>
+                      <input name="village" placeholder="Enter village name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                      <input name="phone" placeholder="Enter phone number" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milk Type</label>
+                    <select name="milk_type" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                      <option value="A1">A1</option>
+                      <option value="A2" selected>A2</option>
+                      <option value="Buffalo">Buffalo</option>
+                    </select>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rate Type</label>
+                      <select name="rate_type" id="add_rate_type" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <option value="flat">Flat Rate</option>
+                        <option value="chart">Rate Chart</option>
+                      </select>
+                    </div>
+                    <div id="add_rate_field">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Flat Rate (₹)</label>
+                      <input name="flat_rate" type="number" step="0.01" placeholder="Enter flat rate" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" class="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200" data-close="modal">Cancel</button>
+                    <button class="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors duration-200 flex items-center gap-2" type="submit">
+                      <i data-lucide="plus" class="w-4 h-4"></i>
+                      Create Farmer
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Farmer Modal -->
+          <div id="editFarmerModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border dark:border-gray-700">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <i data-lucide="user-edit" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Edit Farmer</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Update farmer information and rate settings</p>
+                    </div>
+                  </div>
+                  <button type="button" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-close="modal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <form id="editFarmerForm" method="post" class="space-y-6">
+                  <!-- Basic Information Section -->
+                  <div class="space-y-4">
+                    <div class="flex items-center gap-2 mb-3">
+                      <div class="w-1 h-6 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
+                      <h4 class="text-lg font-medium text-gray-900 dark:text-white">Basic Information</h4>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Farmer Name *</label>
+                        <input name="name" id="ef_name" placeholder="Enter farmer name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Village</label>
+                        <input name="village" id="ef_village" placeholder="Enter village name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                        <input name="phone" id="ef_phone" placeholder="Enter phone number" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Collection Point (CPP)</label>
+                        <select name="cpp_id" id="ef_cpp" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                          <option value="">Select CPP</option>
+                          <% (cpps||[]).forEach(c => { %>
+                            <option value="<%= c.id %>"><%= c.name %></option>
+                          <% }) %>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Milk & Status Section -->
+                  <div class="space-y-4">
+                    <div class="flex items-center gap-2 mb-3">
+                      <div class="w-1 h-6 bg-green-500 dark:bg-green-400 rounded-full"></div>
+                      <h4 class="text-lg font-medium text-gray-900 dark:text-white">Milk & Status</h4>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milk Type</label>
+                        <select name="milk_type" id="ef_milk" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                          <option value="A1">A1</option>
+                          <option value="A2">A2</option>
+                          <option value="Buffalo">Buffalo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select name="status" id="ef_status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Rate Configuration Section -->
+                  <div class="space-y-4">
+                    <div class="flex items-center gap-2 mb-3">
+                      <div class="w-1 h-6 bg-purple-500 dark:bg-purple-400 rounded-full"></div>
+                      <h4 class="text-lg font-medium text-gray-900 dark:text-white">Rate Configuration</h4>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rate Type</label>
+                        <select name="rate_type" id="ef_rate_type" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                          <option value="flat">Flat Rate</option>
+                          <option value="chart">Rate Chart</option>
+                        </select>
+                      </div>
+                      <div id="ef_rate_field">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Flat Rate (₹)</label>
+                        <input name="flat_rate" id="ef_flat_rate" type="number" step="0.01" placeholder="Enter flat rate" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" class="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200" data-close="modal">Cancel</button>
+                    <button class="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-200 flex items-center gap-2" type="submit">
+                      <i data-lucide="save" class="w-4 h-4"></i>
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delete Confirmation Modal -->
+          <div id="deleteFarmerModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border dark:border-gray-700">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                      <i data-lucide="trash-2" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Delete Farmer</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone</p>
+                    </div>
+                  </div>
+                  <button type="button" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-close="modal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <div class="space-y-4">
+                  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                      <div class="w-5 h-5 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mt-0.5">
+                        <i data-lucide="alert-triangle" class="w-3 h-3 text-red-600 dark:text-red-400"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-red-800 dark:text-red-300">Are you sure you want to delete <strong id="deleteFarmerName"></strong>?</p>
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">If the farmer has milk entries, you should deactivate them instead.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" class="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200" data-close="modal">Cancel</button>
+                    <button type="button" class="px-6 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200 flex items-center gap-2" id="confirmDeleteFarmer">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      Delete Farmer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </section>
+  </main>
+  <%- include('../../../partials/_footer') %>
+</div>
+
+<%- include('../../../partials/_toast') %>
+<script>
+  // Toast notifications are now handled by the standardized system
+  // Available functions: showToast(), showSuccessToast(), showErrorToast(), showWarningToast(), showInfoToast()
+
+  (function(){
+    const addModal = document.getElementById('addFarmerModal');
+    const openAdd = document.getElementById('btnOpenAddFarmer');
+    function open(){ addModal.classList.remove('hidden'); addModal.classList.add('flex'); }
+    function close(){ addModal.classList.add('hidden'); addModal.classList.remove('flex'); }
+    openAdd?.addEventListener('click', open);
+    addModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', close));
+    
+    // Handle add farmer form submission
+    const addForm = addModal?.querySelector('form');
+    addForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Get farmer name for toast message
+      const farmerName = addForm.querySelector('input[name="name"]').value || 'New Farmer';
+      
+      // Close modal first
+      close();
+      
+      // Show toast
+      showSuccessToast(`${farmerName} has been created successfully`);
+      
+      // Submit form after a delay to allow toast to show
+      setTimeout(() => {
+        // Create a new form submission without the event listener
+        const formData = new FormData(addForm);
+        const action = addForm.getAttribute('action');
+        const method = addForm.getAttribute('method') || 'POST';
+        
+        // Create a temporary form for submission
+        const tempForm = document.createElement('form');
+        tempForm.method = method;
+        tempForm.action = action;
+        tempForm.style.display = 'none';
+        
+        // Add all form data
+        for (let [key, value] of formData.entries()) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          tempForm.appendChild(input);
+        }
+        
+        document.body.appendChild(tempForm);
+        tempForm.submit();
+      }, 1000);
+    });
+
+    // Edit farmer modal
+    const editModal = document.getElementById('editFarmerModal');
+    const editForm = document.getElementById('editFarmerForm');
+    const ef = {
+      cpp: document.getElementById('ef_cpp'),
+      milk: document.getElementById('ef_milk'),
+      name: document.getElementById('ef_name'),
+      village: document.getElementById('ef_village'),
+      phone: document.getElementById('ef_phone'),
+      status: document.getElementById('ef_status'),
+      rateType: document.getElementById('ef_rate_type'),
+      flatRate: document.getElementById('ef_flat_rate'),
+      rateField: document.getElementById('ef_rate_field'),
+    };
+    function openEdit(){ editModal.classList.remove('hidden'); editModal.classList.add('flex'); }
+    function closeEdit(){ editModal.classList.add('hidden'); editModal.classList.remove('flex'); }
+    
+    // Function to update rate field based on rate type
+    function updateRateField(rateType, containerId, currentValue = '') {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      if (rateType === 'chart') {
+        container.innerHTML = `
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rate Chart</label>
+          <select name="rate_chart_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+            <option value="">Select Rate Chart</option>
+            <% (rateCharts||[]).forEach(rc => { %>
+              <option value="<%= rc.id %>" ${currentValue == '<%= rc.id %>' ? 'selected' : ''}><%= rc.name %></option>
+            <% }) %>
+          </select>
+        `;
+      } else {
+        container.innerHTML = `
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Flat Rate (₹)</label>
+          <input name="flat_rate" type="number" step="0.01" value="${currentValue}" placeholder="Enter flat rate" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+        `;
+      }
+    }
+    
+    // Add event listeners for rate type changes
+    document.getElementById('add_rate_type')?.addEventListener('change', (e) => {
+      updateRateField(e.target.value, 'add_rate_field');
+    });
+    
+    ef.rateType?.addEventListener('change', (e) => {
+      updateRateField(e.target.value, 'ef_rate_field');
+    });
+    
+    // Handle edit form submission
+    editForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Get farmer name for toast message
+      const farmerName = ef.name.value || 'Farmer';
+      
+      // Close modal first
+      closeEdit();
+      
+      // Show toast immediately
+      showSuccessToast(`${farmerName} has been updated successfully`);
+      
+      // Submit form after a delay to allow toast to show
+      setTimeout(() => {
+        // Create a new form submission without the event listener
+        const formData = new FormData(editForm);
+        const action = editForm.getAttribute('action');
+        const method = editForm.getAttribute('method') || 'POST';
+        
+        // Create a temporary form for submission
+        const tempForm = document.createElement('form');
+        tempForm.method = method;
+        tempForm.action = action;
+        tempForm.style.display = 'none';
+        
+        // Add all form data
+        for (let [key, value] of formData.entries()) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          tempForm.appendChild(input);
+        }
+        
+        document.body.appendChild(tempForm);
+        tempForm.submit();
+      }, 1000);
+    });
+    
+    editModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', closeEdit));
+    document.querySelectorAll('.btn-edit-farmer').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.farmer-card');
+        const id = card?.getAttribute('data-id') || btn.getAttribute('data-id');
+        const rateType = card?.getAttribute('data-rate-type') || 'flat';
+        const rateChartId = card?.getAttribute('data-rate-chart-id') || '';
+        const flatRate = card?.getAttribute('data-flat-rate') || '';
+        
+        ef.cpp.value = card?.getAttribute('data-cpp-id') || '';
+        ef.milk.value = card?.getAttribute('data-milk') || 'A2';
+        ef.name.value = card?.getAttribute('data-name') || '';
+        ef.village.value = card?.getAttribute('data-village') || '';
+        ef.phone.value = card?.getAttribute('data-phone') || '';
+        ef.status.value = card?.getAttribute('data-status') || 'active';
+        ef.rateType.value = rateType;
+        
+        // Update rate field based on current rate type
+        updateRateField(rateType, 'ef_rate_field', rateType === 'chart' ? rateChartId : flatRate);
+        
+        editForm.setAttribute('action', `/admin/farmers/${id}`);
+        openEdit();
+      });
+    });
+
+    // Delete farmer functionality
+    const deleteModal = document.getElementById('deleteFarmerModal');
+    const deleteFarmerName = document.getElementById('deleteFarmerName');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteFarmer');
+    let farmerToDelete = null;
+
+    function openDeleteModal(farmerId, farmerName) {
+      farmerToDelete = farmerId;
+      deleteFarmerName.textContent = farmerName;
+      deleteModal.classList.remove('hidden');
+      deleteModal.classList.add('flex');
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.add('hidden');
+      deleteModal.classList.remove('flex');
+      farmerToDelete = null;
+    }
+
+    // Delete button event listeners
+    document.querySelectorAll('.btn-delete-farmer').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const farmerId = btn.getAttribute('data-id');
+        const farmerName = btn.getAttribute('data-name');
+        openDeleteModal(farmerId, farmerName);
+      });
+    });
+
+    // Close delete modal
+    deleteModal?.querySelectorAll('[data-close="modal"]').forEach(el => el.addEventListener('click', closeDeleteModal));
+
+    // Confirm delete
+    confirmDeleteBtn?.addEventListener('click', async () => {
+      if (!farmerToDelete) return;
+      
+      try {
+        const response = await fetch(`/admin/farmers/${farmerToDelete}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+          // Remove the farmer card from the UI
+          const farmerCard = document.querySelector(`[data-id="${farmerToDelete}"]`);
+          if (farmerCard) {
+            farmerCard.remove();
+            // Update totals
+            const totalEl = document.querySelector('.card:first-child .text-xl');
+            if (totalEl) {
+              const currentTotal = parseInt(totalEl.textContent) || 0;
+              totalEl.textContent = currentTotal - 1;
+            }
+          }
+          closeDeleteModal();
+          // Show success toast
+          showSuccessToast('Farmer has been deleted successfully');
+        } else {
+          showErrorToast(result.error || 'Failed to delete farmer');
+        }
+      } catch (error) {
+        console.error('Error deleting farmer:', error);
+        showErrorToast('Error deleting farmer. Please try again.');
+      }
+    });
+
+    // Search
+    const search = document.getElementById('farmerSearch');
+    const cards = Array.from(document.querySelectorAll('.farmer-card'));
+    function norm(s){ return (s||'').toString().toLowerCase(); }
+    function matches(card, q){ const txt = [card.dataset.name, card.dataset.cpp, card.dataset.phone, card.dataset.milk, card.dataset.status].map(norm).join(' '); return txt.includes(q); }
+    search?.addEventListener('input', () => { const q = norm(search.value); cards.forEach(c => { c.style.display = q ? (matches(c,q)?'':'none') : ''; }); });
+  })();
+  </script>
+  <script src="/assets/js/main.js" defer></script>
+</body>
+</html>

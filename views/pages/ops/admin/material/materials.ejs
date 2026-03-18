@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../../partials/_subnav', { section: section, subsection: subsection, page: 'Material Master', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <!-- Header -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="py-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Materials</h1>
+                      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage material master data and stock levels</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button onclick="exportMaterialsCSV()" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                        Export CSV
+                      </button>
+                      <button onclick="openAddMaterialModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        Add Material
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <!-- Filters -->
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label for="searchFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
+                    <input type="text" id="searchFilter" placeholder="Search by SKU or name..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label for="categoryFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                    <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">All Categories</option>
+                      <% if (categories && categories.length > 0) { %> <% categories.forEach(category => { %>
+                      <option value="<%= category.id %>"><%= category.name %></option>
+                      <% }) %> <% } %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="locationFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                    <select id="locationFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">All Locations</option>
+                      <% if (locations && locations.length > 0) { %> <% locations.forEach(location => { %>
+                      <option value="<%= location.id %>"><%= location.name %></option>
+                      <% }) %> <% } %>
+                    </select>
+                  </div>
+                  <div class="flex items-end">
+                    <label class="flex items-center">
+                      <input type="checkbox" id="lowStockFilter" class="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500" />
+                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Low Stock Only</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Materials Grid -->
+              <div id="materialsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loading state -->
+                <div class="col-span-full text-center py-12">
+                  <i data-lucide="loader" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin"></i>
+                  <p class="text-gray-600 dark:text-gray-400">Loading materials...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Material Modal -->
+          <div id="materialModal" class="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border border-gray-200 dark:border-gray-700 w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 id="materialModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Add Material</h3>
+                  <button onclick="closeMaterialModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <form id="materialForm">
+                  <input type="hidden" id="materialId" name="id" />
+
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Basic Information -->
+                    <div class="space-y-6">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                          <i data-lucide="info" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Basic Information</h4>
+                      </div>
+
+                      <div class="space-y-4">
+                        <div>
+                          <label for="skuCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SKU Code *</label>
+                          <input type="text" id="skuCode" name="sku_code" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter SKU code" />
+                        </div>
+
+                        <div>
+                          <label for="materialName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Material Name *</label>
+                          <input type="text" id="materialName" name="name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter material name" />
+                        </div>
+
+                        <div>
+                          <label for="materialCategory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
+                          <select id="materialCategory" name="category_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select Category</option>
+                            <% if (categories && categories.length > 0) { %> <% categories.forEach(category => { %>
+                            <option value="<%= category.id %>"><%= category.name %></option>
+                            <% }) %> <% } %>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label for="materialDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                          <textarea id="materialDescription" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter material description"></textarea>
+                        </div>
+
+                        <div>
+                          <label for="supplierReference" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Supplier Reference</label>
+                          <input type="text" id="supplierReference" name="supplier_reference" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter supplier reference number or code" />
+                        </div>
+
+                        <div>
+                          <label for="materialImage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Material Image</label>
+                          <div class="flex items-center space-x-4">
+                            <input type="file" id="materialImage" name="image" accept="image/*" class="hidden" onchange="handleImageUpload(this)" />
+                            <button type="button" onclick="document.getElementById('materialImage').click()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                              <i data-lucide="upload" class="w-4 h-4 mr-2 inline"></i>
+                              Choose Image
+                            </button>
+                            <div id="imagePreview" class="hidden">
+                              <img id="imagePreviewImg" src="" alt="Preview" class="w-16 h-16 object-cover rounded-md border dark:border-gray-700" />
+                              <button type="button" onclick="removeImage()" class="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <input type="hidden" id="materialImageUrl" name="image_url" />
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Upload a material image (JPG, PNG, max 5MB)</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Units and Stock Policy -->
+                    <div class="space-y-6">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="p-1 bg-green-100 dark:bg-green-900/30 rounded">
+                          <i data-lucide="settings" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Units & Stock Policy</h4>
+                      </div>
+
+                      <div class="space-y-4">
+                        <div>
+                          <label for="defaultUom" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default UOM *</label>
+                          <select id="defaultUom" name="default_uom_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select UOM</option>
+                            <% if (uoms && uoms.length > 0) { %> <% uoms.forEach(uom => { %>
+                            <option value="<%= uom.id %>"><%= uom.name %> (<%= uom.symbol %>)</option>
+                            <% }) %> <% } %>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label for="stockPolicy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock Policy</label>
+                          <select id="stockPolicy" name="stock_policy" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="min_max">Min/Max</option>
+                            <option value="rop">Reorder Point (ROP)</option>
+                          </select>
+                        </div>
+
+                        <div id="minMaxFields" class="grid grid-cols-2 gap-4">
+                          <div>
+                            <label for="minStock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Min Stock</label>
+                            <input type="number" id="minStock" name="min_stock" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0" />
+                          </div>
+                          <div>
+                            <label for="maxStock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Max Stock</label>
+                            <input type="number" id="maxStock" name="max_stock" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0" />
+                          </div>
+                        </div>
+
+                        <div id="ropFields" class="hidden grid grid-cols-2 gap-4">
+                          <div>
+                            <label for="reorderPoint" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reorder Point</label>
+                            <input type="number" id="reorderPoint" name="reorder_point" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0" />
+                          </div>
+                          <div>
+                            <label for="reorderQty" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reorder Quantity</label>
+                            <input type="number" id="reorderQty" name="reorder_qty" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0" />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label for="leadTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lead Time (Days)</label>
+                          <input type="number" id="leadTime" name="lead_time_days" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0" />
+                        </div>
+
+                        <div>
+                          <label for="packSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pack Size</label>
+                          <input type="number" id="packSize" name="pack_size" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="1" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Custom Attributes Section -->
+                  <div id="customAttributesSection" class="mt-8 hidden">
+                    <div class="flex items-center gap-2 mb-4">
+                      <div class="p-1 bg-purple-100 dark:bg-purple-900/30 rounded">
+                        <i data-lucide="layers" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
+                      </div>
+                      <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Category Attributes</h4>
+                    </div>
+                    <div id="customAttributesContainer" class="space-y-4">
+                      <!-- Dynamic attributes will be loaded here -->
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeMaterialModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                      <span id="materialSubmitText">Add Material</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- View Material Modal -->
+          <div id="viewMaterialModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-4 mx-auto p-0 w-11/12 max-w-6xl shadow-2xl rounded-xl bg-white dark:bg-gray-800">
+              <!-- Header Section -->
+              <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-xl p-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                      <svg class="w-8 h-8" fill="white" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 id="viewMaterialName" class="text-2xl font-bold">Material Details</h3>
+                      <p id="viewSkuCode" class="text-blue-100 text-sm font-medium">SKU: Loading...</p>
+                    </div>
+                  </div>
+                  <button onclick="closeViewMaterialModal()" class="text-white hover:text-blue-200 transition-colors p-2 hover:bg-white hover:bg-opacity-20 rounded-lg">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Content Section -->
+              <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <!-- Left Column - Main Info -->
+                  <div class="lg:col-span-2 space-y-6">
+                    <!-- Material Image & Basic Info -->
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl p-6">
+                      <div class="flex items-start space-x-6">
+                        <div class="flex-shrink-0">
+                          <div id="viewMaterialImage" class="w-32 h-32 bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                            <i data-lucide="package" class="w-12 h-12 text-gray-400 dark:text-gray-400"></i>
+                          </div>
+                        </div>
+                        <div class="flex-1">
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Category</label>
+                              <p id="viewCategory" class="text-lg font-semibold text-gray-900 dark:text-white"></p>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Supplier Reference</label>
+                              <p id="viewSupplierReference" class="text-lg font-semibold text-gray-900 dark:text-white"></p>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Unit of Measure</label>
+                              <p id="viewDefaultUom" class="text-lg font-semibold text-gray-900 dark:text-white"></p>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Pack Size</label>
+                              <p id="viewPackSize" class="text-lg font-semibold text-gray-900 dark:text-white"></p>
+                            </div>
+                          </div>
+                          <div class="mt-4">
+                            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Description</label>
+                            <p id="viewDescription" class="text-gray-700 dark:text-gray-300 leading-relaxed"></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Stock Overview Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-4 border border-green-200 dark:border-green-800">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">Current Stock</p>
+                            <p id="viewCurrentStock" class="text-2xl font-bold text-green-800 dark:text-green-200 mt-1"></p>
+                          </div>
+                          <div class="w-12 h-12 bg-green-200 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                            <i data-lucide="package" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide">Min Stock</p>
+                            <p id="viewMinStock" class="text-2xl font-bold text-orange-800 dark:text-orange-200 mt-1"></p>
+                          </div>
+                          <div class="w-12 h-12 bg-orange-200 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
+                            <i data-lucide="trending-down" class="w-6 h-6 text-orange-600 dark:text-orange-400"></i>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Max Stock</p>
+                            <p id="viewMaxStock" class="text-2xl font-bold text-blue-800 dark:text-blue-200 mt-1"></p>
+                          </div>
+                          <div class="w-12 h-12 bg-blue-200 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">Reorder Point</p>
+                            <p id="viewReorderPoint" class="text-2xl font-bold text-purple-800 dark:text-purple-200 mt-1"></p>
+                          </div>
+                          <div class="w-12 h-12 bg-purple-200 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
+                            <i data-lucide="alert-circle" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Stock Policy & Lead Time -->
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl p-6">
+                      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-lucide="settings" class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-300"></i>
+                        Stock Management
+                      </h4>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Stock Policy</label>
+                          <div id="viewStockPolicy" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"></div>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Reorder Quantity</label>
+                          <p id="viewReorderQty" class="text-lg font-semibold text-gray-900 dark:text-white"></p>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Lead Time</label>
+                          <p id="viewLeadTime" class="text-lg font-semibold text-gray-900 dark:text-white"></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Custom Attributes -->
+                    <div id="viewCustomAttributesSection" class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-xl p-6 hidden">
+                      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-lucide="layers" class="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400"></i>
+                        Custom Attributes
+                      </h4>
+                      <div id="viewCustomAttributesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Custom attributes will be populated here -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right Column - Status & Actions -->
+                  <div class="space-y-6">
+                    <!-- Status Card -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+                      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-lucide="activity" class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-300"></i>
+                        Status
+                      </h4>
+                      <div class="space-y-4">
+                        <div>
+                          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Material Status</label>
+                          <div id="viewStatus" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"></div>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Created</label>
+                          <p id="viewCreatedAt" class="text-sm text-gray-900 dark:text-white"></p>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Last Updated</label>
+                          <p id="viewUpdatedAt" class="text-sm text-gray-900 dark:text-white"></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+                      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-lucide="zap" class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-300"></i>
+                        Quick Actions
+                      </h4>
+                      <div class="space-y-3">
+                        <button onclick="openEditMaterialModalFromView()" class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                          <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
+                          Edit Material
+                        </button>
+                        <button onclick="openStockManagementModalFromView()" class="w-full flex items-center justify-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
+                          <i data-lucide="package" class="w-4 h-4 mr-2"></i>
+                          Manage Stock
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 rounded-b-xl border-t border-gray-200 dark:border-gray-700">
+                <div class="flex justify-end">
+                  <button onclick="closeViewMaterialModal()" class="px-6 py-2 bg-gray-600 dark:bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock Management Modal -->
+          <div id="stockManagementModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Stock Management</h3>
+                  <button onclick="closeStockManagementModal()" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                  </button>
+                </div>
+
+                <div class="space-y-6">
+                  <!-- Material Info -->
+                  <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <h4 class="text-md font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <i data-lucide="package" class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400"></i>
+                      Material Information
+                    </h4>
+                    <div class="flex items-start space-x-4">
+                      <div id="stockMaterialImageContainer" class="flex-shrink-0">
+                        <div id="stockMaterialImage" class="w-20 h-20 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                          <i data-lucide="package" class="w-8 h-8 text-gray-400 dark:text-gray-400"></i>
+                        </div>
+                      </div>
+                      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Material Name</label>
+                          <p id="stockMaterialName" class="text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 px-3 py-2 rounded border"></p>
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU Code</label>
+                          <p id="stockSkuCode" class="text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 px-3 py-2 rounded border"></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Current Stock Display -->
+                  <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <h4 class="text-md font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <i data-lucide="trending-up" class="w-5 h-5 mr-2 text-green-600 dark:text-green-400"></i>
+                      Current Stock Levels
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Stock</label>
+                        <div id="currentStockDisplay" class="text-lg font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-800 px-3 py-2 rounded border"></div>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock by Location</label>
+                        <div id="stockByLocationDisplay" class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 px-3 py-2 rounded border" style="white-space: pre-line"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Stock Adjustment Form -->
+                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <h4 class="text-md font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <i data-lucide="edit" class="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400"></i>
+                      Adjust Stock
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label for="stockLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                        <select id="stockLocation" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <option value="">Select Location</option>
+                          <% if (locations && locations.length > 0) { %> <% locations.forEach(location => { %>
+                          <option value="<%= location.id %>"><%= location.name %></option>
+                          <% }) %> <% } %>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="stockAdjustmentType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Adjustment Type</label>
+                        <select id="stockAdjustmentType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <option value="set">Set to Quantity</option>
+                          <option value="add">Add Quantity</option>
+                          <option value="subtract">Subtract Quantity</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="stockAdjustmentQty" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
+                        <input type="number" id="stockAdjustmentQty" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" />
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <label for="stockAdjustmentReason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason *</label>
+                      <input type="text" id="stockAdjustmentReason" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Reason for stock adjustment" />
+                      <div id="reasonError" class="hidden text-red-600 dark:text-red-400 text-sm mt-1">Please provide a reason for the stock adjustment</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button onclick="closeStockManagementModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                  <button type="button" id="applyStockAdjustment" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">Apply Stock Adjustment</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+                                    // Initialize Lucide icons
+                                    if (typeof lucide !== 'undefined') {
+                                      lucide.createIcons();
+                                    }
+
+                        let materials = [];
+                        let categories = <%- JSON.stringify(categories || []) %>;
+                        let uoms = <%- JSON.stringify(uoms || []) %>;
+                        let locations = <%- JSON.stringify(locations || []) %>;
+
+            // Export materials to CSV
+            async function exportMaterialsCSV() {
+              try {
+                // Get current filters
+                const filters = {
+                  search: document.getElementById('searchFilter').value,
+                  category_id: document.getElementById('categoryFilter').value,
+                  location_id: document.getElementById('locationFilter').value,
+                  low_stock: document.getElementById('lowStockFilter').checked
+                };
+
+                // Build query string
+                const params = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                  if (value) params.append(key, value);
+                });
+
+                // Create download link
+                const exportUrl = `/api/v1/material/materials/export?${params}`;
+
+                // Create a temporary link element and trigger download
+                const link = document.createElement('a');
+                link.href = exportUrl;
+                link.download = 'materials-export.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Show success message
+                showSuccessToast('Materials exported successfully!');
+              } catch (error) {
+                console.error('Error exporting materials:', error);
+                showErrorToast('Failed to export materials');
+              }
+            }
+
+            // Load materials on page load
+            document.addEventListener('DOMContentLoaded', function() {
+              loadMaterials();
+
+                                      // Add event listeners for filters
+                                      document.getElementById('searchFilter').addEventListener('input', debounce(loadMaterials, 300));
+                                      document.getElementById('categoryFilter').addEventListener('change', loadMaterials);
+                                      document.getElementById('locationFilter').addEventListener('change', loadMaterials);
+                                      document.getElementById('lowStockFilter').addEventListener('change', loadMaterials);
+
+                                      // Stock policy change handler
+                                      document.getElementById('stockPolicy').addEventListener('change', function() {
+                                        const isMinMax = this.value === 'min_max';
+                                        document.getElementById('minMaxFields').classList.toggle('hidden', !isMinMax);
+                                        document.getElementById('ropFields').classList.toggle('hidden', isMinMax);
+                                      });
+
+                                      // Category change handler for custom attributes
+                                      document.getElementById('materialCategory').addEventListener('change', function() {
+                                        loadCategoryAttributes(this.value);
+                                      });
+
+                                      // Stock adjustment button event listener
+                                      document.getElementById('applyStockAdjustment').addEventListener('click', applyStockAdjustment);
+
+                                      // Clear reason error when user starts typing
+                                      document.getElementById('stockAdjustmentReason').addEventListener('input', function() {
+                                        if (this.value.trim()) {
+                                          document.getElementById('reasonError').classList.add('hidden');
+                                          this.classList.remove('border-red-500');
+                                        }
+                                      });
+                                    });
+
+                                    // Debounce function
+                                    function debounce(func, wait) {
+                                      let timeout;
+                                      return function executedFunction(...args) {
+                                        const later = () => {
+                                          clearTimeout(timeout);
+                                          func(...args);
+                                        };
+                                        clearTimeout(timeout);
+                                        timeout = setTimeout(later, wait);
+                                      };
+                                    }
+
+            // Load materials
+            async function loadMaterials() {
+              try {
+                const filters = {
+                  search: document.getElementById('searchFilter').value,
+                  category_id: document.getElementById('categoryFilter').value,
+                  location_id: document.getElementById('locationFilter').value,
+                  low_stock: document.getElementById('lowStockFilter').checked
+                };
+
+                const params = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                  if (value) params.append(key, value);
+                });
+
+                const response = await fetch(`/api/v1/material/materials?${params}`);
+                const result = await response.json();
+
+                materials = result.data || [];
+                renderMaterials();
+              } catch (error) {
+                console.error('Error loading materials:', error);
+                document.getElementById('materialsGrid').innerHTML = `
+                  <div class="col-span-full text-center py-12">
+                    <i data-lucide="alert-circle" class="w-8 h-8 mx-auto text-red-500 mb-4"></i>
+                    <p class="text-red-600 dark:text-red-400">Failed to load materials</p>
+                  </div>
+                `;
+                if (typeof lucide !== 'undefined') {
+                  lucide.createIcons();
+                }
+              }
+            }
+
+            // Render materials
+            function renderMaterials() {
+              const container = document.getElementById('materialsGrid');
+
+              // Sort materials by ID in ascending order
+              const sortedMaterials = [...materials].sort((a, b) => a.id - b.id);
+
+              if (sortedMaterials.length === 0) {
+                container.innerHTML = `
+                  <div class="col-span-full text-center py-12">
+                    <i data-lucide="package" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No materials found</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Get started by adding your first material.</p>
+                    <button onclick="openAddMaterialModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                      <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                      Add Material
+                    </button>
+                  </div>
+                `;
+              } else {
+                container.innerHTML = sortedMaterials.map(material => `
+                  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                    <div class="mb-4">
+                      <div class="flex items-start space-x-4 mb-3">
+                        ${material.image_url ? `
+                          <div class="flex-shrink-0">
+                            <img src="${material.image_url}" alt="${material.name}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+                          </div>
+                        ` : `
+                          <div class="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                            <i data-lucide="package" class="w-8 h-8 text-gray-400 dark:text-gray-500"></i>
+                          </div>
+                        `}
+                        <div class="flex-1">
+                          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${material.name}</h3>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 mt-1">
+                            ${material.sku_code}
+                          </span>
+                        </div>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">${material.category_name}</p>
+                      <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${parseFloat(material.total_stock || 0) <= parseFloat(material.min_stock || 0) ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'}">
+                            ${parseFloat(material.total_stock || 0) <= parseFloat(material.min_stock || 0) ? 'Low Stock' : 'In Stock'}
+                          </span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                          <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Current Stock</span>
+                          <div class="flex items-baseline">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">${Math.round(material.total_stock || 0)}</span>
+                            <span class="ml-1 text-sm font-medium text-gray-600 dark:text-gray-300">${material.default_uom_symbol}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div>
+                          <span class="text-gray-500 dark:text-gray-400">Min:</span>
+                          <span class="font-medium text-gray-900 dark:text-white">${material.min_stock} ${material.default_uom_symbol}</span>
+                        </div>
+                        <div>
+                          <span class="text-gray-500 dark:text-gray-400">Max:</span>
+                          <span class="font-medium text-gray-900 dark:text-white">${material.max_stock} ${material.default_uom_symbol}</span>
+                        </div>
+                      </div>
+
+                      <!-- Action buttons moved to bottom -->
+                      <div class="flex items-center justify-end space-x-2">
+                        <button onclick="viewMaterial(${material.id})" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="View Details">
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openStockManagementModal(${material.id})" class="p-2 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors" title="Manage Stock">
+                          <i data-lucide="package" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openEditMaterialModal(${material.id})" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Edit Material">
+                          <i data-lucide="edit" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteMaterial(${material.id})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete Material">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('');
+              }
+
+              // Re-initialize icons
+              if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+              }
+            }
+
+            // Modal Functions
+            function openAddMaterialModal() {
+              document.getElementById('materialModalTitle').textContent = 'Add Material';
+              document.getElementById('materialSubmitText').textContent = 'Add Material';
+              document.getElementById('materialForm').reset();
+              document.getElementById('materialId').value = '';
+              document.getElementById('customAttributesSection').classList.add('hidden');
+              document.getElementById('materialModal').classList.remove('hidden');
+            }
+
+            function openEditMaterialModal(materialId) {
+              const material = materials.find(m => m.id === materialId);
+              if (!material) return;
+
+              document.getElementById('materialModalTitle').textContent = 'Edit Material';
+              document.getElementById('materialSubmitText').textContent = 'Update Material';
+              document.getElementById('materialId').value = material.id;
+              document.getElementById('skuCode').value = material.sku_code;
+              document.getElementById('materialName').value = material.name;
+              document.getElementById('materialCategory').value = material.category_id;
+              document.getElementById('materialDescription').value = material.description || '';
+              document.getElementById('supplierReference').value = material.supplier_reference || '';
+              document.getElementById('defaultUom').value = material.default_uom_id;
+
+              // Handle image
+              if (material.image_url) {
+                document.getElementById('materialImageUrl').value = material.image_url;
+                const preview = document.getElementById('imagePreview');
+                const previewImg = document.getElementById('imagePreviewImg');
+                previewImg.src = material.image_url;
+                preview.classList.remove('hidden');
+              } else {
+                resetImageUpload();
+              }
+              document.getElementById('stockPolicy').value = material.stock_policy;
+              document.getElementById('minStock').value = material.min_stock;
+              document.getElementById('maxStock').value = material.max_stock;
+              document.getElementById('reorderPoint').value = material.reorder_point;
+              document.getElementById('reorderQty').value = material.reorder_qty;
+              document.getElementById('leadTime').value = material.lead_time_days;
+              document.getElementById('packSize').value = material.pack_size;
+
+              // Update stock policy fields visibility
+              const isMinMax = material.stock_policy === 'min_max';
+              document.getElementById('minMaxFields').classList.toggle('hidden', !isMinMax);
+              document.getElementById('ropFields').classList.toggle('hidden', isMinMax);
+
+              // Load custom attributes with existing values
+              loadCategoryAttributes(material.category_id, material.custom_attributes);
+
+              document.getElementById('materialModal').classList.remove('hidden');
+            }
+
+            function closeMaterialModal() {
+              document.getElementById('materialModal').classList.add('hidden');
+              // Reset image upload
+              resetImageUpload();
+            }
+
+            // Stock Management Modal Functions
+            let currentStockMaterialId = null;
+
+            function openStockManagementModal(materialId) {
+              const material = materials.find(m => m.id === materialId);
+              if (!material) return;
+
+              // Store the material ID for use in stock adjustment
+              currentStockMaterialId = materialId;
+
+              // Populate material info
+              document.getElementById('stockMaterialName').textContent = material.name;
+              document.getElementById('stockSkuCode').textContent = material.sku_code;
+
+              // Populate material image
+              const imageContainer = document.getElementById('stockMaterialImage');
+              if (material.image_url) {
+                imageContainer.innerHTML = `<img src="${material.image_url}" alt="${material.name}" class="w-full h-full object-cover rounded-lg" />`;
+              } else {
+                imageContainer.innerHTML = '<i data-lucide="package" class="w-8 h-8 text-gray-400 dark:text-gray-500"></i>';
+              }
+
+              // Load stock data
+              loadMaterialStock(materialId);
+
+              // Show the modal
+              document.getElementById('stockManagementModal').classList.remove('hidden');
+
+              // Re-initialize icons
+              if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+              }
+            }
+
+            function closeStockManagementModal() {
+              document.getElementById('stockManagementModal').classList.add('hidden');
+              // Clear form
+              document.getElementById('stockLocation').value = '';
+              document.getElementById('stockAdjustmentType').value = 'set';
+              document.getElementById('stockAdjustmentQty').value = '';
+              document.getElementById('stockAdjustmentReason').value = '';
+              document.getElementById('reasonError').classList.add('hidden');
+              document.getElementById('stockAdjustmentReason').classList.remove('border-red-500');
+              // Clear stored material ID
+              currentStockMaterialId = null;
+            }
+
+            // Image upload functions
+            async function handleImageUpload(input) {
+              const file = input.files[0];
+              if (!file) return;
+
+              // Validate file type
+              if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                input.value = '';
+                return;
+              }
+
+              // Validate file size (5MB)
+              if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                input.value = '';
+                return;
+              }
+
+              try {
+                // Create FormData for upload
+                const formData = new FormData();
+                formData.append('image', file);
+
+                // Show loading state
+                const button = document.querySelector('button[onclick*="materialImage"]');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i data-lucide="loader" class="w-4 h-4 mr-2 inline animate-spin"></i>Uploading...';
+                button.disabled = true;
+
+                // Upload image
+                const response = await fetch('/api/v1/material/materials/upload-image', {
+                  method: 'POST',
+                  body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  // Set the image URL
+                  document.getElementById('materialImageUrl').value = result.data.imageUrl;
+
+                  // Show preview
+                  const preview = document.getElementById('imagePreview');
+                  const previewImg = document.getElementById('imagePreviewImg');
+                  previewImg.src = result.data.imageUrl;
+                  preview.classList.remove('hidden');
+                } else {
+                  alert('Error uploading image: ' + result.error);
+                }
+              } catch (error) {
+                console.error('Error uploading image:', error);
+                alert('Failed to upload image');
+              } finally {
+                // Reset button state
+                const button = document.querySelector('button[onclick*="materialImage"]');
+                button.innerHTML = '<i data-lucide="upload" class="w-4 h-4 mr-2 inline"></i>Choose Image';
+                button.disabled = false;
+
+                // Re-initialize icons
+                if (typeof lucide !== 'undefined') {
+                  lucide.createIcons();
+                }
+              }
+            }
+
+            function removeImage() {
+              document.getElementById('materialImage').value = '';
+              document.getElementById('materialImageUrl').value = '';
+              document.getElementById('imagePreview').classList.add('hidden');
+            }
+
+            function resetImageUpload() {
+              document.getElementById('materialImage').value = '';
+              document.getElementById('materialImageUrl').value = '';
+              document.getElementById('imagePreview').classList.add('hidden');
+            }
+
+            // Load material stock data
+            async function loadMaterialStock(materialId) {
+              try {
+                const response = await fetch(`/api/v1/material/materials/${materialId}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                  const material = result.data;
+
+                  // Display current total stock
+                  const totalStock = material.stock ? material.stock.reduce((sum, s) => sum + parseFloat(s.on_hand_qty || 0), 0) : 0;
+                  document.getElementById('currentStockDisplay').textContent = `${totalStock.toFixed(2)} ${material.default_uom_symbol || ''}`;
+
+                  // Display stock by location with proper line breaks
+                  if (material.stock && material.stock.length > 0) {
+                    const stockByLocation = material.stock.map(s => `${s.location_name}: ${parseFloat(s.on_hand_qty || 0).toFixed(2)} ${material.default_uom_symbol || ''}`).join('\n');
+                    document.getElementById('stockByLocationDisplay').textContent = stockByLocation;
+                    // Add CSS to preserve line breaks
+                    document.getElementById('stockByLocationDisplay').style.whiteSpace = 'pre-line';
+                  } else {
+                    document.getElementById('stockByLocationDisplay').textContent = 'No stock recorded';
+                  }
+                }
+              } catch (error) {
+                console.error('Error loading material stock:', error);
+                document.getElementById('currentStockDisplay').textContent = 'Error loading stock';
+                document.getElementById('stockByLocationDisplay').textContent = 'Error loading stock';
+              }
+            }
+
+            // Apply stock adjustment
+            async function applyStockAdjustment() {
+              const materialId = currentStockMaterialId;
+              const locationId = document.getElementById('stockLocation').value;
+              const adjustmentType = document.getElementById('stockAdjustmentType').value;
+              const quantity = parseFloat(document.getElementById('stockAdjustmentQty').value);
+              const reason = document.getElementById('stockAdjustmentReason').value;
+              const reasonError = document.getElementById('reasonError');
+
+              // Clear previous errors
+              reasonError.classList.add('hidden');
+              document.getElementById('stockAdjustmentReason').classList.remove('border-red-500');
+
+              // Validation
+              if (!materialId) {
+                showErrorToast('Material ID is required');
+                return;
+              }
+              if (!locationId) {
+                showErrorToast('Please select a location');
+                return;
+              }
+              if (isNaN(quantity) || quantity <= 0) {
+                showErrorToast('Please enter a valid quantity');
+                return;
+              }
+              if (!reason.trim()) {
+                reasonError.classList.remove('hidden');
+                document.getElementById('stockAdjustmentReason').classList.add('border-red-500');
+                document.getElementById('stockAdjustmentReason').focus();
+                return;
+              }
+
+              try {
+                // Determine transaction type based on adjustment
+                let transactionTypeId;
+                let finalQuantity = quantity;
+                let notes = `Stock adjustment: ${adjustmentType} ${quantity} units`;
+
+                // For 'set' type, we need to get current stock first and calculate the difference
+                if (adjustmentType === 'set') {
+                  const response = await fetch(`/api/v1/material/materials/${materialId}`);
+                  const result = await response.json();
+
+                  if (result.success && result.data.stock) {
+                    const currentStock = result.data.stock.find(s => s.location_id == locationId);
+                    const currentQty = currentStock ? currentStock.on_hand_qty : 0;
+                    finalQuantity = Math.abs(quantity - currentQty);
+
+                    if (quantity > currentQty) {
+                      transactionTypeId = 6; // ADJUST_POS (Positive Adjustment)
+                      notes = `Stock set to ${quantity} (was ${currentQty}, added ${finalQuantity})`;
+                    } else if (quantity < currentQty) {
+                      transactionTypeId = 7; // ADJUST_NEG (Negative Adjustment)
+                      notes = `Stock set to ${quantity} (was ${currentQty}, removed ${finalQuantity})`;
+                    } else {
+                      showInfoToast('Stock quantity is already at the specified amount');
+                      return;
+                    }
+                  }
+                } else if (adjustmentType === 'add') {
+                  transactionTypeId = 6; // ADJUST_POS (Positive Adjustment)
+                } else if (adjustmentType === 'subtract') {
+                  transactionTypeId = 7; // ADJUST_NEG (Negative Adjustment)
+                }
+
+                // Create a stock adjustment transaction
+                const transactionData = {
+                  transaction_type_id: transactionTypeId,
+                  material_id: parseInt(materialId),
+                  location_id: parseInt(locationId),
+                  quantity: finalQuantity,
+                  reason: reason,
+                  notes: notes,
+                  user_id: 1 // You might want to get this from the session
+                };
+
+                const response = await fetch('/api/v1/material/transactions', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(transactionData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  showSuccessToast('Stock adjustment applied successfully!');
+
+                  // Close the modal
+                  closeStockManagementModal();
+
+                  // Reload materials list to update the display
+                  loadMaterials();
+                } else {
+                  showErrorToast('Error: ' + (result.error || 'Failed to apply stock adjustment'));
+                }
+              } catch (error) {
+                console.error('Error applying stock adjustment:', error);
+                showErrorToast('Failed to apply stock adjustment');
+              }
+            }
+
+            // Load category attributes
+            async function loadCategoryAttributes(categoryId, existingCustomAttributes = null) {
+              if (!categoryId) {
+                document.getElementById('customAttributesSection').classList.add('hidden');
+                return;
+              }
+
+              try {
+                const response = await fetch(`/api/v1/material/categories/${categoryId}`);
+                const result = await response.json();
+
+                if (result.success && result.data.templates && result.data.templates.length > 0) {
+                  const container = document.getElementById('customAttributesContainer');
+
+                  // Parse existing custom attributes if provided
+                  let parsedAttributes = {};
+                  if (existingCustomAttributes) {
+                    try {
+                      parsedAttributes = typeof existingCustomAttributes === 'string'
+                        ? JSON.parse(existingCustomAttributes)
+                        : existingCustomAttributes;
+                    } catch (e) {
+                      parsedAttributes = {};
+                    }
+                  }
+
+                  container.innerHTML = result.data.templates.map(template => {
+                    let input = '';
+                    const fieldName = `custom_attributes[${template.field_key}]`;
+                    const existingValue = parsedAttributes[template.field_key] || '';
+
+                    switch (template.data_type) {
+                      case 'string':
+                      case 'number':
+                        input = `<input type="${template.data_type === 'number' ? 'number' : 'text'}" name="${fieldName}"
+                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Enter ${template.field_label.toLowerCase()}"
+                                       value="${existingValue}" />`;
+                        break;
+                      case 'boolean':
+                        input = `<select name="${fieldName}"
+                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                     <option value="">Select</option>
+                                     <option value="true" ${existingValue === 'true' || existingValue === true ? 'selected' : ''}>Yes</option>
+                                     <option value="false" ${existingValue === 'false' || existingValue === false ? 'selected' : ''}>No</option>
+                                   </select>`;
+                        break;
+                      case 'date':
+                        input = `<input type="date" name="${fieldName}"
+                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       value="${existingValue}" />`;
+                        break;
+                      case 'enum':
+                        const options = template.enum_options ? (Array.isArray(template.enum_options) ? template.enum_options : template.enum_options.split(',').map(opt => opt.trim()).filter(opt => opt)) : [];
+                        input = `<select name="${fieldName}"
+                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                     <option value="">Select</option>
+                                     ${options.map(opt => `<option value="${opt}" ${existingValue === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                                   </select>`;
+                        break;
+                    }
+
+                    return `
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          ${template.field_label}${template.is_required ? ' *' : ''}
+                        </label>
+                        ${input}
+                      </div>
+                    `;
+                  }).join('');
+
+                  document.getElementById('customAttributesSection').classList.remove('hidden');
+                } else {
+                  document.getElementById('customAttributesSection').classList.add('hidden');
+                }
+              } catch (error) {
+                console.error('Error loading category attributes:', error);
+                document.getElementById('customAttributesSection').classList.add('hidden');
+              }
+            }
+
+                                    // Form submission
+                                    document.getElementById('materialForm').addEventListener('submit', async function(e) {
+                                      e.preventDefault();
+
+                                      const formData = new FormData(this);
+                                      const data = Object.fromEntries(formData);
+
+                                      // Process custom attributes
+                                      const customAttributes = {};
+                                      Object.entries(data).forEach(([key, value]) => {
+                                        if (key.startsWith('custom_attributes[') && value) {
+                                          const attrKey = key.match(/custom_attributes\[(.+)\]/)[1];
+                                          customAttributes[attrKey] = value;
+                                        }
+                                      });
+
+                                      data.custom_attributes = Object.keys(customAttributes).length > 0 ? customAttributes : null;
+
+                                      const isEdit = data.id !== '';
+
+                                      try {
+                                        const url = isEdit ? `/api/v1/material/materials/${data.id}` : '/api/v1/material/materials';
+                                        const method = isEdit ? 'PUT' : 'POST';
+
+                                        const response = await fetch(url, {
+                                          method,
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify(data)
+                                        });
+
+                                        const result = await response.json();
+
+                                        if (result.success) {
+                                          closeMaterialModal();
+                                          loadMaterials();
+                                        } else {
+                                          alert('Error: ' + result.error);
+                                        }
+                                      } catch (error) {
+                                        console.error('Error saving material:', error);
+                                        alert('Failed to save material');
+                                      }
+                                    });
+
+                                    // Delete material
+                                    async function deleteMaterial(materialId) {
+                                      if (!confirm('Are you sure you want to delete this material? This action cannot be undone.')) return;
+
+                                      try {
+                                        const response = await fetch(`/api/v1/material/materials/${materialId}`, {
+                                          method: 'DELETE'
+                                        });
+
+                                        const result = await response.json();
+
+                                        if (result.success) {
+                                          loadMaterials();
+                                        } else {
+                                          alert('Error: ' + result.error);
+                                        }
+                                      } catch (error) {
+                                        console.error('Error deleting material:', error);
+                                        alert('Failed to delete material');
+                                      }
+                                    }
+
+                                    let currentViewMaterialId = null;
+
+                                    function viewMaterial(materialId) {
+                                      const material = materials.find(m => m.id === materialId);
+                                      if (!material) return;
+
+                                      // Store material ID for quick actions
+                                      currentViewMaterialId = materialId;
+
+                                      // Populate header information
+                                      document.getElementById('viewMaterialName').textContent = material.name;
+                                      document.getElementById('viewSkuCode').textContent = `SKU: ${material.sku_code}`;
+
+                                      // Populate basic information
+                                      document.getElementById('viewCategory').textContent = material.category_name;
+                                      document.getElementById('viewSupplierReference').textContent = material.supplier_reference || 'Not specified';
+                                      document.getElementById('viewDefaultUom').textContent = `${material.default_uom_name} (${material.default_uom_symbol})`;
+                                      document.getElementById('viewDescription').textContent = material.description || 'No description available';
+                                      document.getElementById('viewPackSize').textContent = material.pack_size;
+
+                                      // Handle material image
+                                      const imageContainer = document.getElementById('viewMaterialImage');
+                                      if (material.image_url) {
+                                        imageContainer.innerHTML = `<img src="${material.image_url}" alt="${material.name}" class="w-full h-full object-cover rounded-xl" />`;
+                                      } else {
+                                        imageContainer.innerHTML = '<i data-lucide="package" class="w-12 h-12 text-gray-400 dark:text-gray-400"></i>';
+                                      }
+
+                                      // Populate stock information with enhanced styling
+                                      const currentStock = parseFloat(material.total_stock || 0);
+                                      const minStock = parseFloat(material.min_stock);
+                                      const maxStock = parseFloat(material.max_stock);
+                                      const reorderPoint = parseFloat(material.reorder_point);
+
+                                      document.getElementById('viewCurrentStock').textContent = `${currentStock.toFixed(2)} ${material.default_uom_symbol}`;
+                                      document.getElementById('viewMinStock').textContent = `${minStock.toFixed(2)} ${material.default_uom_symbol}`;
+                                      document.getElementById('viewMaxStock').textContent = `${maxStock.toFixed(2)} ${material.default_uom_symbol}`;
+                                      document.getElementById('viewReorderPoint').textContent = `${reorderPoint.toFixed(2)} ${material.default_uom_symbol}`;
+                                      document.getElementById('viewReorderQty').textContent = `${material.reorder_qty} ${material.default_uom_symbol}`;
+                                      document.getElementById('viewLeadTime').textContent = `${material.lead_time_days} days`;
+
+                                      // Style stock policy badge
+                                      const stockPolicyEl = document.getElementById('viewStockPolicy');
+                                      const policyText = material.stock_policy.replace('_', ' ').toUpperCase();
+                                      stockPolicyEl.textContent = policyText;
+                                      stockPolicyEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium';
+
+                                      if (material.stock_policy === 'min_max') {
+                                        stockPolicyEl.classList.add('bg-blue-100 dark:bg-blue-900/30', 'text-blue-800 dark:text-blue-200');
+                                      } else {
+                                        stockPolicyEl.classList.add('bg-purple-100 dark:bg-purple-900/30', 'text-purple-800 dark:text-purple-200');
+                                      }
+
+                                      // Populate status information with enhanced styling
+                                      const statusEl = document.getElementById('viewStatus');
+                                      const statusText = material.is_active ? 'Active' : 'Inactive';
+                                      statusEl.textContent = statusText;
+                                      statusEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium';
+
+                                      if (material.is_active) {
+                                        statusEl.classList.add('bg-green-100 dark:bg-green-900/30', 'text-green-800 dark:text-green-200');
+                                      } else {
+                                        statusEl.classList.add('bg-red-100 dark:bg-red-900/30', 'text-red-800');
+                                      }
+
+                                      document.getElementById('viewCreatedAt').textContent = new Date(material.created_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      });
+                                      document.getElementById('viewUpdatedAt').textContent = new Date(material.updated_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      });
+
+                                      // Load and display custom attributes
+                                      loadViewCustomAttributes(material);
+
+                                      // Show the modal
+                                      document.getElementById('viewMaterialModal').classList.remove('hidden');
+
+                                      // Re-initialize icons
+                                      if (typeof lucide !== 'undefined') {
+                                        lucide.createIcons();
+                                      }
+
+                                      // Ensure the header icon is visible
+                                      const headerIcon = document.querySelector('#viewMaterialModal .w-16.h-16 svg');
+                                      if (headerIcon) {
+                                        headerIcon.style.display = 'block';
+                                        headerIcon.style.width = '2rem';
+                                        headerIcon.style.height = '2rem';
+                                        headerIcon.style.fill = 'white';
+                                        headerIcon.style.stroke = 'white';
+                                        headerIcon.style.color = 'white';
+                                      }
+                                    }
+
+                                    function closeViewMaterialModal() {
+                                      document.getElementById('viewMaterialModal').classList.add('hidden');
+                                      currentViewMaterialId = null;
+                                    }
+
+                                    // Quick action functions
+                                    function openEditMaterialModalFromView() {
+                                      if (currentViewMaterialId) {
+                                        // Open edit modal first, then close view modal
+                                        openEditMaterialModal(currentViewMaterialId);
+                                        // Close view modal after a short delay to ensure edit modal opens
+                                        setTimeout(() => {
+                                          closeViewMaterialModal();
+                                        }, 100);
+                                      }
+                                    }
+
+                                    function openStockManagementModalFromView() {
+                                      if (currentViewMaterialId) {
+                                        // Open stock management modal first, then close view modal
+                                        openStockManagementModal(currentViewMaterialId);
+                                        // Close view modal after a short delay to ensure stock modal opens
+                                        setTimeout(() => {
+                                          closeViewMaterialModal();
+                                        }, 100);
+                                      }
+                                    }
+
+                                    function printMaterialDetails() {
+                                      if (currentViewMaterialId) {
+                                        const material = materials.find(m => m.id === currentViewMaterialId);
+                                        if (material) {
+                                          // Create a print-friendly version
+                                          const printWindow = window.open('', '_blank');
+                                          const printContent = `
+                                            <!DOCTYPE html>
+                                            <html>
+                                            <head>
+                                              <title>Material Details - ${material.name}</title>
+                                              <style>
+                                                body { font-family: Arial, sans-serif; margin: 20px; }
+                                                .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                                                .section { margin-bottom: 20px; }
+                                                .section h3 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                                                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+                                                .info-item { display: flex; justify-content: space-between; padding: 5px 0; }
+                                                .label { font-weight: bold; }
+                                                .value { color: #666; }
+                                                .stock-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+                                                .stock-card { border: 1px solid #ddd; padding: 10px; text-align: center; }
+                                                .stock-card h4 { margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; }
+                                                .stock-card .value { font-size: 18px; font-weight: bold; }
+                                              </style>
+                                            </head>
+                                            <body>
+                                              <div class="header">
+                                                <h1>${material.name}</h1>
+                                                <p><strong>SKU:</strong> ${material.sku_code}</p>
+                                              </div>
+
+                                              <div class="section">
+                                                <h3>Basic Information</h3>
+                                                <div class="info-grid">
+                                                  <div class="info-item">
+                                                    <span class="label">Category:</span>
+                                                    <span class="value">${material.category_name}</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Supplier Reference:</span>
+                                                    <span class="value">${material.supplier_reference || 'Not specified'}</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Unit of Measure:</span>
+                                                    <span class="value">${material.default_uom_name} (${material.default_uom_symbol})</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Pack Size:</span>
+                                                    <span class="value">${material.pack_size}</span>
+                                                  </div>
+                                                </div>
+                                                <p><strong>Description:</strong> ${material.description || 'No description available'}</p>
+                                              </div>
+
+                                              <div class="section">
+                                                <h3>Stock Information</h3>
+                                                <div class="stock-cards">
+                                                  <div class="stock-card">
+                                                    <h4>Current Stock</h4>
+                                                    <div class="value">${parseFloat(material.total_stock || 0).toFixed(2)} ${material.default_uom_symbol}</div>
+                                                  </div>
+                                                  <div class="stock-card">
+                                                    <h4>Min Stock</h4>
+                                                    <div class="value">${parseFloat(material.min_stock).toFixed(2)} ${material.default_uom_symbol}</div>
+                                                  </div>
+                                                  <div class="stock-card">
+                                                    <h4>Max Stock</h4>
+                                                    <div class="value">${parseFloat(material.max_stock).toFixed(2)} ${material.default_uom_symbol}</div>
+                                                  </div>
+                                                  <div class="stock-card">
+                                                    <h4>Reorder Point</h4>
+                                                    <div class="value">${parseFloat(material.reorder_point).toFixed(2)} ${material.default_uom_symbol}</div>
+                                                  </div>
+                                                </div>
+                                                <div class="info-grid">
+                                                  <div class="info-item">
+                                                    <span class="label">Reorder Quantity:</span>
+                                                    <span class="value">${material.reorder_qty} ${material.default_uom_symbol}</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Lead Time:</span>
+                                                    <span class="value">${material.lead_time_days} days</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Stock Policy:</span>
+                                                    <span class="value">${material.stock_policy.replace('_', ' ').toUpperCase()}</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Status:</span>
+                                                    <span class="value">${material.is_active ? 'Active' : 'Inactive'}</span>
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              <div class="section">
+                                                <h3>Timestamps</h3>
+                                                <div class="info-grid">
+                                                  <div class="info-item">
+                                                    <span class="label">Created:</span>
+                                                    <span class="value">${new Date(material.created_at).toLocaleDateString('en-US', {
+                                                      year: 'numeric',
+                                                      month: 'short',
+                                                      day: 'numeric',
+                                                      hour: '2-digit',
+                                                      minute: '2-digit'
+                                                    })}</span>
+                                                  </div>
+                                                  <div class="info-item">
+                                                    <span class="label">Last Updated:</span>
+                                                    <span class="value">${new Date(material.updated_at).toLocaleDateString('en-US', {
+                                                      year: 'numeric',
+                                                      month: 'short',
+                                                      day: 'numeric',
+                                                      hour: '2-digit',
+                                                      minute: '2-digit'
+                                                    })}</span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </body>
+                                            </html>
+                                          `;
+                                          printWindow.document.write(printContent);
+                                          printWindow.document.close();
+                                          printWindow.print();
+                                        }
+                                      }
+                                    }
+
+                                    // Load custom attributes for view modal
+                                    async function loadViewCustomAttributes(material) {
+                                      if (!material.custom_attributes || Object.keys(material.custom_attributes).length === 0) {
+                                        document.getElementById('viewCustomAttributesSection').classList.add('hidden');
+                                        return;
+                                      }
+
+                                      try {
+                                        const response = await fetch(`/api/v1/material/categories/${material.category_id}`);
+                                        const result = await response.json();
+
+                                        if (result.success && result.data.templates && result.data.templates.length > 0) {
+                                          const container = document.getElementById('viewCustomAttributesContainer');
+                                          container.innerHTML = result.data.templates.map(template => {
+                                            const value = material.custom_attributes[template.field_key] || 'Not set';
+                                            let displayValue = value;
+
+                                            // Format boolean values
+                                            if (template.data_type === 'boolean') {
+                                              displayValue = value === true || value === 'true' ? 'Yes' : 'No';
+                                            }
+
+                                            return `
+                                              <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">${template.field_label}</label>
+                                                <p class="text-lg font-semibold text-gray-900 dark:text-white">${displayValue}</p>
+                                              </div>
+                                            `;
+                                          }).join('');
+
+                                          document.getElementById('viewCustomAttributesSection').classList.remove('hidden');
+                                        } else {
+                                          document.getElementById('viewCustomAttributesSection').classList.add('hidden');
+                                        }
+                                      } catch (error) {
+                                        console.error('Error loading custom attributes for view:', error);
+                                        document.getElementById('viewCustomAttributesSection').classList.add('hidden');
+                                      }
+                                    }
+          </script>
+        </section>
+      </main>
+
+      <%- include('../../../../partials/_footer') %>
+    </div>
+    <%- include('../../../../partials/_toast') %>
+  </body>
+</html>

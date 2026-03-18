@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo, pageKey, promo }) %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %> <%- include('../../../partials/_subnav', { section: 'Admin', page: 'Rate Charts', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <!-- Header -->
+          <header class="mb-8">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Rate Charts</h1>
+                <p class="text-slate-600 dark:text-gray-300 mt-2">Manage milk pricing rates and slabs</p>
+              </div>
+              <div class="flex items-center space-x-4">
+                <div class="relative">
+                  <input id="chartSearch" type="text" placeholder="Search rate charts..." class="w-80 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                  <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+                <button type="button" id="btnOpenAddChart" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  Add Chart
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <!-- Stats Overview -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Charts</p>
+                  <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"><%= (charts || []).length %></p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Active Charts</p>
+                  <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= (charts || []).filter(c => c.status === 'active').length %></p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Slabs</p>
+                  <p class="text-2xl font-bold text-purple-600 dark:text-purple-400"><%= (charts || []).reduce((sum, c) => sum + (c.slab_count || 0), 0) %></p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rate Charts Grid -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Rate Charts</h2>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500 dark:text-gray-400"><%= (charts || []).length %> charts</span>
+              </div>
+            </div>
+
+            <% if ((charts || []).length === 0) { %>
+            <!-- Empty State -->
+            <div class="text-center py-12">
+              <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No rate charts found</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating your first rate chart</p>
+              <button type="button" id="btnOpenAddChartEmpty" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create First Chart
+              </button>
+            </div>
+            <% } else { %>
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="chartsGrid">
+              <% (charts || []).forEach(c => { %>
+              <div class="chart-card group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 cursor-pointer" data-name="<%- c.name %>" data-desc="<%- c.description || '' %>" onclick="window.location.href='/admin/rate-charts/<%= c.id %>'">
+                <!-- Chart Header -->
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200"><%= c.name %></h3>
+                    <% if (c.description) { %>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2"><%= c.description %></p>
+                    <% } %>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= c.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' %>"><%= c.status === 'active' ? 'Active' : 'Inactive' %></span>
+                  </div>
+                </div>
+
+                <!-- Chart Stats -->
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                  <div class="text-center">
+                    <p class="text-xl font-bold text-blue-600 dark:text-blue-400"><%= c.slab_count || 0 %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Slabs</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-xl font-bold text-green-600 dark:text-green-400">₹<%= c.min_rate || 0 %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Min Rate</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-xl font-bold text-purple-600 dark:text-purple-400">₹<%= c.max_rate || 0 %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Max Rate</p>
+                  </div>
+                </div>
+
+                <!-- Chart Footer -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Created <%= new Date(c.created_at).toLocaleDateString() %></div>
+                  <div class="flex items-center text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-200">
+                    <span class="text-sm font-medium mr-1">View Details</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } %>
+          </div>
+        </section>
+      </main>
+
+      <%- include('../../../partials/_footer') %>
+    </div>
+
+    <!-- Add Chart Modal -->
+    <div id="addChartModal" class="fixed inset-0 hidden items-center justify-center z-50">
+      <div class="ops-overlay bg-black dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75" data-close="modal"></div>
+      <div class="ops-panel bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border dark:border-gray-700">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Create Rate Chart</h3>
+            <button type="button" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-close="modal">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <form method="post" action="/admin/rate-charts" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chart Name</label>
+              <input name="name" type="text" placeholder="Enter chart name..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea name="description" rows="3" placeholder="Enter chart description..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4">
+              <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200" data-close="modal">Cancel</button>
+              <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-200">Create Chart</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+      // Initialize Lucide icons
+      lucide.createIcons();
+
+      // Search functionality
+      document.getElementById("chartSearch")?.addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase();
+        const chartCards = document.querySelectorAll(".chart-card");
+
+        chartCards.forEach((card) => {
+          const name = card.dataset.name.toLowerCase();
+          const desc = card.dataset.desc.toLowerCase();
+
+          if (name.includes(searchTerm) || desc.includes(searchTerm)) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      });
+
+      // Modal functionality
+      const modal = document.getElementById("addChartModal");
+      const openButtons = document.querySelectorAll('[id*="btnOpenAddChart"]');
+      const closeButtons = document.querySelectorAll('[data-close="modal"]');
+
+      openButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        });
+      });
+
+      closeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        });
+      });
+
+      // Close modal on overlay click
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal || e.target.classList.contains("ops-overlay")) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      });
+
+      // Close modal on Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("flex")) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      });
+    </script>
+  </body>
+</html>

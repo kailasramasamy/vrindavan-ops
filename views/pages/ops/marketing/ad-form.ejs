@@ -1,0 +1,136 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { currentPage: currentPage, section: 'Marketing', subsection: 'Ad Form' }) %>
+
+  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        <%= mode === 'create' ? 'Create New Ad' : 'Edit Ad' %>
+      </h1>
+
+      <form id="adForm" class="space-y-6">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ad Name *</label>
+          <input type="text" id="name" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
+        </div>
+
+        <div>
+          <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+          <textarea id="description" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm"></textarea>
+        </div>
+
+        <div>
+          <label for="campaign_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Campaign</label>
+          <select id="campaign_id" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
+            <option value="">Select Campaign (Optional)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+          <select id="status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
+            <option value="draft">Draft</option>
+            <option value="in_review">In Review</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <a href="/marketing/ads" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            Cancel
+          </a>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            <%= mode === 'create' ? 'Create Ad' : 'Update Ad' %>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/marketing/api/ad-content';
+    const mode = '<%= mode %>';
+    const adId = '<%= adId %>';
+
+    // Load campaigns
+    async function loadCampaigns() {
+      try {
+        const response = await fetch('/marketing/api/campaigns');
+        const data = await response.json();
+        if (data.success && data.data) {
+          const select = document.getElementById('campaign_id');
+          data.data.forEach(campaign => {
+            const option = document.createElement('option');
+            option.value = campaign.id;
+            option.textContent = campaign.name;
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading campaigns:', error);
+      }
+    }
+
+    // Load ad data if editing
+    async function loadAdData() {
+      if (mode === 'edit' && adId) {
+        try {
+          const response = await fetch(`${API_BASE}/ads/${adId}`);
+          const data = await response.json();
+          if (data.success && data.data) {
+            const ad = data.data;
+            document.getElementById('name').value = ad.name || '';
+            document.getElementById('description').value = ad.description || '';
+            document.getElementById('campaign_id').value = ad.campaign_id || '';
+            document.getElementById('status').value = ad.status || 'draft';
+          }
+        } catch (error) {
+          console.error('Error loading ad data:', error);
+        }
+      }
+    }
+
+    // Form submission
+    document.getElementById('adForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
+        campaign_id: document.getElementById('campaign_id').value || null,
+        status: document.getElementById('status').value,
+      };
+
+      try {
+        const url = mode === 'create' 
+          ? `${API_BASE}/ads` 
+          : `${API_BASE}/ads/${adId}`;
+        const method = mode === 'create' ? 'POST' : 'PUT';
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          const redirectId = mode === 'create' ? data.data.id : adId;
+          window.location.href = `/marketing/ads/${redirectId}`;
+        } else {
+          alert('Error: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Form submission error:', error);
+        alert('Failed to save ad');
+      }
+    });
+
+    loadCampaigns();
+    loadAdData();
+  </script>
+</body>
+</html>
+

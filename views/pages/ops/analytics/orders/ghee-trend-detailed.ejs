@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ghee Order Trend - Detailed Analysis | Vrindavan Farm</title>
+    <link href="/assets/styles.css?v=<%= Date.now() %>" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script>
+      // Prevent flash of unstyled content by setting theme immediately
+      (function () {
+        const theme = localStorage.getItem("theme") || "dark";
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      })();
+    </script>
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <!-- Left side - Navigation -->
+          <div class="flex items-center space-x-4">
+            <a href="/analytics/orders" class="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              Back to Orders Analytics
+            </a>
+            <span class="text-gray-400 dark:text-gray-500">|</span>
+            <a href="/analytics" class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Analytics</a>
+            <span class="text-gray-400 dark:text-gray-500">/</span>
+            <a href="/analytics/orders" class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Orders</a>
+            <span class="text-gray-400 dark:text-gray-500">/</span>
+            <span class="text-sm text-gray-900 dark:text-white font-medium">Ghee Trend Detailed</span>
+          </div>
+
+          <!-- Right side - Theme toggle -->
+          <div class="flex items-center space-x-4"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Ghee Order Trend - Detailed Analysis</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">Comprehensive analysis of ghee product sales with advanced filtering and grouping options</p>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div class="space-y-4">
+          <!-- Main Filters Row -->
+          <div class="flex flex-wrap items-end gap-4">
+            <!-- Date Range Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="dateRangeSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+              <select id="dateRangeSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last_7_days">Last 7 days</option>
+                <option value="last_14_days">Last 14 days</option>
+                <option value="last_30_days" selected>Last 30 days</option>
+                <option value="this_month">This month</option>
+                <option value="last_month">Last month</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+
+            <!-- Group By Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="groupBySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Group By</label>
+              <select id="groupBySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="day">Daily</option>
+                <option value="week">Weekly</option>
+                <option value="month">Monthly</option>
+              </select>
+            </div>
+
+            <!-- Apply Filter Button -->
+            <div>
+              <button id="applyFilterBtn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                <span id="applyFilterText">Apply Filter</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quarterly Selection -->
+          <div id="quarterlySelection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Quarter</label>
+            <div class="flex flex-wrap gap-2">
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q1-2025">Q1 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q2-2025">Q2 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q3-2025">Q3 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q4-2025">Q4 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q1-2024">Q1 2024</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q2-2024">Q2 2024</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q3-2024">Q3 2024</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q4-2024">Q4 2024</button>
+            </div>
+          </div>
+
+          <!-- Yearly Selection -->
+          <div id="yearlySelection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Year</label>
+            <div class="flex flex-wrap gap-2">
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2025">2025</button>
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2024">2024</button>
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2023">2023</button>
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2022">2022</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning Message (will be shown if date range is limited) -->
+        <div id="warningMessage" class="hidden mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p id="warningText" class="text-sm text-yellow-800 dark:text-yellow-200"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Ghee Product Sales Trend</h2>
+          <div class="flex items-center space-x-4">
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="hidden flex items-center space-x-2 ml-4">
+              <button id="pagePrevBtn" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Previous Page</button>
+              <span id="pageInfo" class="text-sm text-gray-600 dark:text-gray-400">Page 1 of 1</span>
+
+              <!-- Month Selector for Yearly Data -->
+              <select id="monthSelector" class="hidden px-3 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+
+              <button id="pageNextBtn" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next Page</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="h-96 relative">
+          <canvas id="gheeTrendChart"></canvas>
+          <!-- Loading Spinner Overlay -->
+          <div id="chartSpinnerOverlay" class="hidden absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 flex items-center justify-center">
+            <div class="flex flex-col items-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Loading chart data...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Legend Info -->
+        <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+          <p>
+            <strong>Legend:</strong>
+            Each line represents a different milk product. Colors are assigned based on product type and size.
+          </p>
+        </div>
+      </div>
+
+      <!-- Data Summary -->
+      <div id="dataSummary" class="hidden mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Data Summary</h3>
+        <div id="summaryContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Summary will be populated dynamically -->
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Theme Management
+      function initializeTheme() {
+        const theme = localStorage.getItem("theme") || "dark";
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      }
+
+      // Chart Management
+      let gheeTrendChart = null;
+      let currentGheeData = [];
+
+      // Color functions for different ghee products (matching main orders page)
+      function getGheeColor(productName, unit) {
+        if (productName.includes("Farm Fresh Traditional Cow Ghee")) {
+          if (unit === "200g") return "#10B981"; // Green
+          if (unit === "500g") return "#059669"; // Darker Green
+          if (unit === "4kg") return "#047857"; // Darkest Green
+          return "#10B981"; // Default Green
+        }
+        if (productName.includes("Indus A2 Desi Cow Ghee")) {
+          if (unit === "200g") return "#F59E0B"; // Yellow
+          if (unit === "500g") return "#D97706"; // Darker Yellow/Orange
+          return "#F59E0B"; // Default Yellow
+        }
+        if (productName.includes("A2 Desi Cow Ghee")) {
+          if (unit === "200g") return "#EF4444"; // Red
+          if (unit === "500g") return "#DC2626"; // Darker Red
+          if (unit === "4kg") return "#B91C1C"; // Darkest Red
+          return "#EF4444"; // Default Red
+        }
+        if (productName.includes("Buffalo Ghee")) {
+          if (unit === "200g") return "#3B82F6"; // Blue
+          if (unit === "500g") return "#2563EB"; // Darker Blue
+          return "#3B82F6"; // Default Blue
+        }
+        return "#6B7280"; // Default Gray
+      }
+
+      // Date range handling
+      function getDateRange(range) {
+        const now = new Date();
+        let start, end;
+
+        switch (range) {
+          case "today":
+            start = new Date(now);
+            end = new Date(now);
+            break;
+          case "yesterday":
+            start = new Date(now);
+            start.setDate(start.getDate() - 1);
+            end = new Date(start);
+            break;
+          case "last_7_days":
+            start = new Date(now);
+            start.setDate(start.getDate() - 7);
+            end = new Date(now);
+            break;
+          case "last_14_days":
+            end = new Date(now);
+            start = new Date(now);
+            start.setDate(start.getDate() - 13); // -13 to include both start and end dates (14 days total)
+            break;
+          case "last_30_days":
+            // Calculate 30 days ending today (18/09 to 17/10 = 30 days)
+            end = new Date(now);
+            start = new Date(now);
+            start.setDate(start.getDate() - 29); // -29 to get exactly 30 days including today
+            break;
+          case "this_month":
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now);
+            break;
+          case "last_month":
+            start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            end = new Date(now.getFullYear(), now.getMonth(), 0);
+            break;
+          case "quarterly":
+            // This will be handled by inline selection
+            start = new Date(now);
+            start.setDate(start.getDate() - 7);
+            end = new Date(now);
+            break;
+          case "yearly":
+            // This will be handled by inline selection
+            start = new Date(now);
+            start.setDate(start.getDate() - 7);
+            end = new Date(now);
+            break;
+          default:
+            start = new Date(now);
+            start.setDate(start.getDate() - 7);
+            end = new Date(now);
+        }
+
+        return {
+          start: start.toISOString().split("T")[0],
+          end: end.toISOString().split("T")[0],
+        };
+      }
+
+      // Load data from API
+      async function loadGheeTrendData(page = 1, append = false) {
+        const dateRangeSelect = document.getElementById("dateRangeSelect");
+        const selectedRange = dateRangeSelect.value;
+        const groupBy = document.getElementById("groupBySelect").value;
+
+        // Handle special cases for quarterly and yearly
+        let apiRange = selectedRange;
+        if (selectedRange === "quarterly" && selectedQuarter) {
+          apiRange = selectedQuarter;
+          // For quarterly data, use the current page number for month navigation
+          page = currentPageNumber;
+        } else if (selectedRange === "yearly" && selectedYear) {
+          apiRange = selectedYear;
+          // For yearly data, use the current page number for month navigation
+          page = currentPageNumber;
+        }
+
+        const btn = document.getElementById("applyFilterBtn");
+        const btnText = document.getElementById("applyFilterText");
+        const chartSpinner = document.getElementById("chartSpinnerOverlay");
+
+        btn.disabled = true;
+        btnText.textContent = "Loading...";
+        chartSpinner.classList.remove("hidden");
+
+        try {
+          const response = await fetch(`/analytics/api/orders/ghee-trend-expanded?range=${apiRange}&groupBy=${groupBy}&page=${page}`);
+          const data = await response.json();
+
+          if (data.success) {
+            // Always replace data with current page data
+            currentGheeData = data.data;
+            currentPageNumber = page; // Update current page number
+
+            renderGheeTrendChart();
+            updateDataSummary();
+
+            // Show/hide warning message
+            const warningDiv = document.getElementById("warningMessage");
+            const warningText = document.getElementById("warningText");
+
+            if (data.warning) {
+              warningText.textContent = data.warning;
+              warningDiv.classList.remove("hidden");
+            } else {
+              warningDiv.classList.add("hidden");
+            }
+
+            // Update pagination controls
+            updatePaginationControls(data.pagination);
+          } else {
+            console.error("Error loading curd trend data:", data.error);
+            alert("Error loading data: " + data.error);
+          }
+        } catch (error) {
+          console.error("Error fetching curd trend data:", error);
+          alert("Error fetching data. Please try again.");
+        } finally {
+          btn.disabled = false;
+          btnText.textContent = "Apply Filter";
+          chartSpinner.classList.add("hidden");
+        }
+      }
+
+      // Render chart
+      function renderGheeTrendChart() {
+        const ctx = document.getElementById("gheeTrendChart").getContext("2d");
+
+        if (gheeTrendChart) {
+          gheeTrendChart.destroy();
+        }
+
+        // Get all unique dates from all products
+        const allDates = [...new Set(currentGheeData.flatMap((product) => product.data.map((item) => item.period)))].sort();
+
+        // Process data for chart
+        let labels = [];
+        let datasets = [];
+
+        if (currentGheeData.length > 0 && allDates.length > 0) {
+          // Format labels for all dates
+          labels = allDates.map((date) => {
+            if (date.includes("T") || date.includes(" ")) {
+              const datePart = date.split("T")[0].split(" ")[0];
+              const [year, month, day] = datePart.split("-");
+              return `${day}/${month}`;
+            } else if (date.includes("-") && date.split("-").length === 3) {
+              const [year, month, day] = date.split("-");
+              return `${day}/${month}`;
+            }
+            return date;
+          });
+
+          // Create datasets for each product
+          datasets = currentGheeData.map((product) => {
+            const dataPoints = allDates.map((date) => {
+              const productData = product.data.find((item) => item.period === date);
+              return productData ? productData.total_quantity : 0;
+            });
+
+            const color = getGheeColor(product.name, product.unit);
+
+            return {
+              label: `${product.name} ${product.unit ? `(${product.unit})` : ""}`,
+              data: dataPoints,
+              borderColor: color,
+              backgroundColor: color + "20",
+              pointBackgroundColor: color,
+              pointBorderColor: color,
+              borderWidth: 2,
+              fill: false,
+              tension: 0.4,
+            };
+          });
+        }
+
+        const isDark = document.documentElement.classList.contains("dark");
+
+        gheeTrendChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Ghee Product Sales Trend",
+                font: {
+                  size: 16,
+                  weight: "bold",
+                },
+                color: isDark ? "#F9FAFB" : "#111827",
+              },
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 20,
+                  font: {
+                    size: 11,
+                  },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+              },
+              datalabels: {
+                display: true,
+                color: isDark ? "#F9FAFB" : "#111827",
+                font: {
+                  size: 11,
+                  weight: "bold",
+                },
+                anchor: "end",
+                align: "top",
+                offset: 4,
+                formatter: function (value) {
+                  return value > 0 ? value.toLocaleString() : "";
+                },
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Date",
+                  font: {
+                    size: 12,
+                    weight: "bold",
+                  },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+                ticks: {
+                  font: {
+                    size: 10,
+                  },
+                  color: isDark ? "#9CA3AF" : "#6B7280",
+                },
+                grid: {
+                  color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Quantity Sold",
+                  font: {
+                    size: 12,
+                    weight: "bold",
+                  },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+                ticks: {
+                  font: {
+                    size: 10,
+                  },
+                  color: isDark ? "#9CA3AF" : "#6B7280",
+                },
+                grid: {
+                  color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                },
+              },
+            },
+            interaction: {
+              intersect: false,
+              mode: "index",
+            },
+          },
+          plugins: [ChartDataLabels],
+        });
+      }
+
+      // Update data summary
+      function updateDataSummary() {
+        if (!currentGheeData || currentGheeData.length === 0) {
+          document.getElementById("dataSummary").classList.add("hidden");
+          return;
+        }
+
+        // Calculate summary statistics
+        const totalQuantity = currentGheeData.reduce((sum, product) => sum + product.data.reduce((productSum, item) => productSum + item.total_quantity, 0), 0);
+        const totalOrders = currentGheeData.reduce((sum, product) => sum + product.data.reduce((productSum, item) => productSum + item.order_count, 0), 0);
+        const totalRevenue = currentGheeData.reduce((sum, product) => sum + product.data.reduce((productSum, item) => productSum + item.total_revenue, 0), 0);
+
+        const summaryContent = document.getElementById("summaryContent");
+        summaryContent.innerHTML = `
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-900 dark:text-blue-100">Total Quantity</h4>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">${totalQuantity.toLocaleString()}</p>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <h4 class="font-semibold text-green-900 dark:text-green-100">Total Orders</h4>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400">${totalOrders.toLocaleString()}</p>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <h4 class="font-semibold text-purple-900 dark:text-purple-100">Total Revenue</h4>
+                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">₹${totalRevenue.toLocaleString()}</p>
+                </div>
+            `;
+
+        document.getElementById("dataSummary").classList.remove("hidden");
+      }
+
+      // Pagination functions
+      function updatePaginationControls(pagination) {
+        const paginationControls = document.getElementById("paginationControls");
+        const pageInfo = document.getElementById("pageInfo");
+        const pagePrevBtn = document.getElementById("pagePrevBtn");
+        const pageNextBtn = document.getElementById("pageNextBtn");
+        const monthSelector = document.getElementById("monthSelector");
+
+        // Hide pagination for single-month ranges that don't need pagination
+        const dateRangeSelect = document.getElementById("dateRangeSelect");
+        const selectedRange = dateRangeSelect.value;
+        const singleMonthRanges = ["last_30_days", "last_month", "this_month"];
+
+        if (pagination && pagination.totalPages > 1 && !singleMonthRanges.includes(selectedRange)) {
+          paginationControls.classList.remove("hidden");
+
+          // Show different text for quarterly and yearly data
+          if (selectedQuarter) {
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const [q, year] = selectedQuarter.split("-");
+            const quarterMonths = {
+              Q1: [0, 1, 2], // Jan, Feb, Mar
+              Q2: [3, 4, 5], // Apr, May, Jun
+              Q3: [6, 7, 8], // Jul, Aug, Sep
+              Q4: [9, 10, 11], // Oct, Nov, Dec
+            };
+            const currentMonthIndex = quarterMonths[q][pagination.currentPage - 1] || quarterMonths[q][0];
+            const currentMonthName = monthNames[currentMonthIndex];
+            pageInfo.textContent = `${currentMonthName} ${year} (Month ${pagination.currentPage} of ${pagination.totalPages})`;
+            // Hide month selector for quarterly data
+            monthSelector.classList.add("hidden");
+          } else if (selectedYear || selectedRange === "yearly") {
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const currentMonthName = monthNames[pagination.currentPage - 1] || monthNames[0];
+            const yearDisplay = selectedYear || "Year";
+            pageInfo.textContent = `${currentMonthName} ${yearDisplay} (Month ${pagination.currentPage} of ${pagination.totalPages})`;
+            // Show month selector for yearly data
+            monthSelector.classList.remove("hidden");
+            // Update month selector value to match current page
+            monthSelector.value = pagination.currentPage;
+          } else {
+            pageInfo.textContent = `Page ${pagination.currentPage} of ${pagination.totalPages}`;
+            // Hide month selector for other data types
+            monthSelector.classList.add("hidden");
+          }
+
+          pagePrevBtn.disabled = !pagination.hasPrev;
+          pageNextBtn.disabled = !pagination.hasNext;
+        } else {
+          paginationControls.classList.add("hidden");
+        }
+      }
+
+      let currentPageNumber = 1;
+      let selectedQuarter = null;
+      let selectedYear = null;
+
+      // Show/hide inline selection functions
+      function showQuarterlySelection() {
+        document.getElementById("quarterlySelection").classList.remove("hidden");
+        document.getElementById("yearlySelection").classList.add("hidden");
+        // Hide Apply Filter button for quarterly selection
+        document.getElementById("applyFilterBtn").classList.add("hidden");
+      }
+
+      function showYearlySelection() {
+        document.getElementById("yearlySelection").classList.remove("hidden");
+        document.getElementById("quarterlySelection").classList.add("hidden");
+        // Hide Apply Filter button for yearly selection
+        document.getElementById("applyFilterBtn").classList.add("hidden");
+      }
+
+      function hideAllSelections() {
+        document.getElementById("quarterlySelection").classList.add("hidden");
+        document.getElementById("yearlySelection").classList.add("hidden");
+        // Show Apply Filter button for other selections
+        document.getElementById("applyFilterBtn").classList.remove("hidden");
+      }
+
+      function getQuarterlyDateRange(quarter) {
+        const [q, year] = quarter.split("-");
+        const yearNum = parseInt(year);
+        let startMonth, endMonth;
+
+        switch (q) {
+          case "Q1":
+            startMonth = 0;
+            endMonth = 2;
+            break; // Jan-Mar
+          case "Q2":
+            startMonth = 3;
+            endMonth = 5;
+            break; // Apr-Jun
+          case "Q3":
+            startMonth = 6;
+            endMonth = 8;
+            break; // Jul-Sep
+          case "Q4":
+            startMonth = 9;
+            endMonth = 11;
+            break; // Oct-Dec
+        }
+
+        const start = new Date(yearNum, startMonth, 1);
+        const end = new Date(yearNum, endMonth + 1, 0); // Last day of end month
+
+        return {
+          start: start.toISOString().split("T")[0],
+          end: end.toISOString().split("T")[0],
+        };
+      }
+
+      function getYearlyDateRange(year) {
+        const yearNum = parseInt(year);
+        const start = new Date(yearNum, 0, 1); // Jan 1
+        const end = new Date(yearNum, 11, 31); // Dec 31
+
+        return {
+          start: start.toISOString().split("T")[0],
+          end: end.toISOString().split("T")[0],
+        };
+      }
+
+      function loadNextPage() {
+        currentPageNumber++;
+        loadGheeTrendData(currentPageNumber, false);
+      }
+
+      function loadPreviousPage() {
+        currentPageNumber = Math.max(1, currentPageNumber - 1);
+        loadGheeTrendData(currentPageNumber, false);
+      }
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeTheme();
+
+        // Event listeners
+        document.getElementById("applyFilterBtn").addEventListener("click", () => loadGheeTrendData(1, false));
+        document.getElementById("pagePrevBtn").addEventListener("click", loadPreviousPage);
+        document.getElementById("pageNextBtn").addEventListener("click", loadNextPage);
+
+        // Month selector event listener for yearly data
+        document.getElementById("monthSelector").addEventListener("change", function () {
+          if (selectedYear && this.value) {
+            const selectedMonth = parseInt(this.value);
+            currentPageNumber = selectedMonth;
+            loadGheeTrendData(selectedMonth, false);
+          }
+        });
+
+        // Date range change handler
+        document.getElementById("dateRangeSelect").addEventListener("change", function () {
+          const selectedRange = this.value;
+          if (selectedRange === "quarterly") {
+            showQuarterlySelection();
+          } else if (selectedRange === "yearly") {
+            showYearlySelection();
+          } else {
+            hideAllSelections();
+            selectedQuarter = null;
+            selectedYear = null;
+          }
+        });
+
+        // Quarter selection
+        document.querySelectorAll(".quarter-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            // Remove active state from all quarter buttons
+            document.querySelectorAll(".quarter-btn").forEach((b) => {
+              b.classList.remove("bg-blue-500", "text-white");
+              b.classList.add("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            });
+
+            // Add active state to selected button
+            this.classList.remove("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            this.classList.add("bg-blue-500", "text-white");
+
+            selectedQuarter = this.dataset.quarter;
+            document.getElementById("dateRangeSelect").value = "quarterly";
+            // Reset to page 1 when selecting a new quarter
+            currentPageNumber = 1;
+            // Auto-apply filter to load the first month immediately
+            loadGheeTrendData(1, false);
+          });
+        });
+
+        // Year selection
+        document.querySelectorAll(".year-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            // Remove active state from all year buttons
+            document.querySelectorAll(".year-btn").forEach((b) => {
+              b.classList.remove("bg-blue-500", "text-white");
+              b.classList.add("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            });
+
+            // Add active state to selected button
+            this.classList.remove("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            this.classList.add("bg-blue-500", "text-white");
+
+            selectedYear = this.dataset.year;
+            document.getElementById("dateRangeSelect").value = "yearly";
+            // Reset to page 1 when selecting a new year
+            currentPageNumber = 1;
+            // Auto-load the first month when year is selected
+            loadGheeTrendData(1, false);
+          });
+        });
+
+        // Load initial data
+        loadGheeTrendData();
+      });
+    </script>
+  </body>
+</html>

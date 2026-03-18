@@ -1,0 +1,407 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Payments' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Payments Management</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              Manage all payment modules including delivery partners, employees, rent, transport, IT services, and electricity.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+              <label for="paymentsMonth" class="text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
+              <input type="month" id="paymentsMonth" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Modules Grid -->
+      <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <!-- Delivery Payments -->
+        <a href="/payments/delivery" id="deliveryLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="7" cy="17" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle>
+                <circle cx="17" cy="17" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 17h4M7 14l3-3 3 3M14 11l-3-3"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Delivery Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Manage delivery partner payments, commissions, and cycles</p>
+            <div id="deliverySummary" class="text-2xl font-bold mb-4">
+              <span class="inline-flex items-center gap-1">
+                <span class="animate-pulse">Loading...</span>
+              </span>
+            </div>
+            <div class="flex items-center text-blue-600 dark:text-blue-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- Employee Payments -->
+        <a href="/payments/employees" id="employeeLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Employee Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Process employee salaries, allowances, and deductions</p>
+            <div id="employeeSummary" class="text-2xl font-bold mb-4">
+              <span class="inline-flex items-center gap-1">
+                <span class="animate-pulse">Loading...</span>
+              </span>
+            </div>
+            <div class="flex items-center text-emerald-600 dark:text-emerald-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- Rent Payments -->
+        <a href="/payments/rent" id="rentLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Rent Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Track and manage rent payments for properties and facilities</p>
+            <div id="rentSummary" class="text-2xl font-bold mb-4">
+              <span class="inline-flex items-center gap-1">
+                <span class="animate-pulse">Loading...</span>
+              </span>
+            </div>
+            <div class="flex items-center text-amber-600 dark:text-amber-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- Transport Payments -->
+        <a href="/payments/transport" id="transportLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Transport Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Manage transportation costs and vehicle-related payments</p>
+            <div id="transportSummary" class="text-2xl font-bold mb-4">
+              <span class="inline-flex items-center gap-1">
+                <span class="animate-pulse">Loading...</span>
+              </span>
+            </div>
+            <div class="flex items-center text-purple-600 dark:text-purple-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- IT Services Payments -->
+        <a href="/payments/it-services" id="itServicesLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">IT Services Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Track and manage IT services, software, and technology payments</p>
+            <div id="itServicesSummary" class="text-2xl font-bold mb-4">
+              <span class="inline-flex items-center gap-1">
+                <span class="animate-pulse">Loading...</span>
+              </span>
+            </div>
+            <div class="flex items-center text-cyan-600 dark:text-cyan-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- Electricity Payments -->
+        <a href="/payments/electricity" id="electricityLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">Electricity Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Manage electricity bills and power consumption payments</p>
+            <div id="electricitySummary" class="text-2xl font-bold mb-4">
+              <span class="inline-flex items-center gap-1">
+                <span class="animate-pulse">Loading...</span>
+              </span>
+            </div>
+            <div class="flex items-center text-yellow-600 dark:text-yellow-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- Milk Payments -->
+        <a href="/procurement/billing/management" id="milkLink" class="group relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative">
+            <div class="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Milk Payments</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Manage milk procurement billing and farmer payments</p>
+            <div class="flex items-center text-green-600 dark:text-green-400 font-medium text-sm">
+              <span>Access Module</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <style>
+    /* Dark mode support for month input */
+    .dark input[type="month"] {
+      color-scheme: dark;
+    }
+    
+    input[type="month"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    input[type="month"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+    
+    .dark input[type="month"]::-webkit-calendar-picker-indicator {
+      filter: brightness(0) invert(1);
+    }
+  </style>
+
+  <script>
+    (function() {
+      const API_BASE = "/payments/api";
+      const STORAGE_KEY = "paymentsIndexState";
+      
+      const state = {
+        month: null,
+      };
+
+      const elements = {
+        monthInput: document.getElementById("paymentsMonth"),
+        summaries: {
+          delivery: document.getElementById("deliverySummary"),
+          employee: document.getElementById("employeeSummary"),
+          rent: document.getElementById("rentSummary"),
+          transport: document.getElementById("transportSummary"),
+          itServices: document.getElementById("itServicesSummary"),
+          electricity: document.getElementById("electricitySummary"),
+        },
+        links: {
+          delivery: document.getElementById("deliveryLink"),
+          employee: document.getElementById("employeeLink"),
+          rent: document.getElementById("rentLink"),
+          transport: document.getElementById("transportLink"),
+          itServices: document.getElementById("itServicesLink"),
+          electricity: document.getElementById("electricityLink"),
+          milk: document.getElementById("milkLink"),
+        },
+      };
+
+      function loadStateFromStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            if (saved.month) state.month = saved.month;
+          }
+        } catch (error) {
+          console.error("Failed to load payments index state", error);
+        }
+      }
+
+      function saveStateToStorage() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            month: state.month,
+          }));
+        } catch (error) {
+          console.error("Failed to save payments index state", error);
+        }
+      }
+
+      function getPreviousMonth() {
+        const now = new Date();
+        const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      function updatePaymentLinks() {
+        // Update all payment module links with the current month parameter
+        const monthParam = state.month ? `?month=${encodeURIComponent(state.month)}` : '';
+        
+        if (elements.links.delivery) {
+          elements.links.delivery.href = `/payments/delivery${monthParam}`;
+        }
+        if (elements.links.employee) {
+          elements.links.employee.href = `/payments/employees${monthParam}`;
+        }
+        if (elements.links.rent) {
+          elements.links.rent.href = `/payments/rent${monthParam}`;
+        }
+        if (elements.links.transport) {
+          elements.links.transport.href = `/payments/transport${monthParam}`;
+        }
+        if (elements.links.itServices) {
+          elements.links.itServices.href = `/payments/it-services${monthParam}`;
+        }
+        if (elements.links.electricity) {
+          elements.links.electricity.href = `/payments/electricity${monthParam}`;
+        }
+        // Milk payments link doesn't need month parameter as it uses a different structure
+        if (elements.links.milk) {
+          elements.links.milk.href = `/procurement/billing/management`;
+        }
+      }
+
+      function initMonthInput() {
+        // Set default to previous month if not set
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const previousMonth = getPreviousMonth();
+        
+        if (!state.month) {
+          state.month = previousMonth;
+        }
+
+        if (elements.monthInput) {
+          elements.monthInput.value = state.month;
+          elements.monthInput.max = currentMonth;
+          elements.monthInput.addEventListener("change", (e) => {
+            state.month = e.target.value || previousMonth;
+            saveStateToStorage();
+            updatePaymentLinks();
+            loadSummary();
+          });
+        }
+        
+        // Update links initially
+        updatePaymentLinks();
+      }
+
+      async function loadSummary() {
+        const params = new URLSearchParams();
+        if (state.month) params.append("month", state.month);
+
+        try {
+          const response = await fetch(`${API_BASE}/summary?${params.toString()}`);
+          const data = await response.json();
+
+          if (data && data.success && data.summary) {
+            updateSummary("delivery", data.summary.delivery);
+            updateSummary("employee", data.summary.employee);
+            updateSummary("rent", data.summary.rent);
+            updateSummary("transport", data.summary.transport);
+            updateSummary("itServices", data.summary.itServices);
+            updateSummary("electricity", data.summary.electricity);
+          } else {
+            showError("Failed to load summary");
+          }
+        } catch (error) {
+          console.error("Error loading summary:", error);
+          showError("Failed to load summary");
+        }
+      }
+
+      function updateSummary(module, data) {
+        const element = elements.summaries[module];
+        if (!element) return;
+
+        const { total, pending } = data || { total: 0, pending: 0 };
+        
+        if (total === 0) {
+          element.innerHTML = '<span class="text-sm text-gray-400 dark:text-gray-500">No records</span>';
+        } else {
+          const pendingClass = pending > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400";
+          element.innerHTML = `
+            <span class="${pendingClass} font-bold">${pending}</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400 font-normal">of</span>
+            <span class="text-gray-700 dark:text-gray-300 font-bold">${total}</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400 font-normal">pending</span>
+          `;
+        }
+      }
+
+      function showError(message) {
+        Object.values(elements.summaries).forEach(el => {
+          if (el) {
+            el.innerHTML = `<span class="text-red-500 dark:text-red-400">Error</span>`;
+          }
+        });
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        loadStateFromStorage();
+        initMonthInput();
+        loadSummary();
+      });
+    })();
+  </script>
+</body>
+</html>

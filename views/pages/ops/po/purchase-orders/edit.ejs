@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo: { title: 'Edit Purchase Order - PO Management', description: 'Edit purchase order details and items' } }) %>
+  <link rel="stylesheet" href="/assets/css/po-dark-mode.css" />
+
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'Edit Purchase Order' }) %>
+
+    <div class="min-h-screen pt-16">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="py-6">
+            <div class="md:flex md:items-center md:justify-between">
+              <div class="flex-1 min-w-0">
+                <nav class="flex" aria-label="Breadcrumb">
+                  <ol class="flex items-center space-x-4">
+                    <li>
+                      <div>
+                        <a href="/" class="text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-400">
+                          <i data-lucide="home" class="h-5 w-5"></i>
+                          <span class="sr-only">Home</span>
+                        </a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-5 w-5 text-gray-400"></i>
+                        <a href="/po/dashboard" class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">PO Management</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-5 w-5 text-gray-400"></i>
+                        <a href="/po/purchase-orders" class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">Purchase Orders</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-5 w-5 text-gray-400"></i>
+                        <span class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400">Edit PO</span>
+                      </div>
+                    </li>
+                  </ol>
+                </nav>
+                <h2 class="mt-2 text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">Edit Purchase Order</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Edit purchase order details and items</p>
+              </div>
+              <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+                <a href="/po/purchase-orders" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i data-lucide="arrow-left" class="h-4 w-4 mr-2"></i>
+                  Back to POs
+                </a>
+                <a href="/po/purchase-orders/<%= poId %>" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i data-lucide="eye" class="h-4 w-4 mr-2"></i>
+                  View PO
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form id="editPOForm" class="space-y-6" novalidate>
+          <!-- PO Header Information -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-600">
+            <div class="px-6 py-6">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-6 flex items-center">
+                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-3">
+                  <i data-lucide="file-text" class="h-5 w-5 text-blue-600 dark:text-blue-400 dark:text-blue-400"></i>
+                </div>
+                PO Header Information
+              </h3>
+
+              <!-- First Row: 3 columns -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label for="vendorId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vendor *</label>
+                  <select id="vendorId" name="vendor_id" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">Select Vendor</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="poType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">PO Type *</label>
+                  <select id="poType" name="po_type" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">Select PO Type</option>
+                    <option value="product">Product PO (with variants & MRP)</option>
+                    <option value="material">Material PO (packaging, parts, etc.)</option>
+                  </select>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Product POs support variants and MRP calculations. Material POs are for simple purchases.</p>
+                </div>
+
+                <div>
+                  <label for="poDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">PO Date *</label>
+                  <input type="date" id="poDate" name="po_date" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+
+                <div>
+                  <label for="expectedDeliveryDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Expected Delivery Date</label>
+                  <input type="date" id="expectedDeliveryDate" name="expected_delivery_date" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+              </div>
+
+              <!-- Second Row: 3 columns -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                  <label for="paymentTerms" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Terms</label>
+                  <input type="text" id="paymentTerms" name="payment_terms" placeholder="e.g., 30 days from delivery" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+
+                <div>
+                  <label for="shippingCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shipping Cost (₹)</label>
+                  <input type="number" id="shippingCost" name="shipping_cost" step="0.01" min="0" placeholder="0.00" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+
+                <div>
+                  <label for="logisticsPartner" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Logistics Partner</label>
+                  <select id="logisticsPartner" name="logistics_partner_id" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">Select Logistics Partner</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Third Row: 1 column -->
+              <div class="grid grid-cols-1 gap-6 mt-6">
+                <div>
+                  <label for="poStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">PO Status *</label>
+                  <select id="poStatus" name="status" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">Select Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="ordered">Ordered</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="received">Received</option>
+                    <option value="closed">Closed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Fourth Row: Full width -->
+              <div class="mt-6">
+                <label for="poNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+                <textarea id="poNotes" name="notes" rows="3" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Items Section -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-600">
+            <div class="px-6 py-6">
+              <div class="flex justify-between items-center mb-6">
+                <h3 id="poItemsTitle" class="text-lg leading-6 font-medium text-gray-900 dark:text-white flex items-center">
+                  <div id="poItemsIcon" class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-3">
+                    <i data-lucide="package" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+                  </div>
+                  <span id="poItemsText">PO Items</span>
+                </h3>
+                <button type="button" onclick="addItem()" id="addItemButton" class="inline-flex items-center px-4 py-2 border-2 border-blue-600 dark:border-blue-500 text-sm font-medium rounded-lg text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+                  <span id="addItemText">Add Item</span>
+                </button>
+              </div>
+
+              <div id="itemsContainer" class="space-y-4">
+                <!-- Items will be loaded here -->
+                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                  <i data-lucide="loader" class="h-8 w-8 mx-auto mb-4 animate-spin"></i>
+                  <span id="loadingText">Loading PO items...</span>
+                </div>
+              </div>
+
+              <!-- Items Summary -->
+              <div class="mt-6 border-t border-gray-200 pt-6">
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <div class="flex justify-between items-center">
+                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span id="itemsCount">0</span>
+                      items
+                    </div>
+                    <div class="text-right space-y-1">
+                      <div class="text-sm text-gray-600 dark:text-gray-400">
+                        Subtotal:
+                        <span id="subtotal" class="font-medium text-gray-900 dark:text-white">₹0.00</span>
+                      </div>
+                      <div class="text-sm text-gray-600 dark:text-gray-400">
+                        GST:
+                        <span id="gstTotal" class="font-medium text-gray-900 dark:text-white">₹0.00</span>
+                      </div>
+                      <div class="text-lg font-bold text-gray-900 dark:text-white border-t border-gray-300 dark:border-gray-600 pt-2">
+                        Total:
+                        <span id="totalAmount" class="text-gray-900 dark:text-white">₹0.00</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-600">
+            <div class="px-6 py-6">
+              <div class="flex justify-end space-x-4">
+                <a href="/po/purchase-orders/<%= poId %>" class="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-gray-500 transition-colors">Cancel</a>
+                <button type="button" onclick="saveDraft()" class="px-6 py-2.5 border-2 border-gray-600 rounded-lg text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Save as Draft</button>
+                <button type="submit" class="px-6 py-2.5 border-2 border-blue-600 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Update PO</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="modal-content relative top-4 sm:top-20 mx-auto p-6 border w-11/12 sm:w-[28rem] lg:w-[30rem] xl:w-[32rem] max-w-2xl shadow-2xl rounded-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 transform transition-all duration-300 ease-out scale-95 opacity-0">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="package" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Item to PO</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Select procurement item and quantity</p>
+              </div>
+            </div>
+            <button onclick="closeAddItemModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <form id="addItemForm" class="space-y-6" novalidate>
+            <div>
+              <label for="itemSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Item *</label>
+              <div class="relative">
+                <input type="text" id="itemSearchInput" placeholder="Search items..." class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+                <input type="hidden" id="itemSelect" name="procurement_item_id" required />
+                <div id="itemDropdown" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                  <div class="py-1">
+                    <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No items found</div>
+                  </div>
+                </div>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <i data-lucide="search" class="h-4 w-4 text-gray-400 dark:text-gray-500"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label for="itemBaseUnit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Base Unit</label>
+                <input type="text" id="itemBaseUnit" name="base_unit" readonly class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+              </div>
+              <div>
+                <label for="itemGstPercentage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">GST %</label>
+                <input type="number" id="itemGstPercentage" name="gst_percentage" step="0.01" min="0" max="100" readonly class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+              </div>
+              <div>
+                <label for="itemTotalCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Total Cost (₹)</label>
+                <input type="number" id="itemTotalCost" name="total_cost" step="0.01" min="0" readonly class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="itemQuantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity *</label>
+                <input type="number" id="itemQuantity" name="quantity" step="0.1" min="0" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+              </div>
+              <div>
+                <label for="itemUnitCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit Cost (₹)</label>
+                <input type="number" id="itemUnitCost" name="unit_cost" step="0.01" min="0" placeholder="TBD" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+            </div>
+
+            <div>
+              <label for="itemNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+              <textarea id="itemNotes" name="notes" rows="2" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <button type="button" onclick="closeAddItemModal()" class="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">Cancel</button>
+              <button type="submit" class="px-6 py-2.5 bg-green-600 border-2 border-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 hover:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">Add Item</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm" onclick="handleModalBackdropClick(event)">
+      <div class="min-h-full flex items-center justify-center p-4">
+        <div class="modal-content relative mx-auto my-8 p-6 border border-gray-200 dark:border-gray-600 w-11/12 sm:w-[40rem] lg:w-[44rem] xl:w-[46rem] max-w-3xl shadow-2xl rounded-xl bg-white dark:bg-gray-800 transform transition-all duration-300 ease-out scale-95 opacity-0" onclick="event.stopPropagation()">
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                  <i data-lucide="edit" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit PO Item</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Update item details and quantity</p>
+                </div>
+              </div>
+              <button onclick="closeEditItemModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <i data-lucide="x" class="h-5 w-5"></i>
+              </button>
+            </div>
+
+            <form id="editItemForm" class="space-y-6" novalidate>
+              <input type="hidden" id="editItemId" name="item_id" />
+
+              <div>
+                <label for="editItemSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Item *</label>
+                <select id="editItemSelect" name="procurement_item_id" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <option value="">Select Item</option>
+                </select>
+              </div>
+
+              <!-- Base Unit and GST % - Read-only information -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="editItemBaseUnit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Base Unit</label>
+                  <input type="text" id="editItemBaseUnit" name="base_unit" readonly class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+                </div>
+                <div>
+                  <label for="editItemGstPercentage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">GST %</label>
+                  <input type="number" id="editItemGstPercentage" name="gst_percentage" step="0.01" min="0" max="100" readonly class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+                </div>
+              </div>
+
+              <!-- Quantity, Unit Cost, and Total Cost - Editable fields in one row -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label for="editItemQuantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity *</label>
+                  <input type="number" id="editItemQuantity" name="quantity" step="0.1" min="0" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+                <div>
+                  <label for="editItemUnitCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit Cost (₹)</label>
+                  <input type="number" id="editItemUnitCost" name="unit_cost" step="0.01" min="0" placeholder="TBD" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+                <div>
+                  <label for="editItemTotalCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Total Cost (₹)</label>
+                  <input type="number" id="editItemTotalCost" name="total_cost" step="0.01" min="0" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                </div>
+              </div>
+
+              <!-- Breakdown Calculations Side-by-Side -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Per Unit Breakdown -->
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Per Unit Breakdown</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <label for="editItemUnitLandingCost" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Unit Landing Cost (₹)</label>
+                      <input type="number" id="editItemUnitLandingCost" name="unit_landing_cost" step="0.01" readonly class="block w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="editItemUnitGstAmount" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Unit GST Amount (₹)</label>
+                      <input type="number" id="editItemUnitGstAmount" name="unit_gst_amount" step="0.01" readonly class="block w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Total Level Calculations -->
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Total Breakdown</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <label for="editItemLandingCost" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Landing Cost (₹)</label>
+                      <input type="number" id="editItemLandingCost" name="landing_cost" step="0.01" readonly class="block w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+                    </div>
+                    <div>
+                      <label for="editItemGstAmount" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total GST Amount (₹)</label>
+                      <input type="number" id="editItemGstAmount" name="gst_amount" step="0.01" readonly class="block w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 sm:text-sm text-gray-900 dark:text-white" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label for="editItemNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+                <textarea id="editItemNotes" name="notes" rows="2" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"></textarea>
+              </div>
+
+              <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+                <button type="button" onclick="closeEditItemModal()" class="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Cancel</button>
+                <button type="submit" class="px-6 py-2.5 bg-blue-600 border-2 border-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Update Item</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      #addItemModal .modal-content,
+      #editItemModal .modal-content {
+        max-width: 40rem !important;
+        width: 100% !important;
+      }
+
+      @media (min-width: 640px) {
+        #addItemModal .modal-content,
+        #editItemModal .modal-content {
+          max-width: 40rem !important;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        #addItemModal .modal-content,
+        #editItemModal .modal-content {
+          max-width: 44rem !important;
+        }
+      }
+
+      @media (min-width: 1280px) {
+        #addItemModal .modal-content,
+        #editItemModal .modal-content {
+          max-width: 46rem !important;
+        }
+      }
+    </style>
+
+    <script>
+      let vendors = [];
+      let logisticsPartners = [];
+      let procurementItems = [];
+      let poItems = [];
+      let itemCounter = 0;
+      let currentPO = null;
+
+      // Load data on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadVendors();
+        loadLogisticsPartners();
+        loadProcurementItems();
+        loadPOData();
+
+        // Handle PO type change
+        document.getElementById("poType").addEventListener("change", handlePOTypeChange);
+      });
+
+      // Load PO data
+      async function loadPOData() {
+        try {
+          const poId = "<%= poId %>";
+          const response = await fetch(`/po/api/v1/purchase-orders/${poId}`);
+          const result = await response.json();
+
+          if (result.success) {
+            currentPO = result.data;
+            populatePOForm();
+            loadPOItems();
+          } else {
+            showErrorToast("Error loading Purchase Order data: " + result.error);
+          }
+        } catch (error) {
+          console.error("Error loading PO data:", error);
+          showErrorToast("Error loading Purchase Order data");
+        }
+      }
+
+      // Populate PO form with existing data
+      function populatePOForm() {
+        if (!currentPO) return;
+
+        document.getElementById("vendorId").value = currentPO.vendor_id || "";
+        document.getElementById("poType").value = currentPO.po_type || "product";
+
+        // Format date properly for date input (YYYY-MM-DD)
+        if (currentPO.po_date) {
+          const poDate = new Date(currentPO.po_date);
+          document.getElementById("poDate").value = poDate.toISOString().split("T")[0];
+        }
+
+        if (currentPO.expected_delivery_date) {
+          const deliveryDate = new Date(currentPO.expected_delivery_date);
+          document.getElementById("expectedDeliveryDate").value = deliveryDate.toISOString().split("T")[0];
+        }
+
+        document.getElementById("paymentTerms").value = currentPO.payment_terms || "";
+        document.getElementById("shippingCost").value = currentPO.shipping_cost || "";
+        document.getElementById("logisticsPartner").value = currentPO.logistics_partner_id || "";
+        document.getElementById("poStatus").value = currentPO.status || "";
+        document.getElementById("poNotes").value = currentPO.notes || "";
+
+        // Update PO items display based on PO type (after data is loaded)
+        setTimeout(() => {
+          updatePOItemsDisplay();
+        }, 300);
+      }
+
+      // Handle PO type change to update display
+      function handlePOTypeChange() {
+        updatePOItemsDisplay();
+      }
+
+      // Update PO items display based on PO type
+      function updatePOItemsDisplay() {
+        const poTypeElement = document.getElementById("poType");
+        if (!poTypeElement) return; // Exit if PO type element doesn't exist yet
+
+        const poType = poTypeElement.value;
+        const poItemsIcon = document.getElementById("poItemsIcon");
+        const poItemsText = document.getElementById("poItemsText");
+        const addItemButton = document.getElementById("addItemButton");
+        const addItemText = document.getElementById("addItemText");
+        const loadingText = document.getElementById("loadingText");
+
+        // Exit early if required elements don't exist
+        if (!poItemsIcon || !poItemsText || !addItemButton || !addItemText) {
+          return;
+        }
+
+        if (poType === "material") {
+          // Update icon and colors for material PO
+          poItemsIcon.className = "w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mr-3";
+          const iconElement = poItemsIcon.querySelector("i");
+          if (iconElement) {
+            iconElement.className = "h-5 w-5 text-orange-600 dark:text-orange-400";
+            iconElement.setAttribute("data-lucide", "package-2");
+          }
+
+          // Update text
+          poItemsText.textContent = "Material Items";
+
+          // Update loading text
+          if (loadingText) {
+            loadingText.textContent = "Loading material items...";
+          }
+
+          // Update button
+          addItemButton.className = "inline-flex items-center px-4 py-2 border-2 border-orange-600 dark:border-orange-500 text-sm font-medium rounded-lg text-orange-600 dark:text-orange-400 bg-white dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-orange-500 transition-colors";
+          addItemText.textContent = "Add Material";
+        } else {
+          // Update icon and colors for product PO
+          poItemsIcon.className = "w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-3";
+          const iconElement = poItemsIcon.querySelector("i");
+          if (iconElement) {
+            iconElement.className = "h-5 w-5 text-green-600 dark:text-green-400";
+            iconElement.setAttribute("data-lucide", "package");
+          }
+
+          // Update text
+          poItemsText.textContent = "Product Items";
+
+          // Update loading text
+          if (loadingText) {
+            loadingText.textContent = "Loading product items...";
+          }
+
+          // Update button
+          addItemButton.className = "inline-flex items-center px-4 py-2 border-2 border-blue-600 dark:border-blue-500 text-sm font-medium rounded-lg text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 transition-colors";
+          addItemText.textContent = "Add Item";
+        }
+
+        // Re-initialize Lucide icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Load PO items
+      async function loadPOItems() {
+        try {
+          const poId = "<%= poId %>";
+          const response = await fetch(`/po/api/v1/purchase-orders/${poId}/items`);
+          const result = await response.json();
+
+          if (result.success) {
+            poItems = result.data.map((item, index) => ({
+              id: ++itemCounter,
+              procurement_item_id: item.procurement_item_id,
+              procurement_item_name: item.item_name, // API returns item_name, not procurement_item_name
+              base_unit: item.base_unit,
+              quantity: parseFloat(item.quantity),
+              unit_cost: parseFloat(item.unit_cost),
+              gst_percentage: parseFloat(item.gst_percentage),
+              gst_amount: parseFloat(item.gst_amount),
+              total_amount: parseFloat(item.total_amount),
+              notes: item.notes || "",
+            }));
+
+            renderPOItems();
+          } else {
+            showErrorToast("Error loading Purchase Order items: " + result.error);
+          }
+        } catch (error) {
+          console.error("Error loading PO items:", error);
+          showErrorToast("Error loading Purchase Order items");
+        }
+      }
+
+      // Load vendors
+      async function loadVendors() {
+        try {
+          const response = await fetch("/po/api/v1/vendors");
+          const result = await response.json();
+          if (result.success) {
+            vendors = result.data;
+            populateVendorSelect();
+          }
+        } catch (error) {
+          console.error("Error loading vendors:", error);
+        }
+      }
+
+      // Populate vendor select
+      function populateVendorSelect() {
+        const vendorSelect = document.getElementById("vendorId");
+        vendors.forEach((vendor) => {
+          const option = new Option(vendor.name, vendor.id);
+          vendorSelect.add(option);
+        });
+      }
+
+      // Load logistics partners
+      async function loadLogisticsPartners() {
+        if (logisticsPartners.length === 0) {
+          try {
+            const response = await fetch("/po/api/v1/logistics-partners/dropdown");
+            const result = await response.json();
+            if (result.success) {
+              logisticsPartners = result.data;
+              populateLogisticsPartnerSelect();
+            }
+          } catch (error) {
+            console.error("Error loading logistics partners:", error);
+          }
+        }
+      }
+
+      // Populate logistics partner select
+      function populateLogisticsPartnerSelect() {
+        const logisticsPartnerSelect = document.getElementById("logisticsPartner");
+        logisticsPartners.forEach((partner) => {
+          const option = new Option(`${partner.company_name} (${partner.service_type})`, partner.id);
+          logisticsPartnerSelect.add(option);
+        });
+      }
+
+      // Load procurement items
+      async function loadProcurementItems() {
+        try {
+          const response = await fetch("/po/api/v1/products");
+          const result = await response.json();
+          if (result.success) {
+            procurementItems = result.data;
+            populateItemSelect();
+          }
+        } catch (error) {
+          console.error("Error loading procurement items:", error);
+        }
+      }
+
+      // Populate item select
+      function populateItemSelect() {
+        const editItemSelect = document.getElementById("editItemSelect");
+
+        // Populate edit item select (regular dropdown)
+        procurementItems.forEach((item) => {
+          const editOption = new Option(item.name, item.id);
+          editItemSelect.add(editOption);
+        });
+
+        // Initialize searchable dropdown
+        initializeItemSearch();
+      }
+
+      // Initialize searchable dropdown for items
+      function initializeItemSearch() {
+        const searchInput = document.getElementById("itemSearchInput");
+        const dropdown = document.getElementById("itemDropdown");
+        const hiddenInput = document.getElementById("itemSelect");
+        let selectedItem = null;
+
+        // Show dropdown on focus
+        searchInput.addEventListener("focus", () => {
+          dropdown.classList.remove("hidden");
+          filterItems("");
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+          if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add("hidden");
+          }
+        });
+
+        // Filter items on input
+        searchInput.addEventListener("input", (e) => {
+          filterItems(e.target.value);
+          dropdown.classList.remove("hidden");
+        });
+
+        // Handle item selection
+        dropdown.addEventListener("click", (e) => {
+          const itemElement = e.target.closest("[data-item-id]");
+          if (itemElement) {
+            const itemId = itemElement.getAttribute("data-item-id");
+            const itemName = itemElement.getAttribute("data-item-name");
+            const itemSku = itemElement.getAttribute("data-item-sku");
+
+            selectedItem = procurementItems.find((item) => item.id == itemId);
+            searchInput.value = `${itemName} (${itemSku})`;
+            hiddenInput.value = itemId;
+            dropdown.classList.add("hidden");
+
+            // Update base unit and GST percentage
+            if (selectedItem) {
+              document.getElementById("itemBaseUnit").value = selectedItem.base_unit || "pc";
+              document.getElementById("itemGstPercentage").value = selectedItem.gst_percentage || 0;
+              calculateTotalCost();
+            }
+          }
+        });
+
+        function filterItems(searchTerm) {
+          const filteredItems = procurementItems.filter((item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.sku_code.toLowerCase().includes(searchTerm.toLowerCase()));
+
+          dropdown.innerHTML = "";
+
+          if (filteredItems.length === 0) {
+            dropdown.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No items found</div>';
+          } else {
+            filteredItems.forEach((item) => {
+              const itemElement = document.createElement("div");
+              itemElement.setAttribute("data-item-id", item.id);
+              itemElement.setAttribute("data-item-name", item.name);
+              itemElement.setAttribute("data-item-sku", item.sku_code);
+              itemElement.className = "px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0";
+              itemElement.innerHTML = `
+                <div class="font-medium text-gray-900 dark:text-white">${item.name}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">SKU: ${item.sku_code}</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500">${item.base_unit || "pc"}</div>
+              `;
+
+              dropdown.appendChild(itemElement);
+            });
+          }
+        }
+      }
+
+      // Add item to PO
+      function addItem() {
+        const modal = document.getElementById("addItemModal");
+        modal.classList.remove("hidden");
+
+        // Add animation class
+        setTimeout(() => {
+          modal.querySelector(".transform").classList.add("scale-100", "opacity-100");
+        }, 10);
+      }
+
+      // Close add item modal
+      function closeAddItemModal() {
+        const modal = document.getElementById("addItemModal");
+        modal.querySelector(".transform").classList.remove("scale-100", "opacity-100");
+
+        setTimeout(() => {
+          modal.classList.add("hidden");
+        }, 200);
+
+        document.getElementById("addItemForm").reset();
+
+        // Clear search input and hide dropdown
+        document.getElementById("itemSearchInput").value = "";
+        document.getElementById("itemSelect").value = "";
+        document.getElementById("itemDropdown").classList.add("hidden");
+      }
+
+      // Edit item
+      function editItem(itemId) {
+        const item = poItems.find((i) => i.id == itemId);
+        if (!item) return;
+
+        // Clear form fields manually instead of using reset()
+        document.getElementById("editItemId").value = "";
+        document.getElementById("editItemSelect").value = "";
+        document.getElementById("editItemBaseUnit").value = "";
+        document.getElementById("editItemGstPercentage").value = "";
+        document.getElementById("editItemQuantity").value = "";
+        document.getElementById("editItemUnitCost").value = "";
+        document.getElementById("editItemNotes").value = "";
+        document.getElementById("editItemTotalCost").value = "";
+        document.getElementById("editItemLandingCost").value = "";
+        document.getElementById("editItemGstAmount").value = "";
+        document.getElementById("editItemUnitLandingCost").value = "";
+        document.getElementById("editItemUnitGstAmount").value = "";
+
+        // Populate edit form with item data
+        document.getElementById("editItemId").value = item.id;
+        document.getElementById("editItemSelect").value = item.procurement_item_id;
+        document.getElementById("editItemBaseUnit").value = item.base_unit;
+        document.getElementById("editItemGstPercentage").value = item.gst_percentage;
+        document.getElementById("editItemQuantity").value = item.quantity;
+        document.getElementById("editItemUnitCost").value = item.unit_cost;
+        document.getElementById("editItemNotes").value = item.notes || "";
+
+        // Calculate and set total cost and derived fields
+        calculateEditTotalCost();
+
+        // Show edit modal
+        const modal = document.getElementById("editItemModal");
+        modal.classList.remove("hidden");
+
+        // Modal is ready to show
+
+        // Add animation class
+        setTimeout(() => {
+          modal.querySelector(".transform").classList.add("scale-100", "opacity-100");
+        }, 10);
+      }
+
+      // Close edit item modal
+      function closeEditItemModal() {
+        const modal = document.getElementById("editItemModal");
+        modal.querySelector(".transform").classList.remove("scale-100", "opacity-100");
+
+        setTimeout(() => {
+          modal.classList.add("hidden");
+        }, 200);
+
+        document.getElementById("editItemForm").reset();
+      }
+
+      // Handle modal backdrop click
+      function handleModalBackdropClick(event) {
+        if (event.target === event.currentTarget) {
+          closeEditItemModal();
+        }
+      }
+
+      // Handle escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          const modal = document.getElementById("editItemModal");
+          if (!modal.classList.contains("hidden")) {
+            closeEditItemModal();
+          }
+        }
+      });
+
+      // Calculate total cost based on quantity, unit cost, and GST
+      function calculateTotalCost() {
+        const quantity = parseFloat(document.getElementById("itemQuantity").value) || 0;
+        const unitCostInput = document.getElementById("itemUnitCost").value;
+        const unitCost = unitCostInput ? parseFloat(unitCostInput) : 0;
+        const gstPercentage = parseFloat(document.getElementById("itemGstPercentage").value) || 0;
+
+        if (unitCost > 0) {
+          const subtotal = quantity * unitCost;
+          const gstAmount = (subtotal * gstPercentage) / 100;
+          const totalCost = subtotal + gstAmount;
+          document.getElementById("itemTotalCost").value = totalCost.toFixed(2);
+        } else {
+          document.getElementById("itemTotalCost").value = "";
+        }
+      }
+
+      // Calculate total cost for edit modal (when unit cost changes)
+      function calculateEditTotalCost() {
+        const quantity = parseFloat(document.getElementById("editItemQuantity").value) || 0;
+        const unitCostInput = document.getElementById("editItemUnitCost").value;
+        const unitCost = unitCostInput ? parseFloat(unitCostInput) : 0;
+        const gstPercentage = parseFloat(document.getElementById("editItemGstPercentage").value) || 0;
+
+        if (unitCost > 0 && quantity > 0) {
+          // Unit level calculations
+          // Unit Cost entered is the base cost (without GST)
+          // Unit Landing Cost = Unit Cost (base cost without GST)
+          const unitLandingCost = unitCost;
+          // Unit GST Amount = Unit Landing Cost * (GST%/100)
+          const unitGstAmount = (unitLandingCost * gstPercentage) / 100;
+          // Unit Cost with GST = Unit Landing Cost + Unit GST Amount
+          const unitCostWithGst = unitLandingCost + unitGstAmount;
+
+          // Total level calculations
+          // Total Landing Cost = Quantity * Unit Landing Cost (without GST)
+          const subtotal = quantity * unitLandingCost;
+          // Total GST Amount = Quantity * Unit GST Amount (or Total Landing Cost * GST%)
+          const gstAmount = quantity * unitGstAmount;
+          // Total Cost = Total Landing Cost + Total GST Amount (includes GST)
+          const totalCost = subtotal + gstAmount;
+
+          // Update all fields
+          document.getElementById("editItemTotalCost").value = totalCost.toFixed(2);
+          document.getElementById("editItemLandingCost").value = subtotal.toFixed(2);
+          document.getElementById("editItemGstAmount").value = gstAmount.toFixed(2);
+          document.getElementById("editItemUnitLandingCost").value = unitLandingCost.toFixed(2);
+          document.getElementById("editItemUnitGstAmount").value = unitGstAmount.toFixed(2);
+        } else {
+          document.getElementById("editItemTotalCost").value = "";
+          document.getElementById("editItemLandingCost").value = "";
+          document.getElementById("editItemGstAmount").value = "";
+          document.getElementById("editItemUnitLandingCost").value = "";
+          document.getElementById("editItemUnitGstAmount").value = "";
+        }
+      }
+
+      // Calculate unit cost from total cost (reverse calculation)
+      function calculateEditUnitCostFromTotal() {
+        const quantity = parseFloat(document.getElementById("editItemQuantity").value) || 0;
+        const totalCostInput = document.getElementById("editItemTotalCost").value;
+        const totalCost = totalCostInput ? parseFloat(totalCostInput) : 0;
+        const gstPercentage = parseFloat(document.getElementById("editItemGstPercentage").value) || 0;
+
+        if (totalCost > 0 && quantity > 0) {
+          // Reverse calculate: Total Cost entered includes GST
+          // Total Cost = Total Landing Cost + Total GST Amount
+          // Total Cost = Total Landing Cost * (1 + GST%/100)
+          // Total Landing Cost = Total Cost / (1 + GST%/100)
+          const totalLandingCost = totalCost / (1 + gstPercentage / 100);
+          // Total GST Amount = Total Cost - Total Landing Cost
+          const gstAmount = totalCost - totalLandingCost;
+
+          // Unit level calculations
+          // Unit Landing Cost = Total Landing Cost / Quantity (base cost without GST)
+          const unitLandingCost = totalLandingCost / quantity;
+          // Unit GST Amount = Total GST Amount / Quantity (or Unit Landing Cost * GST%)
+          const unitGstAmount = gstAmount / quantity;
+          // Unit Cost = Unit Landing Cost (base cost without GST, as entered by user)
+          const unitCost = unitLandingCost;
+
+          // Update all fields
+          document.getElementById("editItemUnitCost").value = unitCost.toFixed(2);
+          document.getElementById("editItemLandingCost").value = totalLandingCost.toFixed(2);
+          document.getElementById("editItemGstAmount").value = gstAmount.toFixed(2);
+          document.getElementById("editItemUnitLandingCost").value = unitLandingCost.toFixed(2);
+          document.getElementById("editItemUnitGstAmount").value = unitGstAmount.toFixed(2);
+        } else {
+          document.getElementById("editItemUnitCost").value = "";
+          document.getElementById("editItemLandingCost").value = "";
+          document.getElementById("editItemGstAmount").value = "";
+          document.getElementById("editItemUnitLandingCost").value = "";
+          document.getElementById("editItemUnitGstAmount").value = "";
+        }
+      }
+
+      // Add event listeners for quantity and unit cost changes
+      document.getElementById("itemQuantity").addEventListener("input", calculateTotalCost);
+      document.getElementById("itemUnitCost").addEventListener("input", calculateTotalCost);
+
+      // Add event listeners for edit modal quantity and unit cost changes
+      document.getElementById("editItemQuantity").addEventListener("input", calculateEditTotalCost);
+      document.getElementById("editItemUnitCost").addEventListener("input", calculateEditTotalCost);
+
+      // Add event listener for total cost changes (reverse calculation)
+      document.getElementById("editItemTotalCost").addEventListener("input", calculateEditUnitCostFromTotal);
+
+      // Handle edit item selection change
+      document.getElementById("editItemSelect").addEventListener("change", function () {
+        const itemId = this.value;
+        const item = procurementItems.find((i) => i.id == itemId);
+
+        if (item) {
+          // Populate base unit and GST percentage
+          document.getElementById("editItemBaseUnit").value = item.base_unit || "pc";
+          document.getElementById("editItemGstPercentage").value = item.gst_percentage || 0;
+
+          // Calculate total cost when quantity or unit cost changes
+          calculateEditTotalCost();
+        } else {
+          // Clear fields if no item selected
+          document.getElementById("editItemBaseUnit").value = "";
+          document.getElementById("editItemGstPercentage").value = "";
+          document.getElementById("editItemTotalCost").value = "";
+          document.getElementById("editItemLandingCost").value = "";
+          document.getElementById("editItemGstAmount").value = "";
+          document.getElementById("editItemUnitLandingCost").value = "";
+          document.getElementById("editItemUnitGstAmount").value = "";
+        }
+      });
+
+      // Add item form submission
+      const addItemForm = document.getElementById("addItemForm");
+      if (addItemForm && !addItemForm.hasAttribute("data-listener-attached")) {
+        addItemForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Manual form validation
+          const procurementItemId = document.getElementById("itemSelect").value;
+          const quantity = document.getElementById("itemQuantity").value;
+          const unitCost = document.getElementById("itemUnitCost").value;
+
+          if (!procurementItemId) {
+            showWarningToast("Please select an item");
+            return;
+          }
+
+          if (!quantity || parseFloat(quantity) <= 0) {
+            showWarningToast("Please enter a valid quantity");
+            return;
+          }
+
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData.entries());
+
+          const item = procurementItems.find((i) => i.id == data.procurement_item_id);
+          const quantityNum = parseFloat(data.quantity);
+          const unitCostNum = data.unit_cost ? parseFloat(data.unit_cost) : 0;
+          const gstPercentage = parseFloat(data.gst_percentage) || 0;
+          const subtotal = quantityNum * unitCostNum;
+          const gstAmount = (subtotal * gstPercentage) / 100;
+          const totalAmount = subtotal + gstAmount;
+
+          const poItem = {
+            id: ++itemCounter,
+            procurement_item_id: data.procurement_item_id,
+            procurement_item_name: item ? item.name : "",
+            base_unit: data.base_unit || "pc",
+            quantity: quantityNum,
+            unit_cost: unitCostNum,
+            gst_percentage: gstPercentage,
+            gst_amount: gstAmount,
+            total_amount: totalAmount,
+            notes: data.notes,
+          };
+
+          poItems.push(poItem);
+          renderPOItems();
+          closeAddItemModal();
+          showSuccessToast("Item added successfully");
+        });
+        addItemForm.setAttribute("data-listener-attached", "true");
+      }
+
+      // Edit item form submission
+      const editItemForm = document.getElementById("editItemForm");
+      if (editItemForm && !editItemForm.hasAttribute("data-listener-attached")) {
+        editItemForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Manual form validation
+          const procurementItemId = document.getElementById("editItemSelect").value;
+          const quantity = document.getElementById("editItemQuantity").value;
+          const unitCost = document.getElementById("editItemUnitCost").value;
+
+          if (!procurementItemId) {
+            showWarningToast("Please select an item");
+            return;
+          }
+
+          if (!quantity || parseFloat(quantity) <= 0) {
+            showWarningToast("Please enter a valid quantity");
+            return;
+          }
+
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData.entries());
+
+          const item = procurementItems.find((i) => i.id == data.procurement_item_id);
+          const quantityNum = parseFloat(data.quantity);
+          const unitCostNum = data.unit_cost ? parseFloat(data.unit_cost) : 0;
+          const gstPercentage = parseFloat(data.gst_percentage) || 0;
+          const subtotal = quantityNum * unitCostNum;
+          const gstAmount = (subtotal * gstPercentage) / 100;
+          const totalAmount = subtotal + gstAmount;
+
+          // Find and update the existing item
+          const itemIndex = poItems.findIndex((i) => i.id == data.item_id);
+          if (itemIndex !== -1) {
+            poItems[itemIndex] = {
+              ...poItems[itemIndex],
+              procurement_item_id: data.procurement_item_id,
+              procurement_item_name: item ? item.name : poItems[itemIndex].procurement_item_name,
+              base_unit: data.base_unit || "pc",
+              quantity: quantityNum,
+              unit_cost: unitCostNum,
+              gst_percentage: gstPercentage,
+              gst_amount: gstAmount,
+              total_amount: totalAmount,
+              notes: data.notes,
+            };
+
+            renderPOItems();
+            closeEditItemModal();
+            showSuccessToast("Item updated successfully");
+          }
+        });
+        editItemForm.setAttribute("data-listener-attached", "true");
+      }
+
+      // Render PO items
+      function renderPOItems() {
+        const container = document.getElementById("itemsContainer");
+
+        if (poItems.length === 0) {
+          const poType = document.getElementById("poType").value;
+          const addButtonText = poType === "material" ? "Add Material" : "Add Item";
+          container.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-8">No items added yet. Click "${addButtonText}" to start.</div>`;
+          updateSummary();
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">Item</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">Base Unit</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">Unit Cost</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">GST %</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                ${poItems
+                  .map((item) => {
+                    return `
+                      <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">${item.procurement_item_name}</div>
+                            ${item.notes ? `<div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${item.notes}</div>` : ""}
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+                            ${item.base_unit}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          ${parseFloat(item.quantity || 0).toFixed(1)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          ₹${parseFloat(item.unit_cost || 0).toFixed(2)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          ${parseFloat(item.gst_percentage || 0).toFixed(0)}%
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          ₹${parseFloat(item.total_amount || 0).toFixed(2)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div class="flex space-x-2">
+                                    <button type="button" onclick="editItem(${item.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Edit Item">
+                                      <i data-lucide="edit" class="h-4 w-4"></i>
+                                    </button>
+                            <button type="button" onclick="removeItem(${item.id})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Remove Item">
+                              <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        updateSummary();
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Remove item from PO
+      function removeItem(itemId) {
+        poItems = poItems.filter((item) => item.id !== itemId);
+        renderPOItems();
+      }
+
+      // Update summary
+      function updateSummary() {
+        const itemsCount = poItems.length;
+        let subtotal = 0;
+        let gstTotal = 0;
+        let totalAmount = 0;
+
+        // Calculate subtotal (without GST), GST total, and total (with GST)
+        poItems.forEach((item) => {
+          const itemSubtotal = (item.quantity || 0) * (item.unit_cost || 0);
+          const itemGstAmount = item.gst_amount || 0;
+          const itemTotal = item.total_amount || itemSubtotal + itemGstAmount;
+
+          subtotal += itemSubtotal;
+          gstTotal += itemGstAmount;
+          totalAmount += itemTotal;
+        });
+
+        document.getElementById("itemsCount").textContent = itemsCount;
+        document.getElementById("subtotal").textContent = `₹${subtotal.toFixed(2)}`;
+        document.getElementById("gstTotal").textContent = `₹${gstTotal.toFixed(2)}`;
+        document.getElementById("totalAmount").textContent = `₹${totalAmount.toFixed(2)}`;
+      }
+
+      // Save as draft
+      function saveDraft() {
+        // Validate main form fields
+        const vendorId = document.getElementById("vendorId").value;
+        const poDate = document.getElementById("poDate").value;
+
+        if (!vendorId) {
+          showWarningToast("Please select a vendor");
+          return;
+        }
+
+        if (!poDate) {
+          showWarningToast("Please select a PO date");
+          return;
+        }
+
+        if (poItems.length === 0) {
+          showWarningToast("Please add at least one item before saving.");
+          return;
+        }
+
+        const selectedStatus = document.getElementById("poStatus").value;
+        submitPO(selectedStatus || "draft");
+      }
+
+      // Submit PO
+      const editForm = document.getElementById("editPOForm");
+      if (editForm && !editForm.hasAttribute("data-listener-attached")) {
+        editForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Validate main form fields
+          const vendorId = document.getElementById("vendorId").value;
+          const poDate = document.getElementById("poDate").value;
+          const poType = document.getElementById("poType").value;
+
+          if (!vendorId) {
+            showWarningToast("Please select a vendor");
+            return;
+          }
+
+          if (!poDate) {
+            showWarningToast("Please select a PO date");
+            return;
+          }
+
+          if (!poType) {
+            showWarningToast("Please select a PO type");
+            return;
+          }
+
+          if (poItems.length === 0) {
+            showWarningToast("Please add at least one item before updating PO.");
+            return;
+          }
+
+          const selectedStatus = document.getElementById("poStatus").value;
+          submitPO(selectedStatus || "submitted");
+        });
+        editForm.setAttribute("data-listener-attached", "true");
+      }
+
+      // Submit PO to server
+      async function submitPO(status) {
+        const formData = new FormData(document.getElementById("editPOForm"));
+        const poData = Object.fromEntries(formData.entries());
+
+        const data = {
+          ...poData,
+          status: poData.status || status,
+          items: poItems.map((item) => ({
+            procurement_item_id: item.procurement_item_id,
+            variant_id: item.variant_id || null,
+            base_unit: item.base_unit || "pc",
+            quantity: item.quantity,
+            unit_cost: item.unit_cost,
+            gst_percentage: item.gst_percentage,
+            notes: item.notes,
+          })),
+        };
+
+        try {
+          const poId = "<%= poId %>";
+          const response = await fetch(`/po/api/v1/purchase-orders/${poId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            showSuccessToast(`Purchase Order ${status === "draft" ? "saved as draft" : "updated"} successfully!`);
+            setTimeout(() => {
+              window.location.href = `/po/purchase-orders/${poId}`;
+            }, 1000);
+          } else {
+            showErrorToast(result.error || "Error updating Purchase Order");
+          }
+        } catch (error) {
+          console.error("Error updating PO:", error);
+          showErrorToast("Error updating PO");
+        }
+      }
+
+      // Toast notifications are handled by the global toast system
+    </script>
+
+    <%- include('../../../../partials/_toast') %> <%- include('../../../../partials/_footer') %>
+  </body>
+</html>

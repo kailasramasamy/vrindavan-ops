@@ -1,0 +1,267 @@
+<%- include('../../../partials/_head', { title: 'All Products - Orders Analytics - Vrindavan Farm', description: 'Complete view of all products with revenue, orders, and quantity data', url: seo.url, styles: ['/assets/styles.css'] }) %> <%- include('../../../partials/_subnav', { section: 'Analytics', subsection: 'Orders', page: 'All Products Analytics', user: user }) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">All Products Analytics</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Complete product performance data for <%= dateRange.range ? dateRange.range.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'selected period' %></p>
+        </div>
+        <div class="flex items-center space-x-4">
+
+          <!-- Back Button -->
+          <a href="/analytics/orders<%= dateRange.range ? '?range=' + dateRange.range : '' %>" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Back to Orders Analytics</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Date Range Filter</h3>
+          <!-- Date Range Dropdown -->
+          <div class="relative">
+            <select id="dateRangeSelect" class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-4 py-2 pr-8 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="today" <%= dateRange.range === 'today' ? 'selected' : '' %>>Today</option>
+              <option value="yesterday" <%= dateRange.range === 'yesterday' ? 'selected' : '' %>>Yesterday</option>
+              <option value="this_week" <%= dateRange.range === 'this_week' ? 'selected' : '' %>>This Week</option>
+              <option value="last_week" <%= dateRange.range === 'last_week' ? 'selected' : '' %>>Last Week</option>
+              <option value="last_7_days" <%= dateRange.range === 'last_7_days' ? 'selected' : '' %>>Last 7 Days</option>
+              <option value="this_month" <%= dateRange.range === 'this_month' ? 'selected' : '' %>>This Month</option>
+              <option value="last_month" <%= dateRange.range === 'last_month' ? 'selected' : '' %>>Last Month</option>
+              <option value="this_quarter" <%= dateRange.range === 'this_quarter' ? 'selected' : '' %>>This Quarter</option>
+              <option value="last_quarter" <%= dateRange.range === 'last_quarter' ? 'selected' : '' %>>Last Quarter</option>
+              <option value="this_year" <%= dateRange.range === 'this_year' ? 'selected' : '' %>>This Year</option>
+              <option value="last_year" <%= dateRange.range === 'last_year' ? 'selected' : '' %>>Last Year</option>
+              <option value="custom" <%= dateRange.range === 'custom' ? 'selected' : '' %>>Custom Range</option>
+            </select>
+            <!-- Dropdown Arrow -->
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Date Range (shown when custom is selected) -->
+        <div id="customDateRange" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 <%= dateRange.range === 'custom' ? '' : 'hidden' %>">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Range:</span>
+            <form method="GET" action="/analytics/orders/all-products" class="flex items-center space-x-2">
+              <input type="date" name="start_date" value="<%= dateRange.start_date || '' %>" class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <span class="text-gray-500 dark:text-gray-400">to</span>
+              <input type="date" name="end_date" value="<%= dateRange.end_date || '' %>" class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">Apply</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <!-- Total Products -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-md flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Products</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white"><%= topProducts.length %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Quantity -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-md flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h3a1 1 0 110 2h-1v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6H4a1 1 0 110-2h3zM9 6v10h6V6H9z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Quantity</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white"><%= topProducts.reduce((sum, product) => sum + parseInt(product.total_quantity || 0), 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Orders -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-md flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Orders</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white"><%= topProducts.reduce((sum, product) => sum + (product.order_count || 0), 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Revenue -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-md flex items-center justify-center">
+              <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="totalRevenueDisplay">₹0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Products Performance</h2>
+          <button id="exportCsvBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">#</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Unit</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Base Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Orders</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Avg Value</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% topProducts.forEach((product, index) => { %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= index + 1 %></td>
+              <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                <div class="font-medium"><%= product.product_name %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= product.unit || '-' %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= product.category_name %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= (product.base_price || 0).toLocaleString() %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= product.total_quantity || 0 %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= product.order_count %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= (product.total_revenue || 0).toLocaleString() %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= (product.avg_item_value || 0).toLocaleString() %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+  // Format Indian Currency
+  function formatIndianCurrency(amount) {
+    if (amount >= 100000) {
+      return (amount / 100000).toFixed(1) + 'L';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(1) + 'k';
+    }
+    return amount.toLocaleString('en-IN');
+  }
+
+  // Update Total Revenue Display
+  const totalRevenue = <%= topProducts.reduce((sum, product) => sum + (product.total_revenue || 0), 0) %>;
+  document.getElementById('totalRevenueDisplay').textContent = '₹' + formatIndianCurrency(totalRevenue);
+
+  // CSV Export Functionality
+  document.getElementById('exportCsvBtn').addEventListener('click', function() {
+    // Helper function to decode HTML entities
+    function decodeHtmlEntities(text) {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = text;
+      return textarea.value;
+    }
+
+    // Helper function to remove currency symbol and keep only numbers
+    function removeCurrencySymbol(text) {
+      return text.replace(/[₹,]/g, '');
+    }
+
+    const data = [
+      ['#', 'Product', 'Unit', 'Category', 'Base Price', 'Quantity', 'Orders', 'Revenue', 'Avg Value']
+    ];
+
+    <% topProducts.forEach((product, index) => { %>
+    data.push([
+      '<%= index + 1 %>',
+      decodeHtmlEntities('<%= (product.product_name || "").replace(/'/g, "\\'") %>'),
+      '<%= (product.unit || "") %>',
+      decodeHtmlEntities('<%= (product.category_name || "").replace(/'/g, "\\'") %>'),
+      removeCurrencySymbol('<%= (product.base_price || 0).toLocaleString() %>'),
+      '<%= product.total_quantity || 0 %>',
+      '<%= product.order_count %>',
+      removeCurrencySymbol('<%= (product.total_revenue || 0).toLocaleString() %>'),
+      removeCurrencySymbol('<%= (product.avg_item_value || 0).toLocaleString() %>')
+    ]);
+    <% }); %>
+
+    const csvContent = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'all-products-analytics-<%= new Date().toISOString().split('T')[0] %>.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+
+    // Date range dropdown functionality
+    const dateRangeSelect = document.getElementById('dateRangeSelect');
+    const customDateRange = document.getElementById('customDateRange');
+    
+    if (dateRangeSelect) {
+      dateRangeSelect.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        if (selectedValue === 'custom') {
+          customDateRange.classList.remove('hidden');
+        } else {
+          customDateRange.classList.add('hidden');
+          // Redirect to the selected range
+          window.location.href = `/analytics/orders/all-products?range=${selectedValue}`;
+        }
+      });
+    }
+
+  });
+</script>
+
+<%- include('../../../partials/_footer') %>

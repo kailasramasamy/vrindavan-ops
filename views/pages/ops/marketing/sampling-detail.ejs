@@ -1,0 +1,1756 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { currentPage: currentPage, section: 'Marketing', subsection: 'Product Sampling', user: user }) %>
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 shadow">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="flex items-center space-x-3">
+              <a href="/marketing/sampling" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </a>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white" id="campaignTitle">Loading...</h1>
+            </div>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" id="campaignDescription"></p>
+          </div>
+          <div class="flex space-x-3 items-center">
+            <button onclick="runTracking()" id="trackButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium" disabled>
+              Track Orders
+            </button>
+            <div class="relative" id="statusDropdown">
+              <select id="statusSelect" class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 pr-8 rounded-md focus:outline-none focus:ring-blue-500" onchange="updateStatus(this.value)" disabled>
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 mt-8">
+      <!-- Product Information -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex items-start space-x-4">
+              <div class="flex-shrink-0">
+                <img id="sampleProductImage" src="" alt="Sample Product" class="hidden w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700">
+                <div id="sampleProductImagePlaceholder" class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                  <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Sample Product</h3>
+                <p class="text-lg font-semibold text-gray-900 dark:text-white" id="sampleProductName">Not set</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Product being sampled to customers</p>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Reference Product</h3>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white" id="referenceProductName">Not set</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Customers order this product regularly</p>
+            </div>
+          </div>
+        </div>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Tracked Customers</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="customerCount">0</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Orders</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="orderCount">0</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="totalRevenue">₹0</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Last Tracked</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="lastTracked">Never</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-8 4h6m-9 6V9a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Batches Sent</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="batchCount">0</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-teal-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Product Cost</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="totalProductCost">₹0.00</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Orders Chart -->
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Daily Order Trend (Last 30 Days)</h3>
+          <button onclick="runTracking()" id="refreshOrdersButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Refresh Orders
+          </button>
+        </div>
+        <div class="h-64 relative">
+          <canvas id="dailyChart"></canvas>
+          <div id="noOrdersMessage" class="hidden absolute inset-0 flex items-center justify-center">
+            <div class="text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">No orders found in the last 30 days</p>
+              <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Orders will appear here once customers start placing orders for the sample product</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav class="flex -mb-px">
+            <button onclick="switchTab('customers')" id="tab-customers" class="tab-button active px-6 py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600 dark:text-blue-400">
+              Tracked Customers
+            </button>
+            <button onclick="switchTab('orders')" id="tab-orders" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent">
+              Sample Orders
+            </button>
+          </nav>
+        </div>
+
+        <!-- Customers Tab -->
+        <div id="content-customers" class="tab-content p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Tracked Customers by Sampling Date</h3>
+            <div class="flex space-x-3">
+              <button onclick="exportCustomersToCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Export CSV
+              </button>
+              <a href="/marketing/sampling/<%= campaignId %>/add-customers" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                Add Customers
+              </a>
+            </div>
+          </div>
+          
+          <!-- Batches Container -->
+          <div id="customerBatchesContainer" class="space-y-6">
+            <!-- Dynamic batches will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="content-orders" class="tab-content hidden p-6">
+          <div class="flex items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Sample Orders by Sampling Date</h3>
+          </div>
+          
+          <!-- Orders Batches Container -->
+          <div id="orderBatchesContainer" class="space-y-6">
+            <!-- Dynamic batches will be inserted here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <script>
+    let campaignId = '<%= campaignId %>';
+    let campaign = null;
+    let dailyChart = null;
+
+    // Register Chart.js datalabels plugin
+    if (typeof ChartDataLabels !== 'undefined') {
+      Chart.register(ChartDataLabels);
+    }
+
+    // Load initial data
+    document.addEventListener("DOMContentLoaded", function() {
+      loadCampaignDetails();
+      initChart();
+    });
+
+    function initChart() {
+      const ctx = document.getElementById('dailyChart').getContext('2d');
+      dailyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Orders',
+            data: [],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            datalabels: {
+              display: true,
+              align: 'top',
+              anchor: 'end',
+              color: 'rgb(59, 130, 246)',
+              font: {
+                weight: 'bold',
+                size: 12
+              }
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }
+
+    async function loadCampaignDetails() {
+      try {
+        const response = await fetch(`/marketing/api/sampling/campaigns/${campaignId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          campaign = result.data;
+          updateUI();
+        }
+      } catch (error) {
+        console.error("Error loading campaign details:", error);
+      }
+    }
+
+
+    function updateUI() {
+      document.getElementById('campaignTitle').textContent = campaign.campaign_name;
+      document.getElementById('campaignDescription').textContent = campaign.description || 'No description';
+      document.getElementById('statusSelect').value = campaign.status;
+      document.getElementById('statusSelect').disabled = false;
+      
+      // Update product names
+      document.getElementById('sampleProductName').textContent = campaign.product_name || 'Not set';
+      document.getElementById('referenceProductName').textContent = campaign.reference_product_name || 'Not set';
+      
+      // Update sample product image
+      const sampleProductImage = document.getElementById('sampleProductImage');
+      const sampleProductImagePlaceholder = document.getElementById('sampleProductImagePlaceholder');
+      if (campaign.product_image) {
+        sampleProductImage.src = campaign.product_image;
+        sampleProductImage.classList.remove('hidden');
+        if (sampleProductImagePlaceholder) {
+          sampleProductImagePlaceholder.classList.add('hidden');
+        }
+      } else {
+        sampleProductImage.classList.add('hidden');
+        if (sampleProductImagePlaceholder) {
+          sampleProductImagePlaceholder.classList.remove('hidden');
+        }
+      }
+      
+      // Filter tracking orders to only include tracked customers
+      const trackedCustomerIds = new Set(campaign.customers.map(c => c.customer_id));
+      const trackedOrders = campaign.tracking.filter(t => trackedCustomerIds.has(t.customer_id));
+      
+      document.getElementById('customerCount').textContent = campaign.customers.length;
+      document.getElementById('orderCount').textContent = trackedOrders.length;
+      document.getElementById('totalRevenue').textContent = `₹${trackedOrders.reduce((sum, t) => sum + (parseFloat(t.order_amount) || 0), 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+      const uniqueBatchCount = campaign.customers.reduce((set, customer) => {
+        const batchNumber = customer.batch_number;
+        if (batchNumber !== null && batchNumber !== undefined) {
+          set.add(`batch-${batchNumber}`);
+        } else {
+          const date = customer.sampling_date;
+          if (date && typeof date === 'string' && date.trim() !== '') {
+            set.add(date.trim());
+          }
+        }
+        return set;
+      }, new Set()).size;
+      const batchCountEl = document.getElementById('batchCount');
+      if (batchCountEl) {
+        batchCountEl.textContent = uniqueBatchCount;
+      }
+      const perCustomerCost = (() => {
+        const discountPrice = parseFloat(campaign.product_discount_price || 0);
+        if (!isNaN(discountPrice) && discountPrice > 0) {
+          return discountPrice;
+        }
+        const fallbackPrice = parseFloat(campaign.product_price || 0);
+        return !isNaN(fallbackPrice) && fallbackPrice > 0 ? fallbackPrice : 0;
+      })();
+      const totalProductCostValue = perCustomerCost * (campaign.customers.length || 0);
+      const totalProductCostEl = document.getElementById('totalProductCost');
+      if (totalProductCostEl) {
+        totalProductCostEl.textContent = perCustomerCost > 0
+          ? `₹${totalProductCostValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+          : '₹0.00';
+      }
+
+      if (trackedOrders.length > 0) {
+        const lastTracked = trackedOrders[trackedOrders.length - 1].tracked_at;
+        if (lastTracked) {
+          const trackedDate = new Date(lastTracked);
+          document.getElementById('lastTracked').textContent = trackedDate.toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+        }
+      }
+
+      renderCustomers();
+      renderOrders();
+      updateChart();
+
+      // Enable track button if campaign is active
+      const trackButton = document.getElementById('trackButton');
+      const refreshOrdersButton = document.getElementById('refreshOrdersButton');
+      if (campaign.status === 'active') {
+        if (trackButton) trackButton.disabled = false;
+        if (refreshOrdersButton) refreshOrdersButton.disabled = false;
+      } else {
+        if (trackButton) trackButton.disabled = true;
+        if (refreshOrdersButton) refreshOrdersButton.disabled = true;
+      }
+    }
+
+    function updateChart() {
+      if (!dailyChart || !campaign.daily_summary) {
+        // Show informative message if no chart or no daily_summary
+        const noOrdersMessage = document.getElementById('noOrdersMessage');
+        const chartCanvas = document.getElementById('dailyChart');
+        if (noOrdersMessage && chartCanvas) {
+          noOrdersMessage.classList.remove('hidden');
+          chartCanvas.style.display = 'none';
+        }
+        return;
+      }
+
+      const sortedData = campaign.daily_summary.sort((a, b) => new Date(a.order_date) - new Date(b.order_date));
+      const hasData = sortedData.length > 0 && sortedData.some(d => d.order_count > 0);
+      
+      const noOrdersMessage = document.getElementById('noOrdersMessage');
+      const chartCanvas = document.getElementById('dailyChart');
+      
+      if (!hasData) {
+        // Show informative message if no orders
+        if (noOrdersMessage && chartCanvas) {
+          noOrdersMessage.classList.remove('hidden');
+          chartCanvas.style.display = 'none';
+        }
+      } else {
+        // Show chart if there's data
+        if (noOrdersMessage && chartCanvas) {
+          noOrdersMessage.classList.add('hidden');
+          chartCanvas.style.display = 'block';
+        }
+        // Format dates as DD-MM
+        dailyChart.data.labels = sortedData.map(d => {
+          const date = new Date(d.order_date);
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          return `${day}-${month}`;
+        });
+        dailyChart.data.datasets[0].data = sortedData.map(d => d.order_count);
+        dailyChart.update();
+      }
+    }
+
+    function renderCustomers() {
+      const container = document.getElementById('customerBatchesContainer');
+      container.innerHTML = '';
+
+      if (campaign.customers.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400">No customers tracked yet.</div>';
+        return;
+      }
+
+      // Group customers by sampling_date (normalize dates to YYYY-MM-DD format)
+      const customersByDate = {};
+      campaign.customers.forEach(customer => {
+        let date = 'No Date';
+        if (customer.sampling_date) {
+          // Normalize the date to YYYY-MM-DD format to avoid timezone issues
+          if (customer.sampling_date instanceof Date) {
+            // Use UTC methods to avoid timezone conversion issues
+            const year = customer.sampling_date.getUTCFullYear();
+            const month = String(customer.sampling_date.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(customer.sampling_date.getUTCDate()).padStart(2, '0');
+            date = `${year}-${month}-${day}`;
+          } else {
+            // Extract YYYY-MM-DD from string (handles ISO strings and date strings)
+            const dateStr = String(customer.sampling_date);
+            // If it's already in YYYY-MM-DD format, use it directly
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+              date = dateStr;
+            } else {
+              // Extract date part from ISO string or other formats
+              date = dateStr.split('T')[0].split(' ')[0].trim();
+            }
+          }
+        }
+        if (!customersByDate[date]) {
+          customersByDate[date] = [];
+        }
+        customersByDate[date].push(customer);
+      });
+
+      // Create a map: sampling_date -> batch_number from database (marketing_sampling_customers.batch_number)
+      // All customers with the same sampling_date should have the same batch_number
+      const samplingDateToBatchNumber = {};
+      Object.keys(customersByDate).forEach(samplingDate => {
+        const customersForDate = customersByDate[samplingDate];
+        // Use batch_number from marketing_sampling_customers.batch_number
+        if (customersForDate.length > 0) {
+          const customer = customersForDate[0];
+          if (customer.batch_number !== null && customer.batch_number !== undefined) {
+            samplingDateToBatchNumber[samplingDate] = customer.batch_number;
+          }
+        }
+      });
+      
+      // Now sort dates in descending order (newest first) for display
+      // Sort by batch_number descending (newest batch first)
+      const sortedDates = Object.keys(customersByDate).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        const batchA = samplingDateToBatchNumber[a] || 999;
+        const batchB = samplingDateToBatchNumber[b] || 999;
+        return batchB - batchA; // Descending order (newest batch first)
+      });
+
+      // Render each batch (grouped by sampling_date)
+      sortedDates.forEach((samplingDate, index) => {
+        const customers = customersByDate[samplingDate];
+        // Get batch_number from database (marketing_sampling_customers.batch_number)
+        // All customers with the same sampling_date have the same batch_number
+        const batchNumber = samplingDateToBatchNumber[samplingDate] || null;
+        const finalBatchNumber = batchNumber !== null ? batchNumber : (index + 1);
+        // Format date display safely (avoid timezone issues by parsing YYYY-MM-DD directly)
+        let dateDisplay = 'No Date Assigned';
+        if (samplingDate !== 'No Date') {
+          const [year, month, day] = samplingDate.split('-');
+          if (year && month && day) {
+            const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            dateDisplay = dateObj.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+          }
+        }
+        const batchId = `batch-${samplingDate.replace(/\s/g, '-')}`;
+        
+        const batchDiv = document.createElement('div');
+        batchDiv.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden';
+        batchDiv.innerHTML = `
+          <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800" onclick="toggleBatch('${batchId}')">
+            <div class="flex items-center space-x-4">
+              <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform" id="${batchId}-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+              <div>
+                <h4 class="text-sm font-medium text-gray-900 dark:text-white">📅 ${dateDisplay}</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  ${customers.length} customer${customers.length !== 1 ? 's' : ''} • 
+                  💰 ${customers.filter(c => c.amount_credited === true || c.amount_credited === 1 || c.amount_credited === '1').length}/${customers.length} credited • 
+                  📦 ${customers.filter(c => c.sampling_scheduled === true || c.sampling_scheduled === 1 || c.sampling_scheduled === '1').length}/${customers.length} scheduled
+                </p>
+                ${(() => {
+                  const creditedCount = customers.filter(c => c.amount_credited === true || c.amount_credited === 1 || c.amount_credited === '1').length;
+                  const creditAmountPerCustomer = campaign.product_discount_price ? parseFloat(campaign.product_discount_price) : 0;
+                  const totalAmountCredited = creditedCount * creditAmountPerCustomer;
+                  return totalAmountCredited > 0 ? `<p class="text-xs text-gray-600 dark:text-gray-300 mt-1">Total Amount Credited: ₹${totalAmountCredited.toFixed(2)}</p>` : '';
+                })()}
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              ${samplingDate !== 'No Date' ? `
+                ${(() => {
+                  const allScheduled = customers.every(c => c.sampling_scheduled === true || c.sampling_scheduled === 1 || c.sampling_scheduled === '1');
+                  const buttonText = allScheduled ? 'Add Samples Again' : 'Add Sample';
+                  return `
+                    <button onclick="addSampleToBatch('${samplingDate}', event)" class="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-md flex items-center space-x-1" data-sampling-date="${samplingDate}">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <span>${buttonText}</span>
+                    </button>
+                    <button onclick="exportBatchToCSV('${samplingDate}', ${finalBatchNumber}, event)" class="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md flex items-center space-x-1" data-sampling-date="${samplingDate}" data-batch-number="${finalBatchNumber}">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      <span>Export CSV</span>
+                    </button>
+                  `;
+                })()}
+              ` : ''}
+              <span class="px-2 py-1 text-xs font-medium rounded-full ${samplingDate === 'No Date' ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'}">
+                Batch ${finalBatchNumber}
+              </span>
+            </div>
+          </div>
+          <div id="${batchId}" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount Credited</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sampling Scheduled</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reference Product Orders</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sample Orders</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                ${customers.map(customer => {
+                  const sampleOrdersCount = campaign.tracking.filter(t => t.customer_id === customer.customer_id).length;
+                  // Handle MySQL boolean (0/1) and JavaScript boolean
+                  const amountCredited = customer.amount_credited === true || customer.amount_credited === 1 || customer.amount_credited === '1';
+                  const samplingScheduled = customer.sampling_scheduled === true || customer.sampling_scheduled === 1 || customer.sampling_scheduled === '1';
+                  return `
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${customer.customer_id}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${customer.customer_name || 'N/A'}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${customer.customer_phone || 'N/A'}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        ${amountCredited ? 
+                          '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">✓ Credited</span>' : 
+                          '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">Pending</span>'
+                        }
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        ${samplingScheduled ? 
+                          '<span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">✓ Scheduled</span>' : 
+                          '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">Pending</span>'
+                        }
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${customer.reference_product_orders || 0}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${sampleOrdersCount}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="removeCustomer(${customer.customer_id})" class="text-red-600 hover:text-red-900 dark:text-red-400">Remove</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        container.appendChild(batchDiv);
+      });
+    }
+
+    function toggleBatch(batchId) {
+      const batch = document.getElementById(batchId);
+      const icon = document.getElementById(`${batchId}-icon`);
+      if (batch.classList.contains('hidden')) {
+        batch.classList.remove('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      } else {
+        batch.classList.add('hidden');
+        icon.style.transform = 'rotate(-90deg)';
+      }
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('orderBatchesContainer');
+      container.innerHTML = '';
+
+      if (campaign.tracking.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400">No orders tracked yet.</div>';
+        return;
+      }
+
+      // Group orders by customer's sampling_date (only for tracked customers)
+      const ordersByDate = {};
+      campaign.tracking.forEach(order => {
+        const customer = campaign.customers.find(c => c.customer_id === order.customer_id);
+        
+        // Skip orders from customers who are not in the tracking list
+        if (!customer) {
+          return;
+        }
+        
+        // Normalize sampling_date to YYYY-MM-DD format
+        let samplingDate = 'No Date';
+        if (customer.sampling_date) {
+          if (customer.sampling_date instanceof Date) {
+            const year = customer.sampling_date.getFullYear();
+            const month = String(customer.sampling_date.getMonth() + 1).padStart(2, '0');
+            const day = String(customer.sampling_date.getDate()).padStart(2, '0');
+            samplingDate = `${year}-${month}-${day}`;
+          } else if (typeof customer.sampling_date === 'string') {
+            // Extract YYYY-MM-DD from string (handles ISO strings and date strings)
+            samplingDate = customer.sampling_date.split('T')[0].split(' ')[0].trim();
+          }
+        }
+        
+        // Normalize order_date for comparison
+        let normalizedOrderDate = '';
+        if (order.order_date) {
+          if (order.order_date instanceof Date) {
+            const year = order.order_date.getFullYear();
+            const month = String(order.order_date.getMonth() + 1).padStart(2, '0');
+            const day = String(order.order_date.getDate()).padStart(2, '0');
+            normalizedOrderDate = `${year}-${month}-${day}`;
+          } else if (typeof order.order_date === 'string') {
+            normalizedOrderDate = order.order_date.split('T')[0].split(' ')[0].trim();
+          }
+        }
+        
+        if (!ordersByDate[samplingDate]) {
+          ordersByDate[samplingDate] = [];
+        }
+        
+        ordersByDate[samplingDate].push({
+          ...order,
+          customer: customer,
+          isSampleOrder: normalizedOrderDate === samplingDate
+        });
+      });
+
+      // Check if we have any orders from tracked customers
+      if (Object.keys(ordersByDate).length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400">No orders from tracked customers yet.</div>';
+        return;
+      }
+
+      // Create a map: sampling_date -> batch_number from database (marketing_sampling_customers.batch_number)
+      // All customers with the same sampling_date should have the same batch_number
+      const samplingDateToBatchNumber = {};
+      Object.keys(ordersByDate).forEach(samplingDate => {
+        const ordersForDate = ordersByDate[samplingDate];
+        // Get batch_number from the first order's customer (all customers with same sampling_date have same batch_number)
+        if (ordersForDate.length > 0 && ordersForDate[0].customer) {
+          const customer = ordersForDate[0].customer;
+          // Use batch_number from marketing_sampling_customers.batch_number
+          if (customer.batch_number !== null && customer.batch_number !== undefined) {
+            samplingDateToBatchNumber[samplingDate] = customer.batch_number;
+          }
+        }
+      });
+      
+      // Now sort dates in descending order (newest first) for display
+      // Sort by batch_number descending (newest batch first)
+      const sortedDates = Object.keys(ordersByDate).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        const batchA = samplingDateToBatchNumber[a] || 999;
+        const batchB = samplingDateToBatchNumber[b] || 999;
+        return batchB - batchA; // Descending order (newest batch first)
+      });
+
+      // Render each batch (grouped by sampling_date)
+      sortedDates.forEach((samplingDate, index) => {
+        const orders = ordersByDate[samplingDate];
+        // Get batch_number from database (marketing_sampling_customers.batch_number)
+        // All customers with the same sampling_date have the same batch_number
+        const batchNumber = samplingDateToBatchNumber[samplingDate] || null;
+        if (batchNumber === null && orders.length > 0 && orders[0].customer && orders[0].customer.batch_number) {
+          // Fallback: use batch_number from first customer if not in map
+          const fallbackBatchNumber = orders[0].customer.batch_number;
+          if (fallbackBatchNumber !== null && fallbackBatchNumber !== undefined) {
+            samplingDateToBatchNumber[samplingDate] = fallbackBatchNumber;
+          }
+        }
+        const finalBatchNumber = samplingDateToBatchNumber[samplingDate] || (index + 1);
+        // Format date display safely (avoid timezone issues by parsing YYYY-MM-DD directly)
+        let dateDisplay = 'No Date Assigned';
+        if (samplingDate !== 'No Date') {
+          const [year, month, day] = samplingDate.split('-');
+          if (year && month && day) {
+            const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            dateDisplay = dateObj.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+          }
+        }
+        const batchId = `order-batch-${samplingDate.replace(/\s/g, '-')}`;
+        
+        // Count sample orders vs regular orders
+        const sampleOrdersCount = orders.filter(o => o.isSampleOrder).length;
+        const regularOrdersCount = orders.length - sampleOrdersCount;
+        const totalAmount = orders.reduce((sum, o) => sum + parseFloat(o.order_amount || 0), 0);
+        
+        const batchDiv = document.createElement('div');
+        batchDiv.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden';
+        batchDiv.innerHTML = `
+          <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800" onclick="toggleBatch('${batchId}')">
+            <div class="flex items-center space-x-4">
+              <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform" id="${batchId}-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+              <div>
+                <h4 class="text-sm font-medium text-gray-900 dark:text-white">📅 ${dateDisplay}</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">${orders.length} order${orders.length !== 1 ? 's' : ''} • ${sampleOrdersCount} sample, ${regularOrdersCount} regular • ₹${totalAmount.toFixed(2)}</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-1 text-xs font-medium rounded-full ${samplingDate === 'No Date' ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'}">
+                Batch ${finalBatchNumber}
+              </span>
+            </div>
+          </div>
+          <div id="${batchId}" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                ${orders.map(order => {
+                  return `
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${new Date(order.order_date).toLocaleDateString()}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${order.customer ? order.customer.customer_name : order.customer_id}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${order.customer ? (order.customer.customer_phone || 'N/A') : 'N/A'}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${order.quantity}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹${parseFloat(order.order_amount || 0).toFixed(2)}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        ${order.isSampleOrder ? 
+                          '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">📦 Sample Order</span>' : 
+                          '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">Regular Order</span>'
+                        }
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        container.appendChild(batchDiv);
+      });
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active', 'text-blue-600', 'border-blue-600', 'dark:text-blue-400');
+        btn.classList.add('text-gray-500', 'border-transparent');
+      });
+
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+
+      document.getElementById(`tab-${tab}`).classList.remove('text-gray-500', 'border-transparent');
+      document.getElementById(`tab-${tab}`).classList.add('active', 'text-blue-600', 'border-blue-600', 'dark:text-blue-400');
+      document.getElementById(`content-${tab}`).classList.remove('hidden');
+    }
+
+    async function updateStatus(status) {
+      try {
+        const response = await fetch(`/marketing/api/sampling/campaigns/${campaignId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          campaign.status = status;
+          const trackButton = document.getElementById('trackButton');
+          const refreshOrdersButton = document.getElementById('refreshOrdersButton');
+          if (status === 'active') {
+            if (trackButton) trackButton.disabled = false;
+            if (refreshOrdersButton) refreshOrdersButton.disabled = false;
+          } else {
+            if (trackButton) trackButton.disabled = true;
+            if (refreshOrdersButton) refreshOrdersButton.disabled = true;
+          }
+        }
+      } catch (error) {
+        console.error("Error updating status:", error);
+      }
+    }
+
+    async function runTracking() {
+      // Check if campaign is active
+      if (campaign && campaign.status !== 'active') {
+        showErrorToast('Tracking can only be run for active campaigns');
+        return;
+      }
+
+      const confirmed = await showConfirmDialog(
+        'Run Tracking?',
+        'This will scan for new sample orders from tracked customers. Continue?',
+        'Run Tracking',
+        'Cancel'
+      );
+      
+      if (!confirmed) return;
+
+      // Disable buttons during tracking
+      const trackButton = document.getElementById('trackButton');
+      const refreshOrdersButton = document.getElementById('refreshOrdersButton');
+      const originalTrackText = trackButton ? trackButton.textContent : '';
+      const originalRefreshHTML = refreshOrdersButton ? refreshOrdersButton.innerHTML : '';
+      
+      if (trackButton) {
+        trackButton.disabled = true;
+        trackButton.textContent = 'Tracking...';
+      }
+      if (refreshOrdersButton) {
+        refreshOrdersButton.disabled = true;
+        refreshOrdersButton.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Refreshing...';
+      }
+
+      try {
+        const response = await fetch(`/marketing/api/sampling/campaigns/${campaignId}/track`, {
+          method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast(`Tracking completed. Found ${result.new_orders} new order${result.new_orders !== 1 ? 's' : ''}.`);
+          loadCampaignDetails();
+        } else {
+          showErrorToast('Failed to run tracking: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error("Error running tracking:", error);
+        showErrorToast('Failed to run tracking');
+      } finally {
+        // Re-enable buttons
+        if (trackButton) {
+          trackButton.disabled = campaign && campaign.status === 'active' ? false : true;
+          trackButton.textContent = originalTrackText;
+        }
+        if (refreshOrdersButton) {
+          refreshOrdersButton.disabled = campaign && campaign.status === 'active' ? false : true;
+          refreshOrdersButton.innerHTML = originalRefreshHTML;
+        }
+      }
+    }
+
+    async function addSampleToBatch(samplingDate, event) {
+      // Stop propagation to prevent batch collapse/expand
+      event.stopPropagation();
+      
+      // Normalize the date to YYYY-MM-DD format (remove any time component)
+      // This ensures we match customers correctly and send the correct date to API
+      let normalizedDateStr = samplingDate;
+      if (samplingDate && samplingDate !== 'No Date') {
+        // If it's a Date object, format it
+        if (samplingDate instanceof Date) {
+          const year = samplingDate.getFullYear();
+          const month = String(samplingDate.getMonth() + 1).padStart(2, '0');
+          const day = String(samplingDate.getDate()).padStart(2, '0');
+          normalizedDateStr = `${year}-${month}-${day}`;
+        } else if (typeof samplingDate === 'string') {
+          // Extract YYYY-MM-DD from string (handles ISO strings and date strings)
+          normalizedDateStr = samplingDate.split('T')[0].split(' ')[0].trim();
+        }
+      }
+      
+      // Filter customers by normalized date (compare date strings)
+      const batchCustomers = campaign.customers
+        .filter(c => {
+          if (!c.sampling_date) return false;
+          // Normalize customer's sampling_date for comparison
+          const customerDate = c.sampling_date instanceof Date 
+            ? `${c.sampling_date.getFullYear()}-${String(c.sampling_date.getMonth() + 1).padStart(2, '0')}-${String(c.sampling_date.getDate()).padStart(2, '0')}`
+            : String(c.sampling_date).split('T')[0].split(' ')[0].trim();
+          return customerDate === normalizedDateStr;
+        })
+        .sort((a, b) => a.customer_id - b.customer_id);
+      
+      if (batchCustomers.length === 0) {
+        showErrorToast(`No customers found for sampling date ${normalizedDateStr}`);
+        return;
+      }
+      
+      // Get credit amount
+      const creditAmount = campaign.product_discount_price ? parseFloat(campaign.product_discount_price) : 0;
+      const creditAmountDisplay = `₹${creditAmount.toFixed(2)}`;
+      const totalCredit = `₹${(creditAmount * batchCustomers.length).toFixed(2)}`;
+      
+      // Show progress modal with confirmation
+      // The modal will show Step 1 confirmation first, then Step 1 summary + Step 2 confirmation, then final summary
+      showAddSampleProgressModal(
+        batchCustomers, 
+        normalizedDateStr, 
+        creditAmount,
+        campaign.product_name || 'N/A',
+        campaignId
+      );
+    }
+
+    async function removeCustomer(customerId) {
+      const confirmed = await showConfirmDialog(
+        'Remove Customer?',
+        'Remove this customer from tracking?',
+        'Remove',
+        'Cancel'
+      );
+      
+      if (!confirmed) return;
+
+      try {
+        const response = await fetch(`/marketing/api/sampling/campaigns/${campaignId}/customers/${customerId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast('Customer removed successfully');
+          loadCampaignDetails();
+        } else {
+          showErrorToast('Failed to remove customer: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error("Error removing customer:", error);
+        showErrorToast('Failed to remove customer');
+      }
+    }
+
+    // Export customers to CSV
+    function exportCustomersToCSV() {
+      if (!campaign || !campaign.customers || campaign.customers.length === 0) {
+        showErrorToast('No customers to export');
+        return;
+      }
+
+      // Map customers with additional fields
+      const customersData = campaign.customers.map(customer => {
+        return {
+          customer_id: customer.customer_id,
+          customer_name: customer.customer_name || '',
+          customer_phone: customer.customer_phone || '',
+          locality: customer.locality_name || '',
+          house_no: customer.house_no || '',
+          complete_address: customer.complete_address || '',
+          sample_product_name: campaign.product_name || '',
+          added_at: customer.added_at ? new Date(customer.added_at).toLocaleString() : ''
+        };
+      });
+
+      // Create CSV headers
+      const headers = [
+        'Customer ID',
+        'Customer Name',
+        'Phone',
+        'Locality',
+        'House Number',
+        'Complete Address',
+        'Sample Product Name',
+        'Added At'
+      ];
+
+      // Create CSV rows
+      const rows = customersData.map(customer => [
+        customer.customer_id,
+        `"${customer.customer_name.replace(/"/g, '""')}"`, // Escape quotes in name
+        customer.customer_phone,
+        `"${customer.locality.replace(/"/g, '""')}"`,
+        `"${customer.house_no.replace(/"/g, '""')}"`,
+        `"${customer.complete_address.replace(/"/g, '""')}"`,
+        `"${customer.sample_product_name.replace(/"/g, '""')}"`,
+        `"${customer.added_at}"`
+      ]);
+
+      // Combine headers and rows
+      const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+      // Create a blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      // Generate filename with campaign name and date
+      const campaignName = campaign.campaign_name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `${campaignName}_customers_${dateStr}.csv`;
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showSuccessToast(`Exported ${customersData.length} customers to CSV`);
+    }
+
+    // Export batch-specific customers to CSV
+    function exportBatchToCSV(samplingDate, batchNumber, event) {
+      // Stop propagation to prevent batch collapse/expand
+      if (event) {
+        event.stopPropagation();
+      }
+
+      if (!campaign || !campaign.customers || campaign.customers.length === 0) {
+        showErrorToast('No customers to export');
+        return;
+      }
+
+      // Normalize sampling_date for comparison
+      let normalizedDateStr = samplingDate;
+      if (samplingDate && samplingDate !== 'No Date') {
+        if (samplingDate instanceof Date) {
+          const year = samplingDate.getFullYear();
+          const month = String(samplingDate.getMonth() + 1).padStart(2, '0');
+          const day = String(samplingDate.getDate()).padStart(2, '0');
+          normalizedDateStr = `${year}-${month}-${day}`;
+        } else if (typeof samplingDate === 'string') {
+          normalizedDateStr = samplingDate.split('T')[0].split(' ')[0].trim();
+        }
+      }
+
+      // Filter customers by sampling_date
+      const batchCustomers = campaign.customers.filter(c => {
+        if (!c.sampling_date) return false;
+        // Normalize customer's sampling_date for comparison
+        const customerDate = c.sampling_date instanceof Date 
+          ? `${c.sampling_date.getFullYear()}-${String(c.sampling_date.getMonth() + 1).padStart(2, '0')}-${String(c.sampling_date.getDate()).padStart(2, '0')}`
+          : String(c.sampling_date).split('T')[0].split(' ')[0].trim();
+        return customerDate === normalizedDateStr;
+      });
+
+      if (batchCustomers.length === 0) {
+        showErrorToast('No customers found for this batch');
+        return;
+      }
+
+      // Map customers with additional fields (same format as global export)
+      const customersData = batchCustomers.map(customer => {
+        return {
+          customer_id: customer.customer_id,
+          customer_name: customer.customer_name || '',
+          customer_phone: customer.customer_phone || '',
+          locality: customer.locality_name || '',
+          house_no: customer.house_no || '',
+          complete_address: customer.complete_address || '',
+          sample_product_name: campaign.product_name || '',
+          added_at: customer.added_at ? new Date(customer.added_at).toLocaleString() : ''
+        };
+      });
+
+      // Create CSV headers (same as global export)
+      const headers = [
+        'Customer ID',
+        'Customer Name',
+        'Phone',
+        'Locality',
+        'House Number',
+        'Complete Address',
+        'Sample Product Name',
+        'Added At'
+      ];
+
+      // Create CSV rows (same format as global export)
+      const rows = customersData.map(customer => [
+        customer.customer_id,
+        `"${(customer.customer_name || '').replace(/"/g, '""')}"`, // Escape quotes in name
+        customer.customer_phone,
+        `"${(customer.locality || '').replace(/"/g, '""')}"`,
+        `"${(customer.house_no || '').replace(/"/g, '""')}"`,
+        `"${(customer.complete_address || '').replace(/"/g, '""')}"`,
+        `"${(customer.sample_product_name || '').replace(/"/g, '""')}"`,
+        `"${customer.added_at}"`
+      ]);
+
+      // Combine headers and rows
+      const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+      // Create a blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      // Generate filename with campaign name, batch number, and date
+      const campaignName = campaign.campaign_name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const dateStr = new Date().toISOString().split('T')[0];
+      const batchDateStr = normalizedDateStr.replace(/-/g, '');
+      const filename = `${campaignName}_batch_${batchNumber}_${batchDateStr}_${dateStr}.csv`;
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showSuccessToast(`Exported ${customersData.length} customers from Batch ${batchNumber} to CSV`);
+    }
+
+    // Confirmation dialog helper
+    function showConfirmDialog(title, message, confirmText = "Confirm", cancelText = "Cancel") {
+      return new Promise((resolve) => {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center";
+        modal.innerHTML = `
+          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">${title}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-line mb-6">${message}</p>
+              <div class="flex justify-end space-x-3">
+                <button id="confirmCancel" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600">
+                  ${cancelText}
+                </button>
+                <button id="confirmOk" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">
+                  ${confirmText}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.querySelector("#confirmOk").onclick = () => {
+          document.body.removeChild(modal);
+          resolve(true);
+        };
+        
+        modal.querySelector("#confirmCancel").onclick = () => {
+          document.body.removeChild(modal);
+          resolve(false);
+        };
+        
+        modal.onclick = (e) => {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+            resolve(false);
+          }
+        };
+      });
+    }
+
+    // Multi-step progress modal for Add Sample process
+    function showAddSampleProgressModal(batchCustomers, normalizedDateStr, creditAmount, productName, campaignId) {
+      let modal = null;
+      // Step states: -1 = Step 1 confirmation, 0 = Step 1 in progress, 1 = Step 1 summary + Step 2 confirmation, 2 = Step 2 in progress, 3 = Final summary
+      let currentStep = -1;
+      let creditResult = null;
+      let orderResult = null;
+      let resolvePromise = null;
+      let confirmStep1Callback = null;
+      let confirmStep2Callback = null;
+      
+      const promise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
+      
+      modal = document.createElement("div");
+      modal.id = "addSampleProgressModal";
+      modal.className = "fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center";
+      
+      const creditAmountDisplay = `₹${creditAmount.toFixed(2)}`;
+      const totalCredit = `₹${(creditAmount * batchCustomers.length).toFixed(2)}`;
+      
+      const updateModal = () => {
+        const steps = [
+          { 
+            number: 1, 
+            name: 'Add Credit', 
+            status: currentStep === -1 ? 'pending' : currentStep === 0 ? 'active' : currentStep > 0 ? 'completed' : 'pending' 
+          },
+          { 
+            number: 2, 
+            name: 'Place Orders', 
+            status: currentStep <= 0 ? 'pending' : currentStep === 1 ? 'pending' : currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : 'pending' 
+          }
+        ];
+        
+        const step1Content = currentStep === 0 ? `
+            <div class="text-center py-8">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Adding credit to ${batchCustomers.length} customers...</p>
+            </div>
+          ` : creditResult ? `
+            <div class="space-y-3">
+              <div class="bg-blue-50 dark:bg-blue-900 p-3 rounded-md">
+                <p class="text-sm"><strong>Product:</strong> ${creditResult.summary.product_name}</p>
+                <p class="text-sm"><strong>Credit Amount per Customer:</strong> ₹${creditResult.summary.credit_amount.toFixed(2)}</p>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                  <p class="text-lg font-bold">${creditResult.summary.total}</p>
+                </div>
+                <div class="bg-green-100 dark:bg-green-900 p-2 rounded">
+                  <p class="text-xs text-green-700 dark:text-green-300">Succeeded</p>
+                  <p class="text-lg font-bold text-green-700 dark:text-green-300">${creditResult.summary.succeeded}</p>
+                </div>
+                <div class="bg-red-100 dark:bg-red-900 p-2 rounded">
+                  <p class="text-xs text-red-700 dark:text-red-300">Failed</p>
+                  <p class="text-lg font-bold text-red-700 dark:text-red-300">${creditResult.summary.failed}</p>
+                </div>
+              </div>
+              ${creditResult.results && creditResult.results.filter(r => !r.success).length > 0 ? `
+                <div class="mt-4">
+                  <p class="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Failed Customers:</p>
+                  <div class="max-h-32 overflow-y-auto space-y-1">
+                    ${creditResult.results.filter(r => !r.success).map(r => `
+                      <div class="text-xs bg-red-50 dark:bg-red-900 p-2 rounded">
+                        <strong>${r.customer_name}</strong> (ID: ${r.customer_id}): ${r.error || r.message}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          ` : '';
+        
+        const step2Content = currentStep === 2 ? `
+            <div class="text-center py-8">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Placing orders for ${batchCustomers.length} customers...</p>
+            </div>
+          ` : orderResult ? `
+            <div class="space-y-3">
+              <div class="bg-blue-50 dark:bg-blue-900 p-3 rounded-md">
+                <p class="text-sm"><strong>Product:</strong> ${orderResult.summary.product_name}</p>
+                <p class="text-sm"><strong>Order Date:</strong> ${normalizedDateStr}</p>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                  <p class="text-lg font-bold">${orderResult.summary.total}</p>
+                </div>
+                <div class="bg-green-100 dark:bg-green-900 p-2 rounded">
+                  <p class="text-xs text-green-700 dark:text-green-300">Succeeded</p>
+                  <p class="text-lg font-bold text-green-700 dark:text-green-300">${orderResult.summary.succeeded}</p>
+                </div>
+                <div class="bg-red-100 dark:bg-red-900 p-2 rounded">
+                  <p class="text-xs text-red-700 dark:text-red-300">Failed</p>
+                  <p class="text-lg font-bold text-red-700 dark:text-red-300">${orderResult.summary.failed}</p>
+                </div>
+              </div>
+              ${orderResult.results && orderResult.results.filter(r => !r.success).length > 0 ? `
+                <div class="mt-4">
+                  <p class="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Failed Customers:</p>
+                  <div class="max-h-32 overflow-y-auto space-y-1">
+                    ${orderResult.results.filter(r => !r.success).map(r => `
+                      <div class="text-xs bg-red-50 dark:bg-red-900 p-2 rounded">
+                        <strong>${r.customer_name}</strong> (ID: ${r.customer_id}): ${r.error || r.message}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              ${creditResult && orderResult ? `
+                <div class="bg-green-50 dark:bg-green-900 p-3 rounded-md mt-4">
+                  <p class="text-sm text-green-800 dark:text-green-200">
+                    ✅ Process completed! ${creditResult.summary.succeeded} credit${creditResult.summary.succeeded !== 1 ? 's' : ''} added and ${orderResult.summary.succeeded} order${orderResult.summary.succeeded !== 1 ? 's' : ''} placed.
+                  </p>
+                </div>
+              ` : ''}
+            </div>
+          ` : '';
+        
+        modal.innerHTML = `
+            <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+              <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add Sample to Batch</h3>
+                
+                <!-- Progress Steps -->
+                <div class="flex items-center justify-center mb-6">
+                    ${steps.map((step, idx) => `
+                      <div class="flex items-center">
+                        <div class="flex flex-col items-center">
+                          <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all ${
+                            step.status === 'completed' ? 'bg-green-500 border-green-500 text-white shadow-md' :
+                            step.status === 'active' ? 'bg-blue-600 border-blue-600 text-white shadow-lg ring-2 ring-blue-200 dark:ring-blue-800' :
+                            'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400'
+                          }">
+                            ${step.status === 'completed' ? '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>' : step.number}
+                          </div>
+                          <p class="text-xs mt-2 font-medium text-center min-w-[80px] ${
+                            step.status === 'active' ? 'text-blue-600 dark:text-blue-400' :
+                            step.status === 'completed' ? 'text-green-600 dark:text-green-400' :
+                            'text-gray-500 dark:text-gray-400'
+                          }">${step.name}</p>
+                        </div>
+                        ${idx < steps.length - 1 ? `
+                          <div class="w-16 h-1 mx-4 rounded-full transition-all ${
+                            step.status === 'completed' ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
+                          }"></div>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                </div>
+              </div>
+              
+              <div class="p-6 overflow-y-auto flex-1">
+                ${currentStep === -1 ? `
+                  <!-- Step 1 Confirmation -->
+                  <div class="space-y-4">
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 1: Add Credit</h4>
+                    <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-md">
+                      <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                        Add credit to <strong>${batchCustomers.length} customer${batchCustomers.length !== 1 ? 's' : ''}</strong> for sampling date <strong>${normalizedDateStr}</strong>?
+                      </p>
+                      <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                          <span class="text-gray-600 dark:text-gray-400">💰 Credit per customer:</span>
+                          <span class="font-medium text-gray-900 dark:text-white">${creditAmountDisplay}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600 dark:text-gray-400">💵 Total credit:</span>
+                          <span class="font-medium text-gray-900 dark:text-white">${totalCredit}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600 dark:text-gray-400">📦 Product:</span>
+                          <span class="font-medium text-gray-900 dark:text-white">${productName}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ` : currentStep === 0 ? `
+                  <!-- Step 1 In Progress -->
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 1: Add Credit</h4>
+                    ${step1Content}
+                  </div>
+                ` : currentStep === 1 ? `
+                  <!-- Step 1 Summary + Step 2 Confirmation -->
+                  <div class="space-y-4">
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 1: Add Credit - Summary</h4>
+                      ${step1Content}
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 2: Place Orders</h4>
+                      <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-md">
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                          Place orders for <strong>${batchCustomers.length} customer${batchCustomers.length !== 1 ? 's' : ''}</strong> for sampling date <strong>${normalizedDateStr}</strong>?
+                        </p>
+                        <div class="space-y-2 text-sm">
+                          <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">📦 Product:</span>
+                            <span class="font-medium text-gray-900 dark:text-white">${productName}</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">📅 Order Date:</span>
+                            <span class="font-medium text-gray-900 dark:text-white">${normalizedDateStr}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ` : currentStep === 2 ? `
+                  <!-- Step 2 In Progress -->
+                  <div class="space-y-4">
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 1: Add Credit - Summary</h4>
+                      ${step1Content}
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 2: Place Orders</h4>
+                      ${step2Content}
+                    </div>
+                  </div>
+                ` : `
+                  <!-- Final Summary -->
+                  <div class="space-y-4">
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 1: Add Credit - Summary</h4>
+                      ${step1Content}
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Step 2: Place Orders - Summary</h4>
+                      ${step2Content}
+                    </div>
+                  </div>
+                `}
+              </div>
+              
+              <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+                ${currentStep === -1 ? `
+                  <button id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600">
+                    Cancel
+                  </button>
+                  <button id="confirmStep1Btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                    Add Credits
+                  </button>
+                ` : currentStep === 0 ? `
+                  <button id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600" disabled>
+                    Processing...
+                  </button>
+                ` : currentStep === 1 ? `
+                  <button id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600">
+                    Cancel
+                  </button>
+                  <button id="confirmStep2Btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                    Place Orders
+                  </button>
+                ` : currentStep === 2 ? `
+                  <button id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600" disabled>
+                    Processing...
+                  </button>
+                ` : `
+                  <button id="closeBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                    Close
+                  </button>
+                `}
+              </div>
+            </div>
+          `;
+        
+        // Re-attach event listeners
+        const cancelBtn = modal.querySelector('#cancelBtn');
+        const closeBtn = modal.querySelector('#closeBtn');
+        const confirmStep1Btn = modal.querySelector('#confirmStep1Btn');
+        const confirmStep2Btn = modal.querySelector('#confirmStep2Btn');
+        
+        if (cancelBtn && !cancelBtn.disabled) {
+          cancelBtn.onclick = () => {
+            document.body.removeChild(modal);
+            if (resolvePromise) resolvePromise({ cancelled: true });
+          };
+        }
+        
+        if (confirmStep1Btn) {
+          confirmStep1Btn.onclick = () => {
+            if (confirmStep1Callback) {
+              confirmStep1Callback();
+            }
+          };
+        }
+        
+        if (confirmStep2Btn) {
+          confirmStep2Btn.onclick = () => {
+            if (confirmStep2Callback) {
+              confirmStep2Callback();
+            }
+          };
+        }
+        
+        if (closeBtn) {
+          closeBtn.onclick = () => {
+            document.body.removeChild(modal);
+            if (resolvePromise) resolvePromise({ cancelled: false, creditResult, orderResult });
+          };
+        }
+        
+        modal.onclick = (e) => {
+          if (e.target === modal && currentStep >= 3) {
+            document.body.removeChild(modal);
+            if (resolvePromise) resolvePromise({ cancelled: false, creditResult, orderResult });
+          }
+        };
+      };
+      
+      // Initial render
+      updateModal();
+      document.body.appendChild(modal);
+      
+      // Expose update functions
+      modal.updateStep = (step, result) => {
+        currentStep = step;
+        if (step === 1) creditResult = result;
+        if (step === 3) orderResult = result;
+        updateModal();
+      };
+      
+      modal.setStep = (step) => {
+        currentStep = step;
+        updateModal();
+      };
+      
+      // Execute Step 1: Add Credit
+      const executeStep1 = async () => {
+        // Move to step 1 in progress
+        modal.setStep(0);
+        
+        try {
+          const creditResponse = await fetch(`/marketing/api/sampling/campaigns/${campaignId}/add-credit`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              sampling_date: normalizedDateStr,
+              test_mode: false,
+              dry_run: false  // Call actual API
+            })
+          });
+
+          const result = await creditResponse.json();
+
+          if (!result.success) {
+            showErrorToast('Failed to add credit: ' + (result.error || 'Unknown error'));
+            // Reset to confirmation
+            modal.setStep(-1);
+            return;
+          }
+
+          // Update modal with Step 1 results and show Step 2 confirmation
+          modal.updateStep(1, result);
+          
+        } catch (error) {
+          console.error("Error in step 1:", error);
+          showErrorToast('Failed to add credit');
+          // Reset to confirmation
+          modal.setStep(-1);
+        }
+      };
+      
+      // Execute Step 2: Place Orders
+      const executeStep2 = async () => {
+        // Move to step 2 in progress
+        modal.setStep(2);
+        
+        try {
+          const orderResponse = await fetch(`/marketing/api/sampling/campaigns/${campaignId}/place-order`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              sampling_date: normalizedDateStr,
+              test_mode: false,
+              dry_run: false  // Call actual API
+            })
+          });
+
+          const result = await orderResponse.json();
+
+          if (!result.success) {
+            showErrorToast('Failed to place orders: ' + (result.error || 'Unknown error'));
+            // Keep modal open to show Step 1 results and Step 2 confirmation
+            modal.setStep(1);
+            return;
+          }
+
+          // Update modal with Step 2 results and show final summary
+          modal.updateStep(3, result);
+          
+          // Show success toast
+          const creditSummary = creditResult.summary;
+          const orderSummary = result.summary;
+          if (creditSummary.succeeded > 0 || orderSummary.succeeded > 0) {
+            showSuccessToast(`Process completed! ${creditSummary.succeeded} credit${creditSummary.succeeded !== 1 ? 's' : ''} added, ${orderSummary.succeeded} order${orderSummary.succeeded !== 1 ? 's' : ''} placed.`);
+            // Reload campaign details to refresh data
+            setTimeout(() => {
+              loadCampaignDetails();
+            }, 2000);
+          }
+          
+        } catch (error) {
+          console.error("Error in step 2:", error);
+          showErrorToast('Failed to place orders');
+          // Keep modal open to show Step 1 results and Step 2 confirmation
+          modal.setStep(1);
+        }
+      };
+      
+      // Store the callbacks so Confirm buttons can call them
+      confirmStep1Callback = executeStep1;
+      confirmStep2Callback = executeStep2;
+      
+      // Return modal and promise
+      return { modal, promise };
+    }
+
+    // Results modal helper (with Continue button)
+    function showResultsDialog(title, htmlContent, continueText = "Continue") {
+      return new Promise((resolve) => {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center";
+        modal.innerHTML = `
+          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div class="p-6">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">${title}</h3>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mb-6">${htmlContent}</div>
+              <div class="flex justify-end space-x-3">
+                <button id="resultsClose" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600">
+                  Close
+                </button>
+                <button id="resultsContinue" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                  ${continueText}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.querySelector("#resultsContinue").onclick = () => {
+          document.body.removeChild(modal);
+          resolve(true);
+        };
+        
+        modal.querySelector("#resultsClose").onclick = () => {
+          document.body.removeChild(modal);
+          resolve(false);
+        };
+        
+        modal.onclick = (e) => {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+            resolve(false);
+          }
+        };
+      });
+    }
+
+    // Results modal helper (close only)
+    function showResultsModal(title, htmlContent) {
+      const modal = document.createElement("div");
+      modal.className = "fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center";
+      modal.innerHTML = `
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+          <div class="p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">${title}</h3>
+            <div class="text-sm text-gray-700 dark:text-gray-300 mb-6">${htmlContent}</div>
+            <div class="flex justify-end">
+              <button id="resultsClose" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      modal.querySelector("#resultsClose").onclick = () => {
+        document.body.removeChild(modal);
+      };
+      
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      };
+    }
+  </script>
+</body>
+</html>
+

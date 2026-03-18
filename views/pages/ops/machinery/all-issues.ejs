@@ -1,0 +1,550 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Sub Navigation -->
+  <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Issues' }) %>
+  
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Machine Details Header (only when filtering by machine_id) -->
+      <% if (selectedMachine) { %>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+        <div class="px-6 py-6">
+          <div class="flex items-start space-x-6">
+            <!-- Machine Image -->
+            <div class="flex-shrink-0">
+              <% if (selectedMachine.images) { %>
+                <% try { %>
+                  <% 
+                    let images;
+                    if (typeof selectedMachine.images === 'string') {
+                      images = JSON.parse(selectedMachine.images);
+                    } else {
+                      images = selectedMachine.images;
+                    }
+                  %>
+                  <% if (images && images.length > 0 && images[0].path) { %>
+                    <div class="w-20 h-20 rounded-lg overflow-hidden">
+                      <img src="<%= images[0].path %>" alt="<%= selectedMachine.name %>" class="w-full h-full object-cover">
+                    </div>
+                  <% } else { %>
+                    <div class="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                      <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                      </svg>
+                    </div>
+                  <% } %>
+                <% } catch (e) { %>
+                  <div class="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                    </svg>
+                  </div>
+                <% } %>
+              <% } else { %>
+                <div class="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                  </svg>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Machine Information -->
+            <div class="flex-1 min-w-0">
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"><%= selectedMachine.name %></h1>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span class="font-medium text-gray-500 dark:text-gray-400">Serial Number:</span>
+                  <p class="text-gray-900 dark:text-gray-100"><%= selectedMachine.serial_number || 'N/A' %></p>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-500 dark:text-gray-400">Location:</span>
+                  <p class="text-gray-900 dark:text-gray-100"><%= selectedMachine.location || 'N/A' %></p>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                    <%= selectedMachine.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                        selectedMachine.status === 'inactive' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                        'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' %>">
+                    <%= selectedMachine.status || 'Unknown' %>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex-shrink-0 flex flex-col space-y-2">
+              <a href="/machinery/machines/<%= selectedMachine.id %>" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                View Machine Details
+              </a>
+              <a href="/machinery" class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
+                Back to Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% } else { %>
+      <!-- Page Header (when not filtering by machine) -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">All Issues</h1>
+            <p class="text-gray-600 dark:text-gray-400">Monitor and manage issues across all machines</p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <a href="/machinery" class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
+              <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Issue Statistics -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-6 h-6 md:w-8 md:h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 md:ml-4">
+              <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Total Issues</p>
+              <p class="text-lg md:text-2xl font-semibold text-gray-900 dark:text-gray-100"><%= issueStats.total_issues || 0 %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-6 h-6 md:w-8 md:h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 md:ml-4">
+              <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Open Issues</p>
+              <p class="text-lg md:text-2xl font-semibold text-gray-900 dark:text-gray-100"><%= issueStats.open_issues || 0 %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-6 h-6 md:w-8 md:h-8 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 md:ml-4">
+              <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">In Progress</p>
+              <p class="text-lg md:text-2xl font-semibold text-gray-900 dark:text-gray-100"><%= issueStats.in_progress_issues || 0 %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-6 h-6 md:w-8 md:h-8 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 md:ml-4">
+              <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Critical Issues</p>
+              <p class="text-lg md:text-2xl font-semibold text-gray-900 dark:text-gray-100"><%= issueStats.critical_issues || 0 %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-6 h-6 md:w-8 md:h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 md:ml-4">
+              <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Resolved Issues</p>
+              <p class="text-lg md:text-2xl font-semibold text-gray-900 dark:text-gray-100"><%= issueStats.resolved_issues || 0 %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6 mb-8">
+        <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Filter Issues</h3>
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-<%= selectedMachine ? '3' : '4' %> gap-4">
+          <% if (selectedMachine) { %>
+          <input type="hidden" name="machine_id" value="<%= selectedMachine.id %>">
+          <% } %>
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+            <select id="status" name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Statuses</option>
+              <option value="open" <%= (typeof status !== 'undefined' && status === 'open') ? 'selected' : '' %>>Open</option>
+              <option value="in_progress" <%= (typeof status !== 'undefined' && status === 'in_progress') ? 'selected' : '' %>>In Progress</option>
+              <option value="resolved" <%= (typeof status !== 'undefined' && status === 'resolved') ? 'selected' : '' %>>Resolved</option>
+              <option value="closed" <%= (typeof status !== 'undefined' && status === 'closed') ? 'selected' : '' %>>Closed</option>
+              <option value="cancelled" <%= (typeof status !== 'undefined' && status === 'cancelled') ? 'selected' : '' %>>Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+            <select id="priority" name="priority" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Priorities</option>
+              <option value="low" <%= (typeof priority !== 'undefined' && priority === 'low') ? 'selected' : '' %>>Low</option>
+              <option value="medium" <%= (typeof priority !== 'undefined' && priority === 'medium') ? 'selected' : '' %>>Medium</option>
+              <option value="high" <%= (typeof priority !== 'undefined' && priority === 'high') ? 'selected' : '' %>>High</option>
+              <option value="critical" <%= (typeof priority !== 'undefined' && priority === 'critical') ? 'selected' : '' %>>Critical</option>
+            </select>
+          </div>
+          <% if (!selectedMachine) { %>
+          <div>
+            <label for="machine_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Machine</label>
+            <select id="machine_id" name="machine_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Machines</option>
+              <% if (machines && machines.length > 0) { %>
+                <% machines.forEach(machine => { %>
+                  <option value="<%= machine.id %>" <%= (typeof machine_id !== 'undefined' && machine_id == machine.id) ? 'selected' : '' %>><%= machine.name %></option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <% } %>
+          <div class="flex items-end">
+            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              Apply Filters
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Issues Table -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-700 rounded-lg flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100"><%= title %></h2>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <% if (issues && issues.length > 0) { %>
+            <!-- Desktop Table -->
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Issue & Machine</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Priority</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Assigned To</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <% issues.forEach(issue => { %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-start">
+                      <!-- Machine Image -->
+                      <div class="flex-shrink-0 h-16 w-16 mr-4">
+                        <div class="h-16 w-16 bg-gradient-to-br from-gray-50 dark:from-gray-700 to-gray-100 dark:to-gray-600 relative rounded-lg overflow-hidden">
+                          <% 
+                            let hasImage = false;
+                            let imagePath = null;
+                            
+                            if (issue.machine_images) {
+                              try {
+                                const images = JSON.parse(issue.machine_images);
+                                if (images && images.length > 0 && images[0].path) {
+                                  hasImage = true;
+                                  imagePath = images[0].path;
+                                }
+                              } catch (e) {
+                                // JSON parse error, no image
+                              }
+                            }
+                          %>
+                          
+                          <% if (hasImage) { %>
+                            <img src="<%= imagePath %>" 
+                                 alt="<%= issue.machine_name %>" 
+                                 class="w-full h-full object-contain bg-white dark:bg-gray-800 p-1 rounded-lg" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                            <div class="h-full flex items-center justify-center p-1 rounded-lg" style="display: none;">
+                              <div class="text-center">
+                                <div class="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto">
+                                  <svg class="w-3 h-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          <% } else { %>
+                            <div class="h-full flex items-center justify-center p-1 rounded-lg">
+                              <div class="text-center">
+                                <div class="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto">
+                                  <svg class="w-3 h-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          <% } %>
+                        </div>
+                      </div>
+                      <!-- Issue and Machine Information -->
+                      <div class="flex flex-col min-w-0 flex-1">
+                        <!-- Issue Title -->
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1"><%= issue.title %></div>
+                        <!-- Issue Description -->
+                        <div class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs mb-2"><%= issue.description %></div>
+                        <!-- Machine Information -->
+                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                          </svg>
+                          <a href="/machinery/machines/<%= issue.machine_id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                            <%= issue.machine_name %>
+                          </a>
+                          <% if (issue.machine_model) { %>
+                            <span class="ml-1">(<%= issue.machine_model %>)</span>
+                          <% } %>
+                        </div>
+                        <!-- Issue Type -->
+                        <div class="flex items-center text-xs">
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                          </svg>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize
+                            <%= issue.issue_type === 'mechanical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                                issue.issue_type === 'electrical' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                                issue.issue_type === 'hydraulic' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                                issue.issue_type === 'pneumatic' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 
+                                issue.issue_type === 'software' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                                issue.issue_type === 'safety' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : 
+                                issue.issue_type === 'maintenance' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' : 
+                                issue.issue_type === 'performance' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' : 
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' %>">
+                            <%= issue.issue_type %>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                      <%= issue.priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                          issue.priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : 
+                          issue.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' %>">
+                      <%= issue.priority %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                      <%= issue.status === 'open' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                          issue.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                          issue.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                          issue.status === 'closed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' %>">
+                      <%= issue.status %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <%= issue.assigned_to || 'Unassigned' %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <%= new Date(issue.created_at).toLocaleDateString() %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button onclick="viewIssueDetails(<%= issue.id %>)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+
+            <!-- Mobile Cards -->
+            <div class="block md:hidden p-4 space-y-4">
+              <% issues.forEach(issue => { %>
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex items-start flex-1 min-w-0">
+                    <!-- Machine Image -->
+                    <div class="flex-shrink-0 h-12 w-12 mr-3">
+                      <div class="h-12 w-12 bg-gradient-to-br from-gray-50 dark:from-gray-700 to-gray-100 dark:to-gray-600 relative rounded-lg overflow-hidden">
+                        <% 
+                          let hasImage = false;
+                          let imagePath = null;
+                          
+                          if (issue.machine_images) {
+                            try {
+                              const images = JSON.parse(issue.machine_images);
+                              if (images && images.length > 0 && images[0].path) {
+                                hasImage = true;
+                                imagePath = images[0].path;
+                              }
+                            } catch (e) {
+                              // JSON parse error, no image
+                            }
+                          }
+                        %>
+                        
+                        <% if (hasImage) { %>
+                          <img src="<%= imagePath %>" 
+                               alt="<%= issue.machine_name %>" 
+                               class="w-full h-full object-contain bg-white dark:bg-gray-800 p-0.5 rounded-lg" 
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                          <div class="h-full flex items-center justify-center p-0.5 rounded-lg" style="display: none;">
+                            <div class="text-center">
+                              <div class="w-4 h-4 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto">
+                                <svg class="w-2 h-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        <% } else { %>
+                          <div class="h-full flex items-center justify-center p-0.5 rounded-lg">
+                            <div class="text-center">
+                              <div class="w-4 h-4 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto">
+                                <svg class="w-2 h-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        <% } %>
+                      </div>
+                    </div>
+                    <!-- Issue and Machine Information -->
+                    <div class="flex flex-col min-w-0 flex-1">
+                      <!-- Issue Title -->
+                      <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1"><%= issue.title %></h3>
+                      <!-- Machine Information -->
+                      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                        <a href="/machinery/machines/<%= issue.machine_id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                          <%= issue.machine_name %>
+                        </a>
+                        <% if (issue.machine_model) { %>
+                          <span class="ml-1">(<%= issue.machine_model %>)</span>
+                        <% } %>
+                      </div>
+                      <!-- Issue Type -->
+                      <div class="flex items-center text-xs mb-2">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize
+                          <%= issue.issue_type === 'mechanical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                              issue.issue_type === 'electrical' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                              issue.issue_type === 'hydraulic' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                              issue.issue_type === 'pneumatic' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 
+                              issue.issue_type === 'software' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                              issue.issue_type === 'safety' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : 
+                              issue.issue_type === 'maintenance' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' : 
+                              issue.issue_type === 'performance' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' : 
+                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' %>">
+                          <%= issue.issue_type %>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex space-x-2 ml-3">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                      <%= issue.priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                          issue.priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : 
+                          issue.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' %>">
+                      <%= issue.priority %>
+                    </span>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                      <%= issue.status === 'open' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                          issue.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                          issue.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                          issue.status === 'closed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' :
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' %>">
+                      <%= issue.status %>
+                    </span>
+                  </div>
+                </div>
+                
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2"><%= issue.description %></p>
+                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span><%= issue.assigned_to || 'Unassigned' %></span>
+                  <span><%= new Date(issue.created_at).toLocaleDateString() %></span>
+                </div>
+                <div class="mt-3">
+                  <button onclick="viewIssueDetails(<%= issue.id %>)" class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors">
+                    View Details
+                  </button>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-12">
+              <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No issues found</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No issues match your current filters.</p>
+              <div class="mt-6">
+                <a href="/machinery/machines" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                  View Machines
+                </a>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add spacing after the page content -->
+  <div class="mb-8"></div>
+
+  <script>
+    function viewIssueDetails(issueId) {
+      // Redirect to issue details page
+      window.location.href = `/machinery/issues/${issueId}`;
+    }
+  </script>
+
+  <%- include('../../../partials/_footer') %>
+</body>
+</html>

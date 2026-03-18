@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Firecracker Rocket Icon</title>
+  <defs>
+    <linearGradient id="g-rocket" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#8338EC"/>
+      <stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient>
+    <style>
+      .s{stroke:#1F2937;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+
+  <!-- rocket -->
+  <path class="s" fill="url(#g-rocket)" d="M180 332l132-132 48 48-132 132-69 17 21-65z"/>
+  <path class="s" d="M312 200l40-40 40 40-40 40z" fill="#FFD166"/>
+  <path class="s" d="M180 332l-32 32" fill="none"/>
+  <path class="s" d="M208 360l-32 32" fill="none"/>
+
+  <!-- fuse + spark -->
+  <path class="s" d="M360 240c28 28 58 38 80 32" fill="none"/>
+  <g fill="#FFD166" stroke="#1F2937" stroke-width="6" stroke-linecap="round">
+    <circle cx="444" cy="268" r="10"/>
+    <path d="M444 244v-18M444 292v18M468 268h18M402 268h-18M460 252l14-14M428 252l-14-14M460 284l14 14M428 284l-14 14" fill="none"/>
+  </g>
+</svg>

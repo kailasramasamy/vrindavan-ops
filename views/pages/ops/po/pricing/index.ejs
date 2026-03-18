@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %>
+<link rel="stylesheet" href="/assets/css/po-dark-mode.css">
+
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'Pricing' }) %>
+
+    <div class="min-h-screen pt-16">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="py-6">
+            <div class="md:flex md:items-center md:justify-between">
+              <div class="flex-1 min-w-0">
+                <h2 class="mt-2 text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">Variant Pricing Management</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400">Calculate and manage MRP for product variants</p>
+              </div>
+              <div class="mt-4 flex md:mt-0 md:ml-4">
+                <button onclick="openExpenseSettingsModal()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="settings" class="h-4 w-4 mr-2"></i>
+                  Expense Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                <i data-lucide="calculator" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+              </div>
+            </div>
+            <div class="ml-6 w-0 flex-1" style="margin-left: 1.75rem !important;">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Calculations</dt>
+                <dd class="text-lg font-medium text-gray-900 dark:text-white" id="totalCalculations">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                <i data-lucide="package" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+            </div>
+            <div class="ml-6 w-0 flex-1" style="margin-left: 1.75rem !important;">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Variants</dt>
+                <dd class="text-lg font-medium text-gray-900 dark:text-white" id="activeVariants">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+                <i data-lucide="trending-up" class="h-5 w-5 text-purple-600 dark:text-purple-400"></i>
+              </div>
+            </div>
+            <div class="ml-6 w-0 flex-1" style="margin-left: 1.75rem !important;">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Profit Margin</dt>
+                <dd class="text-lg font-medium text-gray-900 dark:text-white" id="avgProfitMargin">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="h-5 w-5 text-orange-600 dark:text-orange-400"></i>
+              </div>
+            </div>
+            <div class="ml-6 w-0 flex-1" style="margin-left: 1.75rem !important;">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg MRP</dt>
+                <dd class="text-lg font-medium text-gray-900 dark:text-white" id="avgMRP">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="PO Number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">PO Number</label>
+          <div class="relative">
+            <input type="text" id="poFilter" placeholder="Search PO Number..." class="block w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" autocomplete="off">
+            <div id="poDropdown" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-60 overflow-auto">
+              <div class="py-1">
+                <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-value="">All POs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label for="Product Item" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Item</label>
+          <div class="relative">
+            <input type="text" id="itemFilter" placeholder="Search Product Item..." class="block w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" autocomplete="off">
+            <div id="itemDropdown" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-60 overflow-auto">
+              <div class="py-1">
+                <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-value="">All Items</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label for="Variant" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Variant</label>
+          <select id="variantFilter" onchange="applyFilters()" class="block w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <option value="">All Variants</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Data Table -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+        <!-- Mobile Header -->
+        <div class="block md:hidden">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+              <i data-lucide="calculator" class="h-4 w-4 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modalTitle">Pricing Calculations</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">MRP and profit calculations</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Desktop Header -->
+        <div class="hidden md:block">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Pricing Calculations</h3>
+        </div>
+      </div>
+      
+      <!-- Desktop Table View -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">PO / Item / Variant</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sourcing Cost</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">GST</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Expenses</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Profit Margin</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Final MRP</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Calculated</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pricingTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+            <tr>
+              <td colspan="8" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                <div class="flex flex-col items-center">
+                  <i data-lucide="loader" class="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin mb-2"></i>
+                  <span>Loading pricing data...</span>
+                </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Mobile Card View -->
+      <div class="block md:hidden">
+        <div id="pricingMobileBody" class="p-4 space-y-3">
+          <div class="text-center py-8">
+            <i data-lucide="loader" class="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin mx-auto mb-2"></i>
+            <span class="text-gray-600 dark:text-gray-400">Loading pricing data...</span>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Expense Settings Modal -->
+  <div id="expenseSettingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+    <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-gray-600 w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mr-3">
+              <i data-lucide="settings" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modalTitle">Expense Settings</h3>
+          </div>
+          <button onclick="closeExpenseSettingsModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="Packaging Cost (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Packaging Cost (₹)</label>
+            <input type="number" id="packagingCost" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+          <div>
+            <label for="Delivery Cost (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Delivery Cost (₹)</label>
+            <input type="number" id="deliveryCost" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+          <div>
+            <label for="Software Cost (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Software Cost (₹)</label>
+            <input type="number" id="softwareCost" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="closeExpenseSettingsModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-gray-500 transition-colors">
+            Cancel
+          </button>
+          <button onclick="saveExpenseSettings()" class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 transition-colors">
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Edit Variant Expenses Modal -->
+  <div id="editExpensesModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+    <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-gray-600 w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mr-3">
+              <i data-lucide="settings" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modalTitle">Edit Variant Expenses</h3>
+          </div>
+          <button onclick="closeEditExpensesModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Variant: <span id="editExpensesVariantName" class="font-medium text-gray-900 dark:text-white"></span></p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Item: <span id="editExpensesItemName" class="font-medium text-gray-900 dark:text-white"></span></p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shipping Cost (₹)</label>
+            <div class="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 sm:text-sm" id="editShippingCost">
+              ₹0.00
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Derived from PO shipping cost (read-only)</p>
+          </div>
+
+          <div>
+            <label for="Packaging Cost (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Packaging Cost (₹)</label>
+            <input type="number" id="editPackagingCost" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+
+          <div>
+            <label for="Delivery Cost (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Delivery Cost (₹)</label>
+            <input type="number" id="editDeliveryCost" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+
+          <div>
+            <label for="Software Cost (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Software Cost (₹)</label>
+            <input type="number" id="editSoftwareCost" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="closeEditExpensesModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-gray-500 transition-colors">
+            Cancel
+          </button>
+          <button onclick="saveVariantExpenses()" class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 transition-colors">
+            Save Expenses
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profit Margin Modal -->
+  <div id="editProfitMarginModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+    <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-gray-600 w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center mr-3">
+              <i data-lucide="percent" class="h-5 w-5 text-purple-600 dark:text-purple-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modalTitle">Edit Profit Margin</h3>
+          </div>
+          <button onclick="closeEditProfitMarginModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Variant: <span id="editProfitMarginVariantName" class="font-medium text-gray-900 dark:text-white"></span></p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Item: <span id="editProfitMarginItemName" class="font-medium text-gray-900 dark:text-white"></span></p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Current MRP: ₹<span id="editProfitMarginCurrentMRP" class="font-medium text-gray-900 dark:text-white"></span></p>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center space-x-4 mb-3">
+            <label class="flex items-center">
+              <input type="radio" id="useGlobalMargin" name="marginType" value="global" class="mr-2" checked>
+              <span class="text-sm text-gray-700 dark:text-gray-300">Use Global Margin</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" id="useCustomMargin" name="marginType" value="custom" class="mr-2">
+              <span class="text-sm text-gray-700 dark:text-gray-300">Custom Margin</span>
+            </label>
+          </div>
+          
+          <div class="flex items-center space-x-4 mb-3">
+            <label class="flex items-center">
+              <input type="radio" id="adjustMarginMode" name="calculationMode" value="adjust-margin" class="mr-2" checked>
+              <span class="text-sm text-gray-700 dark:text-gray-300">Adjust Profit Margin</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" id="keepMRPMode" name="calculationMode" value="keep-mrp" class="mr-2">
+              <span class="text-sm text-gray-700 dark:text-gray-300">Keep MRP Fixed</span>
+            </label>
+          </div>
+          
+          <div id="globalMarginInfo" class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md mb-3 border border-blue-200 dark:border-blue-700">
+            <p class="text-sm text-blue-800 dark:text-blue-300">Global Margin: <span id="globalMarginValue" class="font-medium">-</span>%</p>
+            <p class="text-sm text-blue-600 dark:text-blue-400">This margin is inherited from the procurement item settings</p>
+          </div>
+          
+          <div id="customMarginInput" class="hidden">
+            <label for="Custom Profit Margin (%)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Custom Profit Margin (%)</label>
+            <input type="number" id="editProfitMarginValue" step="0.01" min="0" max="100" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+          
+          <div id="fixedMRPInput" class="hidden">
+            <label for="Fixed MRP (₹)" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fixed MRP (₹)</label>
+            <input type="number" id="editFixedMRPValue" step="0.01" min="0" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+          <p class="text-sm text-gray-600 dark:text-gray-300">New MRP: ₹<span id="editProfitMarginNewMRP" class="font-medium text-purple-600 dark:text-purple-400">-</span></p>
+          <p class="text-sm text-gray-600 dark:text-gray-300 hidden" id="calculatedMarginLabel">Calculated Profit Margin: <span id="editCalculatedMargin" class="font-medium text-green-600 dark:text-green-400">-</span>%</p>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="closeEditProfitMarginModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-gray-500 transition-colors">
+            Cancel
+          </button>
+          <button onclick="saveVariantProfitMargin()" class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-purple-500 transition-colors">
+            Save Profit Margin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Breakdown Modal -->
+  <div id="expenseBreakdownModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+    <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-gray-600 w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mr-3">
+              <i data-lucide="receipt" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modalTitle">Expense Breakdown</h3>
+          </div>
+          <button onclick="closeExpenseBreakdownModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Variant: <span id="expenseBreakdownVariantName" class="font-medium text-gray-900 dark:text-white"></span></p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Item: <span id="expenseBreakdownItemName" class="font-medium text-gray-900 dark:text-white"></span></p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-300">Shipping Cost</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white" id="expenseBreakdownShipping">₹0.00</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-300">Packaging Cost</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white" id="expenseBreakdownPackaging">₹0.00</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-300">Delivery Cost</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white" id="expenseBreakdownDelivery">₹0.00</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-300">Software Cost</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white" id="expenseBreakdownSoftware">₹0.00</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-300">Payment Gateway Charges</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white" id="expenseBreakdownGateway">₹0.00 (2.0%)</span>
+          </div>
+          <div class="flex justify-between items-center py-3 bg-gray-50 dark:bg-gray-700 rounded-md px-3">
+            <span class="text-sm font-semibold text-gray-900 dark:text-white">Total Expenses (Including Payment Gateway)</span>
+            <span class="text-sm font-bold text-blue-600 dark:text-blue-400" id="expenseBreakdownTotal">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="closeExpenseBreakdownModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-gray-500 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../../partials/_toast') %>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    let pricingData = [];
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      loadPricingData();
+      loadExpenseSettings();
+      
+      // Initialize icons
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    });
+
+    // Load pricing data
+    async function loadPricingData() {
+      try {
+        const response = await fetch('/po/api/v1/pricing-data');
+        
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+
+        if (result.success) {
+          pricingData = result.data || [];
+          renderPricingTable();
+          updateStats();
+          initializePODropdown();
+          initializeItemDropdown();
+          loadVariants();
+        } else {
+          console.error('Error loading pricing data:', result.error);
+          if (typeof window.showErrorToast !== 'undefined') {
+            window.showErrorToast('Error loading pricing data: ' + (result.error || 'Unknown error'));
+          }
+          // Still render empty state
+          pricingData = [];
+          renderPricingTable();
+        }
+      } catch (error) {
+        console.error('Error loading pricing data:', error);
+        if (typeof window.showErrorToast !== 'undefined') {
+          window.showErrorToast('Error loading pricing data. Please check the console for details.');
+        }
+        // Render empty state on error
+        pricingData = [];
+        renderPricingTable();
+      }
+    }
+
+    // Render pricing table
+    function renderPricingTable() {
+      const tbody = document.getElementById('pricingTableBody');
+      
+      if (!tbody) {
+        console.error('tbody element not found');
+        return;
+      }
+      
+      if (pricingData.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+              <div class="flex flex-col items-center space-y-3">
+                <i data-lucide="calculator" class="h-12 w-12 text-gray-400 dark:text-gray-500"></i>
+                <div>
+                  <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">No pricing data found</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">To see pricing data here, you need to:</p>
+                  <ol class="text-sm text-gray-600 dark:text-gray-400 text-left space-y-2 max-w-md">
+                    <li>1. Create a Product PO and mark it as <span class="font-medium">Received</span></li>
+                    <li>2. Go to the PO detail page and click <span class="font-medium">"Calculate MRP"</span> button</li>
+                    <li>3. The calculated pricing will appear here</li>
+                  </ol>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                    <strong>Note:</strong> Variants are added in the <a href="/po/products" class="text-blue-600 dark:text-blue-400 hover:underline">Products Management</a> page, not here.
+                  </p>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+        
+        // Update mobile empty state
+        const mobileBody = document.getElementById('pricingMobileBody');
+        if (mobileBody) {
+          mobileBody.innerHTML = `
+            <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+              <div class="flex flex-col items-center space-y-3">
+                <i data-lucide="calculator" class="h-12 w-12 text-gray-400 dark:text-gray-500"></i>
+                <div>
+                  <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">No pricing data found</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">To see pricing data here, you need to:</p>
+                  <ol class="text-sm text-gray-600 dark:text-gray-400 text-left space-y-2 px-4">
+                    <li>1. Create a Product PO and mark it as <span class="font-medium">Received</span></li>
+                    <li>2. Go to the PO detail page and click <span class="font-medium">"Calculate MRP"</span> button</li>
+                    <li>3. The calculated pricing will appear here</li>
+                  </ol>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 px-4">
+                    <strong>Note:</strong> Variants are added in the <a href="/po/products" class="text-blue-600 dark:text-blue-400 hover:underline">Products Management</a> page, not here.
+                  </p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      // Create mobile cards
+      const mobileCards = pricingData.map(item => `
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex-1">
+              <h3 class="font-semibold text-gray-900 dark:text-white">${item.po_number}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">${item.item_name}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">${item.variant_name} (${parseFloat(item.size || item.unit_size).toFixed(3)} ${item.base_unit})</p>
+              ${item.inherited_settings ? '<div class="text-xs text-blue-600 dark:text-blue-400 mt-1">📋 Inherited settings</div>' : ''}
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-gray-900 dark:text-white">₹${parseFloat(item.final_mrp).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Final MRP</div>
+            </div>
+          </div>
+          
+          <!-- Cost Breakdown -->
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Sourcing Cost</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(item.sourcing_cost).toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">GST</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(item.gst_amount || 0).toFixed(2)}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">${parseFloat(item.gst_percentage_calc || item.gst_percentage || 0).toFixed(1)}%</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Expenses</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(item.total_expenses || 0).toFixed(2)}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Profit Margin</p>
+              <div class="flex items-center space-x-1">
+                <div class="flex flex-col items-start">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.use_global_margin ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400'}">
+                    ${item.actual_profit_margin_percentage || item.profit_margin_percentage}%
+                  </span>
+                  <span class="text-xs text-gray-600 dark:text-gray-300 mt-1">₹${(parseFloat(item.final_mrp || 0) * parseFloat(item.actual_profit_margin_percentage || item.profit_margin_percentage || 0) / 100).toFixed(2)}</span>
+                </div>
+                ${item.use_global_margin ? 
+                  '<span class="text-xs text-green-600 dark:text-green-400" title="Using Global Margin">🌐</span>' : 
+                  '<span class="text-xs text-blue-600 dark:text-blue-400" title="Custom Margin">⚙️</span>'
+                }
+              </div>
+            </div>
+          </div>
+          
+          <!-- Date and Actions -->
+          <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              Calculated: ${new Date(item.calculation_date).toLocaleDateString('en-IN')}
+            </div>
+            <div class="flex space-x-2">
+              <button onclick='showExpenseBreakdown(${item.variant_id}, ${item.procurement_item_id}, "${item.variant_name.replace(/"/g, "&quot;")}", "${item.item_name.replace(/"/g, "&quot;")}", ${item.variant_shipping_cost || 0}, ${item.packaging_cost || 0}, ${item.delivery_cost || 0}, ${item.software_cost || 0}, ${item.total_expenses}, ${item.gst_amount || 0}, ${item.gst_percentage_calc || item.gst_percentage || 0}, ${item.payment_gateway_charge || 0})' class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-xs" title="View Expense Breakdown">
+                <i data-lucide="info" class="h-4 w-4"></i>
+              </button>
+              <button onclick='openEditExpensesModal(${item.variant_id}, ${item.procurement_item_id}, "${item.variant_name.replace(/"/g, "&quot;")}", "${item.item_name.replace(/"/g, "&quot;")}", {shipping_cost: ${item.variant_shipping_cost || 0}, packaging_cost: ${item.packaging_cost || 0}, delivery_cost: ${item.delivery_cost || 0}, software_cost: ${item.software_cost || 0}})' class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-xs" title="Edit Expenses">
+                <i data-lucide="settings" class="h-4 w-4"></i>
+              </button>
+              <button onclick='openEditProfitMarginModal(${item.variant_id}, ${item.procurement_item_id}, "${item.variant_name.replace(/"/g, "&quot;")}", "${item.item_name.replace(/"/g, "&quot;")}", ${item.final_mrp}, ${item.profit_margin_percentage}, ${item.use_global_margin})' class="text-purple-600 hover:text-purple-900 text-xs" title="Edit Profit Margin">
+                <i data-lucide="percent" class="h-4 w-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Create desktop table
+      const desktopTable = pricingData.map(item => `
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium text-gray-900 dark:text-white">${item.po_number}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">${item.item_name}</div>
+            <div class="text-sm text-gray-600 dark:text-gray-300">${item.variant_name}</div>
+            <div class="text-xs text-gray-400">(${parseFloat(item.size || item.unit_size).toFixed(3)} ${item.base_unit})</div>
+            ${item.inherited_settings ? '<div class="text-xs text-blue-600 dark:text-blue-400 mt-1">📋 Inherited settings</div>' : ''}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+            ₹${parseFloat(item.sourcing_cost).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+            <div class="text-center">
+              <div class="font-medium">₹${parseFloat(item.gst_amount || 0).toFixed(2)}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">${parseFloat(item.gst_percentage_calc || item.gst_percentage || 0).toFixed(1)}%</div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+            <div class="flex items-center space-x-1">
+                <span class="font-medium">₹${parseFloat(item.total_expenses || 0).toFixed(2)}</span>
+              <button onclick='showExpenseBreakdown(${item.variant_id}, ${item.procurement_item_id}, "${item.variant_name.replace(/"/g, "&quot;")}", "${item.item_name.replace(/"/g, "&quot;")}", ${item.variant_shipping_cost || 0}, ${item.packaging_cost || 0}, ${item.delivery_cost || 0}, ${item.software_cost || 0}, ${item.total_expenses}, ${item.gst_amount || 0}, ${item.gst_percentage_calc || item.gst_percentage || 0}, ${item.payment_gateway_charge || 0})' class="text-gray-400 hover:text-gray-600 transition-colors" title="View Expense Breakdown">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center space-x-2">
+              <div class="relative group">
+                <div class="flex flex-col items-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${item.use_global_margin ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400'} cursor-help">
+                    ${item.actual_profit_margin_percentage || item.profit_margin_percentage}%
+                  </span>
+                  <span class="text-xs text-gray-600 dark:text-gray-300 mt-1">₹${(parseFloat(item.final_mrp || 0) * parseFloat(item.actual_profit_margin_percentage || item.profit_margin_percentage || 0) / 100).toFixed(2)}</span>
+                </div>
+                <!-- Profit Margin Breakdown Tooltip -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div class="p-4">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3">Profit Margin Breakdown</h4>
+                    
+                    <!-- Current Margin (Based on Sourcing Cost) -->
+                    <div class="mb-3">
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-600 dark:text-gray-300">Current Margin (on Sourcing Cost)</span>
+                        <span class="text-sm font-medium text-blue-600 dark:text-blue-400">${item.profit_margin_percentage}%</span>
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        Profit: ₹${((parseFloat(item.sourcing_cost) * parseFloat(item.profit_margin_percentage)) / 100).toFixed(2)}
+                      </div>
+                    </div>
+                    
+                    <!-- Net Profit Margin (After All Expenses) -->
+                    <div class="mb-3">
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-600 dark:text-gray-300">Net Profit Margin (on Final MRP)</span>
+                        <span class="text-sm font-medium text-green-600 dark:text-green-400">${((parseFloat(item.final_mrp) - parseFloat(item.sourcing_cost) - parseFloat(item.total_expenses || 0) - parseFloat(item.gst_amount || 0)) / parseFloat(item.final_mrp) * 100).toFixed(1)}%</span>
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        Net Profit: ₹${(parseFloat(item.final_mrp) - parseFloat(item.sourcing_cost) - parseFloat(item.total_expenses || 0) - parseFloat(item.gst_amount || 0)).toFixed(2)}
+                      </div>
+                    </div>
+                    
+                    <!-- Cost Breakdown -->
+                    <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                      <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        <div class="flex justify-between">
+                          <span class="text-gray-700 dark:text-gray-300">Sourcing Cost:</span>
+                          <span class="text-gray-900 dark:text-white">₹${parseFloat(item.sourcing_cost).toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-700 dark:text-gray-300">GST (${item.gst_percentage_calc || item.gst_percentage || 0}%):</span>
+                          <span class="text-gray-900 dark:text-white">₹${parseFloat(item.gst_amount || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-700 dark:text-gray-300">Expenses:</span>
+                          <span class="text-gray-900 dark:text-white">₹${parseFloat(item.total_expenses || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-700 dark:text-gray-300">Payment Gateway:</span>
+                          <span class="text-gray-900 dark:text-white">₹${parseFloat(item.payment_gateway_charge || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between font-medium border-t border-gray-200 dark:border-gray-600 pt-1">
+                          <span class="text-gray-900 dark:text-white">Final MRP:</span>
+                          <span class="text-gray-900 dark:text-white">₹${parseFloat(item.final_mrp).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Tooltip arrow -->
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-200 dark:border-t-gray-600"></div>
+                </div>
+              </div>
+              ${item.use_global_margin ? 
+                '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-sm font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400" title="Using Global Margin">🌐</span>' : 
+                '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400" title="Custom Margin">⚙️</span>'
+              }
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+            ₹${parseFloat(item.final_mrp).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+            ${new Date(item.calculation_date).toLocaleDateString('en-IN')}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <button onclick='openEditExpensesModal(${item.variant_id}, ${item.procurement_item_id}, "${item.variant_name.replace(/"/g, "&quot;")}", "${item.item_name.replace(/"/g, "&quot;")}", {shipping_cost: ${item.variant_shipping_cost || 0}, packaging_cost: ${item.packaging_cost || 0}, delivery_cost: ${item.delivery_cost || 0}, software_cost: ${item.software_cost || 0}})' class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-2" title="Edit Expenses">
+              <i data-lucide="settings" class="h-4 w-4"></i>
+            </button>
+            <button onclick='openEditProfitMarginModal(${item.variant_id}, ${item.procurement_item_id}, "${item.variant_name.replace(/"/g, "&quot;")}", "${item.item_name.replace(/"/g, "&quot;")}", ${item.final_mrp}, ${item.profit_margin_percentage}, ${item.use_global_margin})' class="text-purple-600 hover:text-purple-900" title="Edit Profit Margin">
+              <i data-lucide="percent" class="h-4 w-4"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Update desktop table
+      tbody.innerHTML = desktopTable;
+      
+      // Update mobile cards
+      const mobileBody = document.getElementById('pricingMobileBody');
+      if (mobileBody) {
+        mobileBody.innerHTML = mobileCards;
+      }
+
+      // Re-initialize icons
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+
+    // Update stats
+    function updateStats() {
+      document.getElementById('totalCalculations').textContent = pricingData.length;
+      document.getElementById('activeVariants').textContent = new Set(pricingData.map(item => item.variant_id)).size;
+      
+      if (pricingData.length > 0) {
+        const avgProfitMargin = pricingData.reduce((sum, item) => sum + parseFloat(item.profit_margin_percentage), 0) / pricingData.length;
+        document.getElementById('avgProfitMargin').textContent = avgProfitMargin.toFixed(1) + '%';
+        
+        const avgMRP = pricingData.reduce((sum, item) => sum + parseFloat(item.final_mrp), 0) / pricingData.length;
+        document.getElementById('avgMRP').textContent = '₹' + avgMRP.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      } else {
+        document.getElementById('avgProfitMargin').textContent = '-';
+        document.getElementById('avgMRP').textContent = '-';
+      }
+    }
+
+
+    // Load variants (still needed for the select dropdown)
+    async function loadVariants() {
+      try {
+        const response = await fetch('/po/api/v1/variants');
+        const result = await response.json();
+        
+        if (result.success) {
+          const variantSelect = document.getElementById('variantFilter');
+          variantSelect.innerHTML = '<option value="">All Variants</option>' + 
+            result.data.map(variant => `<option value="${variant.id}">${variant.name}</option>`).join('');
+        }
+      } catch (error) {
+        console.error('Error loading variants:', error);
+      }
+    }
+
+    // Apply filters
+    function applyFilters() {
+      const poFilter = selectedPOValue || document.getElementById('poFilter').value;
+      const itemFilter = selectedItemValue || document.getElementById('itemFilter').value;
+      const variantFilter = document.getElementById('variantFilter').value;
+
+      let filteredData = pricingData;
+
+      if (poFilter) {
+        filteredData = filteredData.filter(item => item.po_number.toLowerCase().includes(poFilter.toLowerCase()));
+      }
+      if (itemFilter) {
+        filteredData = filteredData.filter(item => item.procurement_item_id == itemFilter);
+      }
+      if (variantFilter) {
+        filteredData = filteredData.filter(item => item.variant_id == variantFilter);
+      }
+
+      const originalData = pricingData;
+      pricingData = filteredData;
+      renderPricingTable();
+      updateStats();
+      pricingData = originalData;
+    }
+
+    // Searchable PO Dropdown functionality
+    let selectedPOValue = '';
+    let allPOs = [];
+
+    // Searchable Item Dropdown functionality
+    let selectedItemValue = '';
+    let allItems = [];
+
+    function initializePODropdown() {
+      const poInput = document.getElementById('poFilter');
+      const poDropdown = document.getElementById('poDropdown');
+      
+      // Get unique POs from pricing data
+      allPOs = [...new Set(pricingData.map(item => item.po_number))].sort();
+      
+      // Populate dropdown
+      updatePODropdown('');
+      
+      // Handle input events
+      poInput.addEventListener('input', function(e) {
+        const value = e.target.value;
+        updatePODropdown(value);
+        poDropdown.classList.remove('hidden');
+        applyFilters();
+      });
+      
+      // Handle focus
+      poInput.addEventListener('focus', function() {
+        poDropdown.classList.remove('hidden');
+      });
+      
+      // Handle click outside
+      document.addEventListener('click', function(e) {
+        if (!poInput.contains(e.target) && !poDropdown.contains(e.target)) {
+          poDropdown.classList.add('hidden');
+        }
+      });
+    }
+
+    
+    function updatePODropdown(searchTerm) {
+      const poDropdown = document.getElementById('poDropdown');
+      const filteredPOs = allPOs.filter(po => 
+        po.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      poDropdown.innerHTML = `
+        <div class="py-1">
+          <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-value="" onclick="selectPO('', 'All POs')">All POs</div>
+          ${filteredPOs.map(po => `
+            <div class="px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-value="${po}" onclick="selectPO('${po}', '${po}')">${po}</div>
+          `).join('')}
+        </div>
+      `;
+    }
+    
+    function selectPO(value, displayText) {
+      const poInput = document.getElementById('poFilter');
+      const poDropdown = document.getElementById('poDropdown');
+      
+      selectedPOValue = value;
+      poInput.value = displayText;
+      poDropdown.classList.add('hidden');
+      applyFilters();
+    }
+
+    // Searchable Item Dropdown functions
+    function initializeItemDropdown() {
+      const itemInput = document.getElementById('itemFilter');
+      const itemDropdown = document.getElementById('itemDropdown');
+      
+      // Get unique items from pricing data
+      const uniqueItems = [...new Map(pricingData.map(item => [item.procurement_item_id, item])).values()];
+      allItems = uniqueItems.map(item => ({
+        id: item.procurement_item_id,
+        name: item.item_name
+      })).sort((a, b) => a.name.localeCompare(b.name));
+      
+      // Populate dropdown
+      updateItemDropdown('');
+      
+      // Handle input events
+      itemInput.addEventListener('input', function(e) {
+        const value = e.target.value;
+        updateItemDropdown(value);
+        itemDropdown.classList.remove('hidden');
+        applyFilters();
+      });
+      
+      // Handle focus
+      itemInput.addEventListener('focus', function() {
+        itemDropdown.classList.remove('hidden');
+      });
+      
+      // Handle click outside
+      document.addEventListener('click', function(e) {
+        if (!itemInput.contains(e.target) && !itemDropdown.contains(e.target)) {
+          itemDropdown.classList.add('hidden');
+        }
+      });
+    }
+    
+    function updateItemDropdown(searchTerm) {
+      const itemDropdown = document.getElementById('itemDropdown');
+      const filteredItems = allItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      itemDropdown.innerHTML = `
+        <div class="py-1">
+          <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-value="" onclick="selectItem('', 'All Items')">All Items</div>
+          ${filteredItems.map(item => `
+            <div class="px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-value="${item.id}" onclick='selectItem("${item.id}", "${item.name.replace(/"/g, "&quot;")}")'>${item.name}</div>
+          `).join('')}
+        </div>
+      `;
+    }
+    
+    function selectItem(value, displayText) {
+      const itemInput = document.getElementById('itemFilter');
+      const itemDropdown = document.getElementById('itemDropdown');
+      
+      selectedItemValue = value;
+      itemInput.value = displayText;
+      itemDropdown.classList.add('hidden');
+      applyFilters();
+    }
+
+    // Expense Settings Modal
+    function openExpenseSettingsModal() {
+      document.getElementById('expenseSettingsModal').classList.remove('hidden');
+    }
+
+    function closeExpenseSettingsModal() {
+      document.getElementById('expenseSettingsModal').classList.add('hidden');
+    }
+
+    async function loadExpenseSettings() {
+      try {
+        const response = await fetch('/po/api/v1/expense-settings');
+        const result = await response.json();
+
+        if (result.success) {
+          result.data.forEach(setting => {
+            if (setting.expense_type === 'packaging') {
+              document.getElementById('packagingCost').value = setting.default_amount;
+            } else if (setting.expense_type === 'delivery') {
+              document.getElementById('deliveryCost').value = setting.default_amount;
+            } else if (setting.expense_type === 'software') {
+              document.getElementById('softwareCost').value = setting.default_amount;
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error loading expense settings:', error);
+      }
+    }
+
+    async function saveExpenseSettings() {
+      const packagingCost = document.getElementById('packagingCost').value;
+      const deliveryCost = document.getElementById('deliveryCost').value;
+      const softwareCost = document.getElementById('softwareCost').value;
+
+      try {
+        const promises = [
+          fetch('/po/api/v1/expense-settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expenseType: 'packaging', amount: packagingCost })
+          }),
+          fetch('/po/api/v1/expense-settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expenseType: 'delivery', amount: deliveryCost })
+          }),
+          fetch('/po/api/v1/expense-settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expenseType: 'software', amount: softwareCost })
+          })
+        ];
+
+        await Promise.all(promises);
+        window.showSuccessToast('Expense settings updated successfully');
+        closeExpenseSettingsModal();
+      } catch (error) {
+        console.error('Error saving expense settings:', error);
+        window.showErrorToast('Error saving expense settings');
+      }
+    }
+
+
+    // Edit Expenses Modal Functions
+    let currentEditExpensesData = null;
+
+    function openEditExpensesModal(variantId, procurementItemId, variantName, itemName, currentExpenses) {
+      currentEditExpensesData = { variantId, procurementItemId };
+      
+      document.getElementById('editExpensesVariantName').textContent = variantName;
+      document.getElementById('editExpensesItemName').textContent = itemName;
+      document.getElementById('editShippingCost').textContent = '₹' + parseFloat(currentExpenses.shipping_cost || 0).toFixed(2);
+      document.getElementById('editPackagingCost').value = currentExpenses.packaging_cost || 0;
+      document.getElementById('editDeliveryCost').value = currentExpenses.delivery_cost || 0;
+      document.getElementById('editSoftwareCost').value = currentExpenses.software_cost || 0;
+      
+      document.getElementById('editExpensesModal').classList.remove('hidden');
+      
+      // Re-initialize icons
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+
+    function closeEditExpensesModal() {
+      document.getElementById('editExpensesModal').classList.add('hidden');
+      currentEditExpensesData = null;
+    }
+
+    async function saveVariantExpenses() {
+      if (!currentEditExpensesData) {
+        window.showErrorToast('No variant selected for editing');
+        return;
+      }
+
+      const packaging = parseFloat(document.getElementById('editPackagingCost').value) || 0;
+      const delivery = parseFloat(document.getElementById('editDeliveryCost').value) || 0;
+      const software = parseFloat(document.getElementById('editSoftwareCost').value) || 0;
+
+      if (packaging < 0 || delivery < 0 || software < 0) {
+        window.showErrorToast('Expense values cannot be negative');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/po/api/v1/variants/${currentEditExpensesData.variantId}/expenses/${currentEditExpensesData.procurementItemId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ packaging, delivery, software })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          window.showSuccessToast('Variant expenses updated successfully');
+          closeEditExpensesModal();
+          loadPricingData(); // Refresh the table
+        } else {
+          window.showErrorToast('Error updating expenses: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error updating expenses:', error);
+        window.showErrorToast('Error updating expenses');
+      }
+    }
+
+    // Edit Profit Margin Modal Functions
+    let currentEditProfitMarginData = null;
+
+    async function openEditProfitMarginModal(variantId, procurementItemId, variantName, itemName, currentMRP, currentMargin, useGlobalMargin = false) {
+      try {
+        currentEditProfitMarginData = { variantId, procurementItemId };
+        
+        document.getElementById('editProfitMarginVariantName').textContent = variantName;
+        document.getElementById('editProfitMarginItemName').textContent = itemName;
+        document.getElementById('editProfitMarginCurrentMRP').textContent = parseFloat(currentMRP).toFixed(2);
+        
+        // Fetch global margin from procurement item
+        try {
+          const response = await fetch(`/po/api/v1/products/${procurementItemId}`);
+          const result = await response.json();
+          
+          if (result.success) {
+            const globalMargin = result.data.default_profit_margin || 20;
+            document.getElementById('globalMarginValue').textContent = globalMargin;
+            
+            // Set radio buttons based on current state
+            if (useGlobalMargin) {
+              document.getElementById('useGlobalMargin').checked = true;
+              document.getElementById('useCustomMargin').checked = false;
+              document.getElementById('globalMarginInfo').classList.remove('hidden');
+              document.getElementById('customMarginInput').classList.add('hidden');
+            } else {
+              document.getElementById('useGlobalMargin').checked = false;
+              document.getElementById('useCustomMargin').checked = true;
+              document.getElementById('globalMarginInfo').classList.add('hidden');
+              document.getElementById('customMarginInput').classList.remove('hidden');
+            }
+            
+            // Set calculation mode to default (Adjust Profit Margin)
+            document.getElementById('adjustMarginMode').checked = true;
+            document.getElementById('keepMRPMode').checked = false;
+            document.getElementById('fixedMRPInput').classList.add('hidden');
+            document.getElementById('calculatedMarginLabel').classList.add('hidden');
+            
+            // Set current margin in custom input for reference
+            document.getElementById('editProfitMarginValue').value = currentMargin;
+          }
+        } catch (error) {
+          console.error('Error fetching global margin:', error);
+          // Fallback to current margin
+          document.getElementById('globalMarginValue').textContent = currentMargin;
+        }
+        
+        document.getElementById('editProfitMarginModal').classList.remove('hidden');
+        
+        // Setup event listeners for this modal instance
+        setupEditProfitMarginEventListeners();
+        
+        // Calculate preview
+        calculateProfitMarginPreview();
+        
+        // Re-initialize icons
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      } catch (error) {
+        console.error('Error opening edit profit margin modal:', error);
+      }
+    }
+
+    function closeEditProfitMarginModal() {
+      document.getElementById('editProfitMarginModal').classList.add('hidden');
+      currentEditProfitMarginData = null;
+    }
+
+    function calculateProfitMarginPreview() {
+      try {
+        if (!currentEditProfitMarginData) {
+          return;
+        }
+        
+        // Find the current pricing data for this variant
+        const currentData = pricingData.find(item => 
+          item.variant_id == currentEditProfitMarginData.variantId && 
+          item.procurement_item_id == currentEditProfitMarginData.procurementItemId
+        );
+        
+        if (!currentData) {
+          document.getElementById('editProfitMarginNewMRP').textContent = 'Data not found';
+          return;
+        }
+        
+        const sourcingCost = parseFloat(currentData.sourcing_cost);
+        const gstAmount = parseFloat(currentData.gst_amount || 0);
+        const totalExpenses = parseFloat(currentData.total_expenses || 0);
+        
+        const adjustMarginMode = document.getElementById('adjustMarginMode');
+        
+        if (adjustMarginMode.checked) {
+          // Adjust Profit Margin mode - calculate new MRP based on margin
+          let newMargin;
+          
+          if (document.getElementById('useGlobalMargin').checked) {
+            newMargin = parseFloat(document.getElementById('globalMarginValue').textContent) || 0;
+          } else {
+            newMargin = parseFloat(document.getElementById('editProfitMarginValue').value) || 0;
+          }
+          
+          // If using global margin, calculate new MRP with global margin
+          if (document.getElementById('useGlobalMargin').checked) {
+            // Calculate total cost (sourcing + GST + operational expenses, excluding payment gateway)
+            const variantShippingCost = parseFloat(currentData.variant_shipping_cost || 0);
+            const packagingCost = parseFloat(currentData.packaging_cost || 0);
+            const deliveryCost = parseFloat(currentData.delivery_cost || 0);
+            const softwareCost = parseFloat(currentData.software_cost || 0);
+            const operationalExpenses = variantShippingCost + packagingCost + deliveryCost + softwareCost;
+            
+            const totalCost = sourcingCost + gstAmount + operationalExpenses;
+            
+            // Calculate final MRP based on global profit margin: Final MRP = Total Cost / (1 - Global Profit Margin % / 100)
+            const finalMRP = totalCost / (1 - newMargin / 100);
+            
+            // Display the calculated MRP
+            document.getElementById('editProfitMarginNewMRP').textContent = parseFloat(finalMRP.toFixed(2)).toLocaleString('en-IN', {minimumFractionDigits: 2});
+            document.getElementById('calculatedMarginLabel').classList.add('hidden');
+            return;
+          }
+          
+          // If using the same margin as current, show current MRP
+          const currentMargin = parseFloat(currentData.actual_profit_margin_percentage || currentData.profit_margin_percentage) || 0;
+          if (Math.abs(newMargin - currentMargin) < 0.01) {
+            document.getElementById('editProfitMarginNewMRP').textContent = parseFloat(currentData.final_mrp).toFixed(2);
+            return;
+          }
+          
+          // Calculate total cost (sourcing + GST + operational expenses, excluding payment gateway)
+          // Extract individual expense components from totalExpenses
+          const variantShippingCost = parseFloat(currentData.variant_shipping_cost || 0);
+          const packagingCost = parseFloat(currentData.packaging_cost || 0);
+          const deliveryCost = parseFloat(currentData.delivery_cost || 0);
+          const softwareCost = parseFloat(currentData.software_cost || 0);
+          const operationalExpenses = variantShippingCost + packagingCost + deliveryCost + softwareCost;
+          
+          const totalCost = sourcingCost + gstAmount + operationalExpenses;
+          
+          // Calculate final MRP based on profit margin: Final MRP = Total Cost / (1 - Profit Margin % / 100)
+          const finalMRP = totalCost / (1 - newMargin / 100);
+          
+          // Calculate payment gateway charge (2% of final MRP)
+          const paymentGatewayCharge = finalMRP * 0.02;
+          
+          // Display the calculated MRP
+          document.getElementById('editProfitMarginNewMRP').textContent = parseFloat(finalMRP.toFixed(2)).toLocaleString('en-IN', {minimumFractionDigits: 2});
+          document.getElementById('calculatedMarginLabel').classList.add('hidden');
+        } else {
+          // Keep MRP Fixed mode - calculate profit margin based on fixed MRP
+          const fixedMRP = parseFloat(document.getElementById('editFixedMRPValue').value) || 0;
+          
+          if (fixedMRP <= 0) {
+            document.getElementById('editProfitMarginNewMRP').textContent = 'Enter valid MRP';
+            document.getElementById('editCalculatedMargin').textContent = '-';
+            return;
+          }
+          
+          // Calculate payment gateway charge from fixed MRP
+          const paymentGatewayCharge = fixedMRP * 0.02;
+          const baseMRP = fixedMRP - paymentGatewayCharge;
+          
+          // Calculate profit margin from fixed MRP (including all costs)
+          const totalCost = sourcingCost + gstAmount + totalExpenses + paymentGatewayCharge;
+          const profitAmount = fixedMRP - totalCost;
+          const calculatedMargin = (profitAmount / fixedMRP) * 100;
+          
+          // Display the fixed MRP and calculated margin
+          document.getElementById('editProfitMarginNewMRP').textContent = parseFloat(fixedMRP.toFixed(2)).toLocaleString('en-IN', {minimumFractionDigits: 2});
+          document.getElementById('editCalculatedMargin').textContent = parseFloat(calculatedMargin.toFixed(2));
+          document.getElementById('calculatedMarginLabel').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error in calculateProfitMarginPreview:', error);
+        document.getElementById('editProfitMarginNewMRP').textContent = 'Error calculating';
+      }
+    }
+
+    // Setup event listeners for edit profit margin modal
+    function setupEditProfitMarginEventListeners() {
+      const useGlobalMargin = document.getElementById('useGlobalMargin');
+      const useCustomMargin = document.getElementById('useCustomMargin');
+      const adjustMarginMode = document.getElementById('adjustMarginMode');
+      const keepMRPMode = document.getElementById('keepMRPMode');
+      const globalMarginInfo = document.getElementById('globalMarginInfo');
+      const customMarginInput = document.getElementById('customMarginInput');
+      const fixedMRPInput = document.getElementById('fixedMRPInput');
+      const editProfitMarginValue = document.getElementById('editProfitMarginValue');
+      const editFixedMRPValue = document.getElementById('editFixedMRPValue');
+
+      if (useGlobalMargin && useCustomMargin) {
+        // Remove existing listeners to avoid duplicates
+        useGlobalMargin.removeEventListener('change', handleGlobalMarginChange);
+        useCustomMargin.removeEventListener('change', handleCustomMarginChange);
+        
+        // Add new listeners
+        useGlobalMargin.addEventListener('change', handleGlobalMarginChange);
+        useCustomMargin.addEventListener('change', handleCustomMarginChange);
+      }
+
+      if (adjustMarginMode && keepMRPMode) {
+        // Remove existing listeners to avoid duplicates
+        adjustMarginMode.removeEventListener('change', handleCalculationModeChange);
+        keepMRPMode.removeEventListener('change', handleCalculationModeChange);
+        
+        // Add new listeners
+        adjustMarginMode.addEventListener('change', handleCalculationModeChange);
+        keepMRPMode.addEventListener('change', handleCalculationModeChange);
+      }
+
+      // Add event listener for input field changes
+      if (editProfitMarginValue) {
+        editProfitMarginValue.removeEventListener('input', handleMarginInputChange);
+        editProfitMarginValue.addEventListener('input', handleMarginInputChange);
+      }
+
+      if (editFixedMRPValue) {
+        editFixedMRPValue.removeEventListener('input', handleFixedMRPInputChange);
+        editFixedMRPValue.addEventListener('input', handleFixedMRPInputChange);
+      }
+    }
+
+    function handleGlobalMarginChange() {
+      if (this.checked) {
+        document.getElementById('globalMarginInfo').classList.remove('hidden');
+        document.getElementById('customMarginInput').classList.add('hidden');
+        calculateProfitMarginPreview();
+      }
+    }
+
+    function handleCustomMarginChange() {
+      if (this.checked) {
+        document.getElementById('globalMarginInfo').classList.add('hidden');
+        document.getElementById('customMarginInput').classList.remove('hidden');
+        calculateProfitMarginPreview();
+      }
+    }
+
+    function handleMarginInputChange() {
+      calculateProfitMarginPreview();
+    }
+
+    function handleCalculationModeChange() {
+      const adjustMarginMode = document.getElementById('adjustMarginMode');
+      const keepMRPMode = document.getElementById('keepMRPMode');
+      const customMarginInput = document.getElementById('customMarginInput');
+      const fixedMRPInput = document.getElementById('fixedMRPInput');
+      const calculatedMarginLabel = document.getElementById('calculatedMarginLabel');
+
+      if (adjustMarginMode.checked) {
+        // Show custom margin input, hide fixed MRP input
+        customMarginInput.classList.remove('hidden');
+        fixedMRPInput.classList.add('hidden');
+        calculatedMarginLabel.classList.add('hidden');
+      } else if (keepMRPMode.checked) {
+        // Show fixed MRP input, hide custom margin input
+        customMarginInput.classList.add('hidden');
+        fixedMRPInput.classList.remove('hidden');
+        calculatedMarginLabel.classList.remove('hidden');
+        
+        // Set current MRP as default value
+        const currentMRP = document.getElementById('editProfitMarginCurrentMRP').textContent;
+        document.getElementById('editFixedMRPValue').value = currentMRP;
+      }
+      
+      calculateProfitMarginPreview();
+    }
+
+    function handleFixedMRPInputChange() {
+      calculateProfitMarginPreview();
+    }
+
+    async function saveVariantProfitMargin() {
+      try {
+        if (!currentEditProfitMarginData) {
+          window.showErrorToast('No variant selected for editing');
+          return;
+        }
+
+        const adjustMarginMode = document.getElementById('adjustMarginMode');
+        
+        if (adjustMarginMode.checked) {
+          // Adjust Profit Margin mode - traditional behavior
+          let profitMargin;
+          let useGlobal = false;
+
+          if (document.getElementById('useGlobalMargin').checked) {
+            profitMargin = parseFloat(document.getElementById('globalMarginValue').textContent) || 0;
+            useGlobal = true;
+          } else {
+            profitMargin = parseFloat(document.getElementById('editProfitMarginValue').value);
+            useGlobal = false;
+          }
+
+          if (profitMargin < 0 || profitMargin > 100) {
+            window.showErrorToast('Profit margin must be between 0 and 100');
+            return;
+          }
+
+          const url = `/po/api/v1/variants/${currentEditProfitMarginData.variantId}/profit-margin/${currentEditProfitMarginData.procurementItemId}`;
+
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              profitMargin,
+              useGlobal: useGlobal
+            })
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            const message = useGlobal ? 
+              'Variant profit margin set to use global margin' : 
+              'Variant profit margin updated successfully';
+            window.showSuccessToast(message);
+            closeEditProfitMarginModal();
+            loadPricingData(); // Refresh the table
+          } else {
+            window.showErrorToast('Error updating profit margin: ' + result.error);
+          }
+        } else {
+          // Keep MRP Fixed mode - calculate and save the profit margin based on fixed MRP
+          const fixedMRP = parseFloat(document.getElementById('editFixedMRPValue').value);
+          
+          if (fixedMRP <= 0) {
+            window.showErrorToast('Please enter a valid MRP value');
+            return;
+          }
+
+          // Find the current pricing data for this variant
+          const currentData = pricingData.find(item => 
+            item.variant_id == currentEditProfitMarginData.variantId && 
+            item.procurement_item_id == currentEditProfitMarginData.procurementItemId
+          );
+          
+          if (!currentData) {
+            window.showErrorToast('Unable to find variant data');
+            return;
+          }
+          
+          const sourcingCost = parseFloat(currentData.sourcing_cost);
+          const variantShippingCost = parseFloat(currentData.variant_shipping_cost);
+          const packagingCost = parseFloat(currentData.packaging_cost || 0);
+          const deliveryCost = parseFloat(currentData.delivery_cost || 0);
+          const softwareCost = parseFloat(currentData.software_cost || 0);
+          const gstAmount = parseFloat(currentData.gst_amount || 0);
+          const totalExpenses = variantShippingCost + packagingCost + deliveryCost + softwareCost;
+          
+          // Calculate payment gateway charge from fixed MRP
+          const paymentGatewayCharge = fixedMRP * 0.02;
+          const baseMRP = fixedMRP - paymentGatewayCharge;
+          
+          // Calculate profit margin from fixed MRP (including all costs)
+          const totalCost = sourcingCost + gstAmount + totalExpenses + paymentGatewayCharge;
+          const profitAmount = fixedMRP - totalCost;
+          const calculatedMargin = (profitAmount / fixedMRP) * 100;
+          
+          if (calculatedMargin < 0) {
+            window.showErrorToast('The fixed MRP results in a negative profit margin. Please increase the MRP.');
+            return;
+          }
+
+          const url = `/po/api/v1/variants/${currentEditProfitMarginData.variantId}/fixed-mrp/${currentEditProfitMarginData.procurementItemId}`;
+
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              fixedMRP: fixedMRP
+            })
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            window.showSuccessToast(`Profit margin updated to ${calculatedMargin.toFixed(2)}% based on fixed MRP of ₹${fixedMRP.toFixed(2)}`);
+            closeEditProfitMarginModal();
+            loadPricingData(); // Refresh the table
+          } else {
+            window.showErrorToast('Error updating profit margin: ' + result.error);
+          }
+        }
+      } catch (error) {
+        console.error('Error updating profit margin:', error);
+        window.showErrorToast('Error updating profit margin');
+      }
+    }
+
+    // Expense Breakdown Modal Functions
+    function showExpenseBreakdown(variantId, procurementItemId, variantName, itemName, shippingCost, packagingCost, deliveryCost, softwareCost, totalExpenses, gstAmount, gstPercentage, paymentGatewayCharge) {
+      // Set the modal content
+      document.getElementById('expenseBreakdownVariantName').textContent = variantName;
+      document.getElementById('expenseBreakdownItemName').textContent = itemName;
+      document.getElementById('expenseBreakdownShipping').textContent = '₹' + parseFloat(shippingCost || 0).toFixed(2);
+      document.getElementById('expenseBreakdownPackaging').textContent = '₹' + parseFloat(packagingCost || 0).toFixed(2);
+      document.getElementById('expenseBreakdownDelivery').textContent = '₹' + parseFloat(deliveryCost || 0).toFixed(2);
+      document.getElementById('expenseBreakdownSoftware').textContent = '₹' + parseFloat(softwareCost || 0).toFixed(2);
+      document.getElementById('expenseBreakdownGateway').textContent = '₹' + parseFloat(paymentGatewayCharge || 0).toFixed(2) + ' (2.0%)';
+      
+    // Calculate total from individual components to ensure consistency with the breakdown display
+    const calculatedTotal = parseFloat(shippingCost || 0) + parseFloat(packagingCost || 0) + parseFloat(deliveryCost || 0) + parseFloat(softwareCost || 0) + parseFloat(paymentGatewayCharge || 0);
+    document.getElementById('expenseBreakdownTotal').textContent = '₹' + calculatedTotal.toFixed(2);
+      
+      // Show the modal
+      document.getElementById('expenseBreakdownModal').classList.remove('hidden');
+      
+      // Re-initialize icons
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+
+    function closeExpenseBreakdownModal() {
+      document.getElementById('expenseBreakdownModal').classList.add('hidden');
+    }
+
+    // Toast functions - use the global toast system directly
+    // No local function definitions to avoid conflicts with global ones
+  </script>
+    </div>
+  </body>
+</html>

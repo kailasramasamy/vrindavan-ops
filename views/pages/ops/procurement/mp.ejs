@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <%- include('../../../partials/_head', { seo }) %>
+
+  <body class="bg-slate-900 text-slate-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_subnav', { section: 'Procurement', page: 'MP — Milk Entry', user }) %>
+      <main class="flex-1">
+        <section class="max-w-6xl mx-auto px-4 py-10">
+          <header class="mb-6">
+            <h1 class="text-2xl font-extrabold tracking-tight text-slate-100">Main Plant — Daily Milk Entry</h1>
+            <p class="text-slate-400 mt-2">Review and accept aggregated RCC data for the selected date (includes both morning and evening data).</p>
+          </header>
+
+          <!-- Date Filter -->
+          <div class="p-6 mb-6 bg-slate-800 border border-slate-700 rounded-lg">
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <div>
+                <label class="block text-sm font-semibold mb-1 text-slate-300">Date</label>
+                <input type="date" id="dateFilter" name="date" value="<%= selectedDate %>" class="w-full border border-slate-600 rounded-lg px-4 py-3 bg-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1 text-slate-300">Data Type</label>
+                <div class="text-slate-400 text-sm py-2">Daily aggregated data (morning + evening)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RCC Data Summary -->
+          <div class="p-6 bg-slate-800 border border-slate-700 rounded-lg">
+            <h2 class="text-xl font-bold mb-4 text-slate-100">RCC Data Summary</h2>
+            <% if ((rccSummaryData||[]).length > 0) { %>
+            <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <% rccSummaryData.forEach(rcc => { const existingEntry = (existingMpEntries||[]).find(e => e.rcc_id === rcc.rccId); const isAccepted = existingEntry && existingEntry.status === 'accepted'; const statusClass = isAccepted ? 'bg-emerald-500/20 text-emerald-300 border-emerald-600/40' : 'bg-slate-700 text-slate-300 border-slate-600'; const statusText = isAccepted ? 'Accepted' : 'Pending'; %>
+              <div class="rcc-card border rounded-lg p-4 flex flex-col gap-3 bg-slate-800/60" data-id="<%- rcc.rccId %>" data-name="<%- rcc.rccName %>" data-milk="<%- existingEntry ? existingEntry.milkType : rcc.milkType %>" data-qty="<%- existingEntry ? existingEntry.qty : rcc.totalQty %>" data-fat="<%- existingEntry ? existingEntry.fat : rcc.fat %>" data-snf="<%- existingEntry ? existingEntry.snf : rcc.snf %>" data-water="<%- existingEntry ? existingEntry.water : rcc.water %>" data-clr="<%- existingEntry ? existingEntry.clr : rcc.clr %>">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-1 rounded-full text-xs bg-slate-700 text-slate-300 border border-slate-600"><%= rcc.milkType %></span>
+                  <span class="text-xs px-2 py-1 rounded-full border <%= statusClass %>"><%= statusText %></span>
+                </div>
+                <div class="text-base font-semibold break-words text-slate-100"><%= rcc.rccName %></div>
+                <div class="text-sm text-slate-300">
+                  <div>
+                    Qty:
+                    <strong><%= Number(existingEntry ? existingEntry.qty : rcc.totalQty || 0).toFixed(1) %> L</strong>
+                  </div>
+                  <div>FAT: <%= (existingEntry ? existingEntry.fat : rcc.fat) || '-' %>% | SNF: <%= (existingEntry ? existingEntry.snf : rcc.snf) || '-' %>%</div>
+                  <div>CLR: <%= (existingEntry ? existingEntry.clr : rcc.clr) || '-' %> | Water: <%= (existingEntry ? existingEntry.water : rcc.water) || '-' %>%</div>
+                </div>
+                <div class="flex items-center justify-between text-sm text-slate-400 mt-1">
+                  <span class="break-words">RCC ID: <%= rcc.rccId %></span>
+                  <div class="flex items-center gap-1">
+                    <button type="button" class="p-2 rounded hover:bg-slate-700 btn-edit-rcc" aria-label="Edit" data-rcc-id="<%= rcc.rccId %>">
+                      <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" class="p-2 rounded hover:bg-emerald-600/20 text-emerald-300 btn-accept-rcc" aria-label="Accept" data-rcc-id="<%= rcc.rccId %>">
+                      <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } else { %>
+            <div class="text-center text-slate-400 py-8">
+              <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                <div class="flex items-center justify-center mb-2">
+                  <i data-lucide="alert-circle" class="w-6 h-6 text-slate-300 mr-2"></i>
+                  <h3 class="text-lg font-semibold text-slate-100">No RCC Data Available</h3>
+                </div>
+                <p class="text-slate-300">RCC hasn't submitted the data yet for the selected date.</p>
+                <p class="text-sm text-slate-400 mt-2">Please check back later or contact the RCC to submit their data.</p>
+              </div>
+            </div>
+            <% } %>
+          </div>
+          <!-- Edit RCC Modal -->
+          <div id="editRccModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="fixed inset-0 bg-black/50 z-10" data-close="modal"></div>
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 w-full max-w-lg shadow-lg relative z-20">
+              <h3 class="text-lg font-bold mb-4 text-slate-100">Edit RCC Data</h3>
+              <form id="editRccForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">Milk Type</label>
+                    <select name="milkType" id="ef_milk" class="w-full border border-slate-600 rounded p-2 bg-slate-700 text-slate-100">
+                      <option value="A1">A1</option>
+                      <option value="A2">A2</option>
+                      <option value="Buffalo">Buffalo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">Quantity (L)</label>
+                    <input name="qty" id="ef_qty" type="number" step="0.1" class="w-full border border-slate-600 rounded p-2 bg-slate-700 text-slate-100" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">FAT %</label>
+                    <input name="fat" id="ef_fat" type="number" step="0.1" class="w-full border border-slate-600 rounded p-2 bg-slate-700 text-slate-100" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">SNF %</label>
+                    <input name="snf" id="ef_snf" type="number" step="0.1" class="w-full border border-slate-600 rounded p-2 bg-slate-700 text-slate-100" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">CLR</label>
+                    <input name="clr" id="ef_clr" type="number" step="0.1" class="w-full border border-slate-600 rounded p-2 bg-slate-700 text-slate-100" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">Water %</label>
+                    <input name="water" id="ef_water" type="number" step="0.1" class="w-full border border-slate-600 rounded p-2 bg-slate-700 text-slate-100" />
+                  </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-2">
+                  <button type="button" class="px-4 py-2 bg-slate-700 text-slate-200 rounded-md hover:bg-slate-600" data-close="modal">Cancel</button>
+                  <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" type="submit">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
+      <%- include('../../../partials/_toast') %>
+    </div>
+    <script>
+      (function(){
+
+        const dateFilter = document.getElementById('dateFilter');
+        const SCOPE_MP_ID = <%- JSON.stringify(user?.scope?.mp_id || 1) %>;
+        window.existingMpEntries = <%- JSON.stringify(existingMpEntries || []) %>;
+
+        // Using standard toast system - no custom function needed
+
+        function openEdit(rccId) {
+          const card = document.querySelector(`[data-id="${rccId}"]`);
+          if (!card) return;
+
+          const editModal = document.getElementById('editRccModal');
+          const form = document.getElementById('editRccForm');
+
+          // Populate form with current data
+          document.getElementById('ef_milk').value = card.getAttribute('data-milk') || 'A2';
+          document.getElementById('ef_qty').value = card.getAttribute('data-qty') || '0';
+          document.getElementById('ef_fat').value = card.getAttribute('data-fat') || '';
+          document.getElementById('ef_snf').value = card.getAttribute('data-snf') || '';
+          document.getElementById('ef_clr').value = card.getAttribute('data-clr') || '';
+          document.getElementById('ef_water').value = card.getAttribute('data-water') || '';
+
+          editModal.classList.remove('hidden');
+          editModal.classList.add('flex');
+        }
+
+        function saveEdit(rccId) {
+          const form = document.getElementById('editRccForm');
+          const formData = new FormData(form);
+          const milkType = formData.get('milkType');
+          const qty = Number(formData.get('qty') || 0);
+          const fat = formData.get('fat') ? Number(formData.get('fat')) : null;
+          const snf = formData.get('snf') ? Number(formData.get('snf')) : null;
+          const clr = formData.get('clr') ? Number(formData.get('clr')) : null;
+          const water = formData.get('water') ? Number(formData.get('water')) : null;
+
+          const existingEntry = window.existingMpEntries.find(e => e.rcc_id == rccId);
+
+          const payload = {
+            role: 'mp',
+            rcc_id: rccId,
+            date: dateFilter.value,
+            time: 'daily', // MP level aggregates both morning and evening
+            items: [{
+              rccId: rccId,
+              milkType,
+              qty,
+              fat,
+              snf,
+              clr,
+              water
+            }]
+          };
+
+          const url = existingEntry
+            ? `/api/procurement/mp/entries/${existingEntry.id}`
+            : '/api/procurement/mp/entries';
+
+          const method = existingEntry ? 'PUT' : 'POST';
+
+          fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(existingEntry ? { milkType, qty, fat, snf, water, clr } : payload)
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.ok) {
+              // Update the card data immediately after database update
+              const card = document.querySelector(`[data-id="${rccId}"]`);
+              if (card) {
+                // Update card data attributes
+                card.setAttribute('data-milk', milkType);
+                card.setAttribute('data-qty', qty);
+                card.setAttribute('data-fat', fat || '');
+                card.setAttribute('data-snf', snf || '');
+                card.setAttribute('data-clr', clr || '');
+                card.setAttribute('data-water', water || '');
+
+                // Update displayed values
+                const qtyElement = card.querySelector('strong');
+                if (qtyElement) {
+                  qtyElement.textContent = `${qty.toFixed(1)} L`;
+                }
+
+                const detailsElement = card.querySelector('.text-sm.text-slate-600');
+                if (detailsElement) {
+                  detailsElement.innerHTML = `
+                    <div>Qty: <strong>${qty.toFixed(1)} L</strong></div>
+                    <div>FAT: ${fat || '-'}% | SNF: ${snf || '-'}%</div>
+                    <div>CLR: ${clr || '-'} | Water: ${water || '-'}%</div>
+                  `;
+                }
+
+                // Update status to accepted if it wasn't already
+                const statusElement = card.querySelector('.text-xs.px-2.py-1.rounded-full.border');
+                if (statusElement && !statusElement.textContent.includes('Accepted')) {
+                  statusElement.className = 'text-xs px-2 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+                  statusElement.textContent = 'Accepted';
+
+                  // Update the button
+                  const acceptBtn = card.querySelector('.btn-accept-rcc');
+                  if (acceptBtn) {
+                    acceptBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    acceptBtn.disabled = true;
+                  }
+                }
+              }
+
+              showSuccessToast(existingEntry ? 'Updated successfully' : 'Saved successfully');
+              document.getElementById('editRccModal').classList.add('hidden');
+              document.getElementById('editRccModal').classList.remove('flex');
+              // Remove the delayed reload - changes are applied immediately
+            } else {
+              showErrorToast(data.error || 'Error saving data');
+            }
+          })
+          .catch(err => {
+            console.error('Error:', err);
+            showErrorToast('Error saving data');
+          });
+        }
+
+        function acceptData(rccId) {
+          const card = document.querySelector(`[data-id="${rccId}"]`);
+          if (!card) return;
+
+          const existingEntry = window.existingMpEntries.find(e => e.rcc_id === rccId);
+
+          const payload = {
+            mp_id: 1, // Use the MP ID we created
+            date: dateFilter.value,
+            items: [{
+              rccId: rccId,
+              milkType: card.getAttribute('data-milk') || 'A2',
+              qty: Number(card.getAttribute('data-qty') || 0),
+              fat: card.getAttribute('data-fat') ? Number(card.getAttribute('data-fat')) : null,
+              snf: card.getAttribute('data-snf') ? Number(card.getAttribute('data-snf')) : null,
+              clr: card.getAttribute('data-clr') ? Number(card.getAttribute('data-clr')) : null,
+              water: card.getAttribute('data-water') ? Number(card.getAttribute('data-water')) : null
+            }]
+          };
+
+          const url = existingEntry
+            ? `/api/procurement/mp/entries/${existingEntry.id}`
+            : '/api/procurement/mp/entries';
+
+          const method = existingEntry ? 'PUT' : 'POST';
+
+          fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(existingEntry ? {
+              milkType: payload.items[0].milkType,
+              qty: payload.items[0].qty,
+              fat: payload.items[0].fat,
+              snf: payload.items[0].snf,
+              clr: payload.items[0].clr,
+              water: payload.items[0].water
+            } : payload)
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.ok) {
+              // Update the status immediately after database update
+              const card = document.querySelector(`[data-id="${rccId}"]`);
+              if (card) {
+                const statusElement = card.querySelector('.text-xs.px-2.py-1.rounded-full.border');
+                if (statusElement) {
+                  statusElement.className = 'text-xs px-2 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+                  statusElement.textContent = 'Accepted';
+                }
+
+                // Update the button to show it's accepted
+                const acceptBtn = card.querySelector('.btn-accept-rcc');
+                if (acceptBtn) {
+                  acceptBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                  acceptBtn.disabled = true;
+                }
+              }
+
+              showSuccessToast('Accepted successfully');
+              // Remove the delayed reload - status changes immediately
+            } else {
+              showErrorToast(data.error || 'Error accepting data');
+            }
+          })
+          .catch(err => {
+            console.error('Error:', err);
+            showErrorToast('Error accepting data');
+          });
+        }
+        function setupButtonHandlers() {
+
+          // Remove any existing listeners first
+          document.querySelectorAll('.btn-edit-rcc').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+          });
+          document.querySelectorAll('.btn-accept-rcc').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+          });
+
+          // Edit buttons
+          document.querySelectorAll('.btn-edit-rcc').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const rccId = this.dataset.rccId;
+              openEditModal(rccId);
+            });
+          });
+
+          // Accept buttons
+          document.querySelectorAll('.btn-accept-rcc').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const rccId = this.dataset.rccId;
+              acceptData(rccId);
+            });
+          });
+
+        }
+
+        // Try multiple times to ensure buttons are loaded
+        setTimeout(setupButtonHandlers, 500);
+        setTimeout(setupButtonHandlers, 1000);
+        setTimeout(setupButtonHandlers, 2000);
+
+        // Edit modal handlers
+        const editModal = document.getElementById('editRccModal');
+        const editForm = document.getElementById('editRccForm');
+        let currentRccId = null;
+
+        function openEditModal(rccId) {
+          currentRccId = rccId;
+          openEdit(rccId);
+        }
+
+        function closeEditModal() {
+          editModal.classList.add('hidden');
+          editModal.classList.remove('flex');
+          currentRccId = null;
+        }
+
+        editModal?.querySelectorAll('[data-close="modal"]').forEach(el => el.addEventListener('click', closeEditModal));
+
+        editForm?.addEventListener('submit', function(e) {
+          e.preventDefault();
+          if (currentRccId) {
+            saveEdit(currentRccId);
+          }
+        });
+
+        // Filter change handlers
+        dateFilter?.addEventListener('change', function() {
+          const url = new URL(window.location);
+          url.searchParams.set('date', this.value);
+          window.location.href = url.toString();
+        });
+
+        // Time filter removed - MP aggregates daily data
+
+      })();
+    </script>
+
+    <style>
+      /* Normalize date input and select styling */
+      input[type="date"],
+      select {
+        height: 48px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+    </style>
+
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

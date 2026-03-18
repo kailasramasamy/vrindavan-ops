@@ -1,0 +1,328 @@
+<%- include('../../../../partials/_head', { seo, pageKey }) %>
+
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../../partials/_subnav', { user, section: 'Payments', subsection: 'Delivery Payments' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <a href="/payments/delivery<%= selectedMonth ? `?month=${selectedMonth}` : "" %>" class="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Delivery Payments
+          </a>
+        </div>
+        <div>
+          <% const statusClassMap = {
+                pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800",
+                ready: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
+                paid: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800",
+                on_hold: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800",
+                cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800",
+              };
+              const statusText = (record.payment_status || "").replace(/_/g, " ") || "pending";
+              const statusKey = (record.payment_status || "pending").toLowerCase();
+              const statusClass = statusClassMap[statusKey] || statusClassMap.pending;
+          %>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold <%= statusClass %>" data-field="status-badge">
+            <%= statusText.charAt(0).toUpperCase() + statusText.slice(1) %>
+          </span>
+        </div>
+      </div>
+
+      <header class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white" data-field="partner-name"><%= record.delivery_boy_name || "Delivery Partner" %></h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" data-field="partner-meta">
+              <%= record.phone ? `📞 ${record.phone} · ` : "" %>User ID: <%= record.delivery_boy_user_id %>
+            </p>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div class="space-y-1">
+              <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Cycle</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white" data-field="cycle-range">
+                <% if (cycle) { %>
+                  <%= new Date(cycle.start_date).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) %>
+                <% } else { %>
+                  —
+                <% } %>
+              </p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Payment Type</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white capitalize" data-field="payment-type"><%= record.payment_type || "commission" %></p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Total Orders</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white" data-field="total-orders"><%= record.total_orders || 0 %></p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Base Pay</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="base-pay">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Commission</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="commission">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Allowances (+)</p>
+          <p class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-2" data-field="allowances">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Deductions (-)</p>
+          <p class="text-xl font-bold text-red-600 dark:text-red-400 mt-2" data-field="deductions">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Net Pay</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white mt-2" data-field="net">-</p>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Payment Status</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Update payout status and add a reason for audit trail.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <select data-field="status-select" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+              <option value="pending">Pending</option>
+              <option value="ready">Ready</option>
+              <option value="paid">Paid</option>
+              <option value="on_hold">On Hold</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button data-action="update-status" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
+              Update Status
+            </button>
+          </div>
+          <textarea data-field="status-reason" rows="2" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Reason for status change (optional)"></textarea>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Internal Remarks</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Add notes for finance reviews or payout follow-ups.</p>
+          </div>
+          <textarea data-field="remarks" rows="4" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"><%= record.remarks || "" %></textarea>
+          <div class="flex justify-end">
+            <button data-action="update-remarks" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors">
+              Save Remarks
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Leave Management</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select leave dates. Deductions will be calculated automatically based on payment type.</p>
+          </div>
+        </div>
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <form data-form="leave-entry" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col">
+                <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Leave Start Date</label>
+                <input 
+                  name="leave_start_date" 
+                  type="date" 
+                  class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" 
+                  <% if (cycle) { %>
+                    min="<%= new Date(cycle.start_date).toISOString().split('T')[0] %>"
+                    max="<%= new Date(cycle.end_date).toISOString().split('T')[0] %>"
+                  <% } %>
+                  required>
+                <% if (cycle) { %>
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Valid: <%= new Date(cycle.start_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) %> - <%= new Date(cycle.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) %>
+                  </p>
+                <% } %>
+              </div>
+              <div class="flex flex-col">
+                <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Leave End Date</label>
+                <input 
+                  name="leave_end_date" 
+                  type="date" 
+                  class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" 
+                  <% if (cycle) { %>
+                    min="<%= new Date(cycle.start_date).toISOString().split('T')[0] %>"
+                    max="<%= new Date(cycle.end_date).toISOString().split('T')[0] %>"
+                  <% } %>
+                  required>
+                <% if (cycle) { %>
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Must be on or after start date
+                  </p>
+                <% } %>
+              </div>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Reason (optional)</label>
+              <input name="leave_reason" type="text" maxlength="255" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Reason for leave">
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Leave
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="overflow-x-auto" data-section="leave-entries">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leave Dates</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Days</th>
+                <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deduction (₹)</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reason</th>
+                <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody data-field="leave-entries-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Adjustments & Allowances</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Record fuel reimbursements, advances, and one-off adjustments.</p>
+          </div>
+        </div>
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <form data-form="new-entry" class="grid grid-cols-1 md:grid-cols-5 gap-3 md:items-end">
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Entry Type</label>
+              <select name="entry_type" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" required>
+                <option value="fuel_allowance">Fuel Allowance</option>
+                <option value="adjustment">Adjustment</option>
+                <option value="advance">Advance</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Direction</label>
+              <select name="direction" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" required>
+                <option value="credit">Credit (Add)</option>
+                <option value="debit">Debit (Deduct)</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Amount (₹)</label>
+              <input name="amount" type="number" step="0.01" min="0" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" required>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Quantity</label>
+              <input name="quantity" type="number" step="0.01" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Litres / days">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Effective Date</label>
+              <input name="effective_date" type="date" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            </div>
+            <div class="md:col-span-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input name="reason" type="text" maxlength="200" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Reason (optional)">
+              <input name="notes" type="text" maxlength="255" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Notes (optional)">
+            </div>
+            <div class="md:col-span-5 flex justify-end">
+              <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors">
+                Add Entry
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="overflow-x-auto" data-section="entries">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Direction</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reason & Notes</th>
+                <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody data-field="entries-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <header class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Commission Breakdown</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Order-wise calculation of commission for this period.</p>
+          </div>
+          <button
+            id="exportCommissionCsv"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
+            data-action="export-commission-csv"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Export CSV
+          </button>
+        </header>
+        <div class="border-t border-gray-100 dark:border-gray-800" data-field="orders-wrapper">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Qty</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Line Total</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Source</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Commission</th>
+              </tr>
+            </thead>
+            <tbody data-field="orders-body"></tbody>
+          </table>
+        </div>
+        <div class="px-5 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4" data-field="orders-pagination">
+          <div class="text-sm text-gray-600 dark:text-gray-400" data-field="orders-pagination-info"></div>
+          <div class="flex items-center gap-2" data-field="orders-pagination-controls"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <%- include('../../../../partials/_footer') %>
+  <%- include('../../../../partials/_toast') %>
+
+  <script src="/assets/js/indian-number-format.js"></script>
+  <script>
+    window.DELIVERY_RECORD_DATA = <%- JSON.stringify(record || null) %>;
+    window.DELIVERY_RECORD_ENTRIES = <%- JSON.stringify(entries || []) %>;
+    window.DELIVERY_RECORD_ORDERS = <%- JSON.stringify(orders || []) %>;
+    window.DELIVERY_RECORD_SELECTED_MONTH = "<%= selectedMonth || "" %>";
+  </script>
+  <script src="/assets/js/payments-delivery-record.js?v=<%= Date.now() %>"></script>
+</body>
+</html>
+

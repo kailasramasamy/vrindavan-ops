@@ -1,0 +1,334 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/accounting-dark-mode.css">
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("accounting_theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <%- include('../../../partials/_subnav', { user, section: 'Accounting', subsection: 'Bank Accounts' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Bank Accounts</h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Manage your organization's bank accounts</p>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button onclick="openAccountModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Bank Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Accounts</h3>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1"><%= bankAccounts.length %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Active</h3>
+          <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1"><%= bankAccounts.filter(a => a.is_active).length %></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Balance</h3>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">₹<%= bankAccounts.reduce((sum, a) => sum + parseFloat(a.current_balance || 0), 0).toLocaleString() %></p>
+        </div>
+      </div>
+
+      <!-- Bank Accounts Table -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Account Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Account Number</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Bank Details</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Balance</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (bankAccounts && bankAccounts.length > 0) { %>
+                <% bankAccounts.forEach(acc => { %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4">
+                      <div class="font-medium text-gray-900 dark:text-white"><%= acc.account_name %></div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                      <%= acc.account_number %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div><%= acc.bank_name %></div>
+                      <% if (acc.ifsc_code) { %>
+                        <div class="text-xs text-gray-500 dark:text-gray-500">IFSC: <%= acc.ifsc_code %></div>
+                      <% } %>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                      <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 uppercase">
+                        <%= acc.account_type %>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white">₹<%= parseFloat(acc.current_balance || 0).toLocaleString() %></td>
+                    <td class="px-6 py-4">
+                      <% if (acc.is_active) { %>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Active</span>
+                      <% } else { %>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">Inactive</span>
+                      <% } %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm">
+                      <button onclick="editAccount(<%= acc.id %>)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">Edit</button>
+                      <button onclick="deleteAccount(<%= acc.id %>, '<%= acc.account_name %>')" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                    <p>No bank accounts found. Click "Add Bank Account" to get started.</p>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+  <%- include('../../../partials/_toast') %>
+
+  <!-- Add/Edit Bank Account Modal -->
+  <div id="accountModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 sticky top-0 rounded-t-2xl">
+        <h2 id="modalTitle" class="text-xl font-semibold text-white">Add Bank Account</h2>
+      </div>
+
+      <form id="accountForm" class="p-6 space-y-4">
+        <input type="hidden" id="accountId" name="id" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="account_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Account Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="account_name" name="account_name" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Main Current Account" />
+          </div>
+
+          <div>
+            <label for="account_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Account Number <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="account_number" name="account_number" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 123456789012" />
+          </div>
+
+          <div>
+            <label for="bank_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Bank Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="bank_name" name="bank_name" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., ICICI Bank" />
+          </div>
+
+          <div>
+            <label for="branch_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Branch Name
+            </label>
+            <input type="text" id="branch_name" name="branch_name" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Vrindavan Branch" />
+          </div>
+
+          <div>
+            <label for="ifsc_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              IFSC Code
+            </label>
+            <input type="text" id="ifsc_code" name="ifsc_code" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 uppercase" placeholder="e.g., ICIC0001234" maxlength="11" />
+          </div>
+
+          <div>
+            <label for="account_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Account Type <span class="text-red-500">*</span>
+            </label>
+            <select id="account_type" name="account_type" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <option value="current">Current Account</option>
+              <option value="savings">Savings Account</option>
+              <option value="od">Overdraft Account</option>
+              <option value="cc">Cash Credit</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="opening_balance" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Opening Balance
+            </label>
+            <input type="number" id="opening_balance" name="opening_balance" step="0.01" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="0.00" />
+          </div>
+
+          <div class="flex items-center">
+            <input type="checkbox" id="is_active" name="is_active" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded" />
+            <label for="is_active" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Active</label>
+          </div>
+        </div>
+
+        <div>
+          <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+          <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Additional notes..."></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" onclick="closeAccountModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Save Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openAccountModal(id = null) {
+      const modal = document.getElementById("accountModal");
+      const form = document.getElementById("accountForm");
+      const modalTitle = document.getElementById("modalTitle");
+
+      form.reset();
+      document.getElementById("is_active").checked = true;
+
+      if (id) {
+        modalTitle.textContent = "Edit Bank Account";
+        // Fetch and populate account data
+        fetch(`/accounting/bank-accounts/${id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.account) {
+              document.getElementById("accountId").value = data.account.id;
+              document.getElementById("account_name").value = data.account.account_name;
+              document.getElementById("account_number").value = data.account.account_number;
+              document.getElementById("bank_name").value = data.account.bank_name;
+              document.getElementById("branch_name").value = data.account.branch_name || "";
+              document.getElementById("ifsc_code").value = data.account.ifsc_code || "";
+              document.getElementById("account_type").value = data.account.account_type;
+              document.getElementById("opening_balance").value = data.account.opening_balance || 0;
+              document.getElementById("notes").value = data.account.notes || "";
+              document.getElementById("is_active").checked = data.account.is_active;
+            }
+          });
+      } else {
+        modalTitle.textContent = "Add Bank Account";
+        document.getElementById("accountId").value = "";
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeAccountModal() {
+      document.getElementById("accountModal").classList.add("hidden");
+    }
+
+    function editAccount(id) {
+      openAccountModal(id);
+    }
+
+    async function deleteAccount(id, name) {
+      if (!confirm(`Are you sure you want to delete bank account "${name}"?`)) return;
+
+      try {
+        const response = await fetch(`/accounting/bank-accounts/${id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showToast(data.message || "Bank account deleted successfully", "", "success");
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          showToast(data.error || "Failed to delete bank account", "", "error");
+        }
+      } catch (error) {
+        console.error("Error deleting bank account:", error);
+        showToast("Error deleting bank account", "", "error");
+      }
+    }
+
+    document.getElementById("accountForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const accountId = document.getElementById("accountId").value;
+
+      const data = {
+        account_name: formData.get("account_name"),
+        account_number: formData.get("account_number"),
+        bank_name: formData.get("bank_name"),
+        branch_name: formData.get("branch_name") || null,
+        ifsc_code: formData.get("ifsc_code") || null,
+        account_type: formData.get("account_type"),
+        opening_balance: parseFloat(formData.get("opening_balance")) || 0,
+        is_active: document.getElementById("is_active").checked ? 1 : 0,
+        notes: formData.get("notes") || null,
+      };
+
+      try {
+        const url = accountId 
+          ? `/accounting/bank-accounts/${accountId}` 
+          : "/accounting/bank-accounts";
+        const method = accountId ? "PUT" : "POST";
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          closeAccountModal();
+          showToast(result.message, "", "success");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast(result.error, "", "error");
+        }
+      } catch (error) {
+        console.error("Error saving bank account:", error);
+        showToast("Error saving bank account", "", "error");
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

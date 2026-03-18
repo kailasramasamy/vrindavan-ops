@@ -1,0 +1,406 @@
+<%- include('../../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../../partials/_subnav', { user, section: 'Product Labels', subsection: 'Label Orders' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Label Order</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Order Number: <span class="font-medium"><%= order.order_number %></span></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <% const statusColors = {
+              draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+              pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+              confirmed: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+              in_production: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+              completed: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+              cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+            };
+            const statusText = {
+              draft: "Draft",
+              pending: "Pending",
+              confirmed: "Confirmed",
+              in_production: "In Production",
+              completed: "Completed",
+              cancelled: "Cancelled",
+            }; %>
+            <span class="px-3 py-1.5 text-sm font-medium rounded-full <%= statusColors[order.status] || statusColors.draft %>">
+              <%= statusText[order.status] || "Draft" %>
+            </span>
+            <button onclick="shareOrder(<%= order.id %>)" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+              </svg>
+              Share
+            </button>
+            <a href="/product-labels/orders/edit/<%= order.id %>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Order
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Details and Vendor Information in Two Column Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Order Details -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Details</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Order Date</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                <%= order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : "—" %>
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Expected Delivery Date</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                <%= order.expected_delivery_date ? new Date(order.expected_delivery_date).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : "—" %>
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Total Quantity</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1"><%= order.total_quantity || 0 %></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Invoice Amount</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1">₹<%= (order.total_cost || 0).toFixed(2) %></p>
+            </div>
+          </div>
+          <% if (order.notes) { %>
+          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Notes</p>
+            <p class="text-sm text-gray-900 dark:text-white mt-1 whitespace-pre-wrap"><%= order.notes %></p>
+          </div>
+          <% } %>
+        </div>
+
+        <!-- Vendor Information -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vendor Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Vendor Name</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1"><%= order.vendor_name || "—" %></p>
+            </div>
+            <% if (order.vendor_contact_person) { %>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Contact Person</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1"><%= order.vendor_contact_person %></p>
+            </div>
+            <% } %>
+            <% if (order.vendor_email) { %>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                <a href="mailto:<%= order.vendor_email %>" class="text-blue-600 dark:text-blue-400 hover:underline"><%= order.vendor_email %></a>
+              </p>
+            </div>
+            <% } %>
+            <% if (order.vendor_phone) { %>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                <a href="tel:<%= order.vendor_phone %>" class="text-blue-600 dark:text-blue-400 hover:underline"><%= order.vendor_phone %></a>
+              </p>
+            </div>
+            <% } %>
+            <% if (order.vendor_address || order.vendor_city || order.vendor_state || order.vendor_pincode) { %>
+            <div class="md:col-span-2">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Address</p>
+              <p class="text-sm text-gray-900 dark:text-white mt-1">
+                <%= [order.vendor_address, order.vendor_city, order.vendor_state, order.vendor_pincode].filter(Boolean).join(", ") || "—" %>
+              </p>
+            </div>
+            <% } %>
+            <% if (order.vendor_gst_number) { %>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">GST Number</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-1"><%= order.vendor_gst_number %></p>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Items -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Items</h2>
+        <% if (order.items && order.items.length > 0) { %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Design</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Unit Size</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Label Type</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Label Material</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cutting</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Design File</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% order.items.forEach((item) => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <% if (item.design_file_path) { %>
+                    <% 
+                      // Generate thumbnail path
+                      const fileName = item.design_file_path.split('/').pop().replace(/\.pdf$/i, '');
+                      const thumbnailPath = `/uploads/product-labels/thumbnails/${fileName}.png`;
+                    %>
+                    <a href="<%= item.design_file_path %>" target="_blank" class="block group relative" title="Click to view design file">
+                      <div class="w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden hover:border-blue-500 dark:hover:border-blue-400 transition-all shadow-sm hover:shadow-md">
+                        <img 
+                          src="<%= thumbnailPath %>" 
+                          alt="<%= item.design_file_name || 'Design thumbnail' %>"
+                          class="w-full h-full object-contain"
+                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                          loading="lazy"
+                        />
+                        <div class="text-center p-2 hidden">
+                          <svg class="w-8 h-8 mx-auto text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                          </svg>
+                          <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 font-medium truncate max-w-[80px]" title="<%= item.design_file_name || 'PDF' %>"><%= item.design_file_name || 'PDF' %></p>
+                        </div>
+                        <div class="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-10 transition-opacity rounded-lg"></div>
+                      </div>
+                    </a>
+                  <% } else { %>
+                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                      <span class="text-xs text-gray-400 dark:text-gray-500 text-center px-2">No Design</span>
+                    </div>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white"><%= item.label_name || item.product_name || "—" %></div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <%= item.unit_size || "—" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <%= item.quantity || 0 %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <%= item.label_type || "—" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <%= item.label_material || "—" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <%= item.cutting || "—" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                  <% if (item.design_file_path) { %>
+                    <a href="<%= item.design_file_path %>" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      Download
+                    </a>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500">—</span>
+                  <% } %>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } else { %>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No items in this order.</p>
+        <% } %>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <p>This is a shareable order page for vendors.</p>
+        <p class="mt-1">Generated on <%= new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeShareModal()"></div>
+      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Share Order</h3>
+            <button type="button" onclick="closeShareModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 px-6 py-4 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shareable Link</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="shareLink"
+                readonly
+                class="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
+              />
+              <button onclick="copyShareLink()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                Copy
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passcode</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="sharePasscode"
+                readonly
+                class="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white font-mono text-center text-lg"
+              />
+              <button onclick="copyPasscode()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                Copy
+              </button>
+            </div>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Share this passcode with the vendor to access the order page.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">WhatsApp Message</label>
+            <textarea
+              id="whatsappMessage"
+              readonly
+              rows="8"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white resize-none"
+            ></textarea>
+            <div class="mt-2 flex justify-end">
+              <button 
+                onclick="copyWhatsAppMessage()" 
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                Copy Message
+              </button>
+            </div>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Copy and paste this message to share with the vendor via WhatsApp.</p>
+          </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex justify-end">
+          <button
+            type="button"
+            onclick="closeShareModal()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function shareOrder(orderId) {
+      try {
+        const response = await fetch(`/product-labels/api/orders/${orderId}/share`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const shareLink = `${window.location.origin}/product-labels/orders/share/${data.share_code}`;
+          document.getElementById('shareLink').value = shareLink;
+          document.getElementById('sharePasscode').value = data.passcode;
+          
+          // Generate WhatsApp message
+          const orderNumber = '<%= order.order_number %>';
+          const whatsappMessage = `Hello! Please find the details for Label Order ${orderNumber}:\n\n` +
+            `Order Link: ${shareLink}\n` +
+            `Passcode: ${data.passcode}\n\n` +
+            `Please use the passcode to access the order details.\n\n` +
+            `---\n` +
+            `Vrindavan Dairy LLP\n` +
+            `Sy No 26 Janthgondanahalli, Muthsandra Post\n` +
+            `Sarjapur Hobli, Anekal Taluk\n` +
+            `Bangalore 560087\n` +
+            `GSTN: 29AALFV5152D1ZZ`;
+          
+          document.getElementById('whatsappMessage').value = whatsappMessage;
+          document.getElementById('shareModal').classList.remove('hidden');
+        } else {
+          if (typeof window.showErrorToast === 'function') {
+            window.showErrorToast(data.error || 'Failed to generate share link');
+          } else {
+            alert('Error: ' + (data.error || 'Failed to generate share link'));
+          }
+        }
+      } catch (error) {
+        console.error('Error sharing order:', error);
+        if (typeof window.showErrorToast === 'function') {
+          window.showErrorToast('Failed to generate share link');
+        } else {
+          alert('Failed to generate share link');
+        }
+      }
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.add('hidden');
+    }
+
+    function copyShareLink() {
+      const linkInput = document.getElementById('shareLink');
+      linkInput.select();
+      document.execCommand('copy');
+      if (typeof window.showSuccessToast === 'function') {
+        window.showSuccessToast('Link copied to clipboard');
+      }
+    }
+
+    function copyPasscode() {
+      const passcodeInput = document.getElementById('sharePasscode');
+      passcodeInput.select();
+      document.execCommand('copy');
+      if (typeof window.showSuccessToast === 'function') {
+        window.showSuccessToast('Passcode copied to clipboard');
+      }
+    }
+
+    function copyWhatsAppMessage() {
+      const messageTextarea = document.getElementById('whatsappMessage');
+      messageTextarea.select();
+      document.execCommand('copy');
+      if (typeof window.showSuccessToast === 'function') {
+        window.showSuccessToast('WhatsApp message copied to clipboard');
+      }
+    }
+  </script>
+  <%- include('../../../../partials/_toast') %>
+</body>
+</html>
+

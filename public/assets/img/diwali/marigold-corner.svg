@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <radialGradient id="mg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0.6"/>
+    </radialGradient>
+    <linearGradient id="stem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#16a34a" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+  <!-- Garland arc -->
+  <path d="M0,0 C60,10 100,50 160,80" fill="none" stroke="url(#stem)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Marigold blooms -->
+  <g>
+    <circle cx="20" cy="18" r="10" fill="url(#mg)"/>
+    <circle cx="52" cy="28" r="10" fill="url(#mg)"/>
+    <circle cx="84" cy="44" r="10" fill="url(#mg)"/>
+    <circle cx="116" cy="58" r="10" fill="url(#mg)"/>
+    <circle cx="144" cy="74" r="10" fill="url(#mg)"/>
+  </g>
+</svg>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %> <%- include('../../../../partials/_toast') %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../../partials/_subnav', { section: section, subsection: subsection, page: 'Material Transactions', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <div class="min-h-screen bg-gray-50 dark:bg-gray-700/50 dark:bg-gray-900">
+            <!-- Header -->
+            <div class="bg-white dark:bg-gray-800 dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 dark:border-gray-700">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="py-6">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white dark:text-white">Material Transactions</h1>
+                      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">Manage stock movements and transactions</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button onclick="openAddTransactionModal()" class="inline-flex items-center px-3 py-2 sm:px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto justify-center">
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        New Transaction
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <!-- Filters -->
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                  <div>
+                    <label for="transactionTypeFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transaction Type</label>
+                    <select id="transactionTypeFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">All Types</option>
+                      <% if (transactionTypes && transactionTypes.length > 0) { %> <% transactionTypes.forEach(type => { %>
+                      <option value="<%= type.id %>" <%= selectedTransactionTypeId == type.id ? 'selected' : '' %>><%= type.name %></option>
+                      <% }) %> <% } %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="materialFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Material</label>
+                    <select id="materialFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">All Materials</option>
+                      <% if (materials && materials.length > 0) { %> <% materials.forEach(material => { %>
+                      <option value="<%= material.id %>"><%= material.sku_code %> - <%= material.name %></option>
+                      <% }) %> <% } %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="locationFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                    <select id="locationFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">All Locations</option>
+                      <% if (locations && locations.length > 0) { %> <% locations.forEach(location => { %>
+                      <option value="<%= location.id %>"><%= location.name %></option>
+                      <% }) %> <% } %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="dateFromFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date From</label>
+                    <input type="date" id="dateFromFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label for="dateToFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date To</label>
+                    <input type="date" id="dateToFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transactions Table -->
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction History</h3>
+                </div>
+                
+                <!-- Desktop Table View -->
+                <div class="hidden lg:block overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Transaction</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Material</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      <tr>
+                        <td colspan="8" class="px-6 py-12 text-center">
+                          <i data-lucide="loader" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-400 mb-4 animate-spin"></i>
+                          <p class="text-gray-600 dark:text-gray-300">Loading transactions...</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="lg:hidden">
+                  <div id="transactionsCardBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="p-4 text-center">
+                      <i data-lucide="loader" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-400 mb-4 animate-spin"></i>
+                      <p class="text-gray-600 dark:text-gray-300">Loading transactions...</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Transaction Modal -->
+          <div id="transactionModal" class="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-4 sm:top-10 mx-auto p-4 sm:p-5 border border-gray-200 dark:border-gray-700 w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 id="transactionModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">New Transaction</h3>
+                  <button onclick="closeTransactionModal()" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <form id="transactionForm">
+                  <input type="hidden" id="transactionId" name="id" />
+
+                  <div class="grid grid-cols-1 gap-6">
+                    <!-- Transaction Details -->
+                    <div class="space-y-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                          <i data-lucide="info" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Transaction Details</h4>
+                      </div>
+
+                      <div>
+                        <label for="transactionType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transaction Type *</label>
+                        <select id="transactionType" name="transaction_type_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <option value="">Select Type</option>
+                          <% if (transactionTypes && transactionTypes.length > 0) { %> <% transactionTypes.forEach(type => { %>
+                          <option value="<%= type.id %>"><%= type.name %></option>
+                          <% }) %> <% } %>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label for="transactionMaterial" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Material *</label>
+                        <select id="transactionMaterial" name="material_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <option value="">Select Material</option>
+                          <% if (materials && materials.length > 0) { %> <% materials.forEach(material => { %>
+                          <option value="<%= material.id %>"><%= material.sku_code %> - <%= material.name %></option>
+                          <% }) %> <% } %>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label for="transactionLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location *</label>
+                        <select id="transactionLocation" name="location_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <option value="">Select Location</option>
+                          <% if (locations && locations.length > 0) { %> <% locations.forEach(location => { %>
+                          <option value="<%= location.id %>"><%= location.name %></option>
+                          <% }) %> <% } %>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label for="transactionQuantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity *</label>
+                        <input type="number" id="transactionQuantity" name="quantity" step="0.01" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter quantity" />
+                      </div>
+
+                      <div>
+                        <label for="transactionDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transaction Date *</label>
+                        <input type="datetime-local" id="transactionDate" name="transaction_date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                      </div>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div class="space-y-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="p-1 bg-green-100 dark:bg-green-900/30 rounded">
+                          <i data-lucide="layers" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Additional Details</h4>
+                      </div>
+
+                      <div>
+                        <label for="referenceNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reference Number</label>
+                        <input type="text" id="referenceNumber" name="reference_number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="PO/GRN/Job number" />
+                      </div>
+
+                      <div>
+                        <label for="lotNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lot Number</label>
+                        <input type="text" id="lotNumber" name="lot_number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Lot/Batch number" />
+                      </div>
+
+                      <div>
+                        <label for="department" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department</label>
+                        <input type="text" id="department" name="department" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Production/Maintenance" />
+                      </div>
+
+                      <div>
+                        <label for="jobOrder" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Order</label>
+                        <input type="text" id="jobOrder" name="job_order" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Work order number" />
+                      </div>
+
+                      <div>
+                        <label for="machineId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Machine ID</label>
+                        <input type="text" id="machineId" name="machine_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Machine identifier" />
+                      </div>
+
+                      <div id="reasonField" class="hidden">
+                        <label for="reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason *</label>
+                        <textarea id="reason" name="reason" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Reason for adjustment"></textarea>
+                      </div>
+
+                      <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Additional notes"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeTransactionModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                      <span id="transactionSubmitText">Create Transaction</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+            }
+
+            let transactions = [];
+            let transactionTypes = <%- JSON.stringify(transactionTypes || []) %>;
+            let materials = <%- JSON.stringify(materials || []) %>;
+            let locations = <%- JSON.stringify(locations || []) %>;
+
+            // Load transactions on page load
+            document.addEventListener('DOMContentLoaded', function() {
+              loadTransactions();
+
+              // Add event listeners for filters
+              document.getElementById('transactionTypeFilter').addEventListener('change', loadTransactions);
+              document.getElementById('materialFilter').addEventListener('change', loadTransactions);
+              document.getElementById('locationFilter').addEventListener('change', loadTransactions);
+              document.getElementById('dateFromFilter').addEventListener('change', loadTransactions);
+              document.getElementById('dateToFilter').addEventListener('change', loadTransactions);
+
+              // Set default transaction date to now
+              const now = new Date();
+              const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+              document.getElementById('transactionDate').value = localDateTime;
+
+              // Transaction type change handler
+              document.getElementById('transactionType').addEventListener('change', function() {
+                const selectedType = transactionTypes.find(t => t.id == this.value);
+                const reasonField = document.getElementById('reasonField');
+
+                if (selectedType && selectedType.name.toLowerCase().includes('adjust')) {
+                  reasonField.classList.remove('hidden');
+                  reasonField.querySelector('textarea').required = true;
+                } else {
+                  reasonField.classList.add('hidden');
+                  reasonField.querySelector('textarea').required = false;
+                }
+              });
+            });
+
+            // Load transactions
+            async function loadTransactions() {
+              try {
+                const filters = {
+                  transaction_type_id: document.getElementById('transactionTypeFilter').value,
+                  material_id: document.getElementById('materialFilter').value,
+                  location_id: document.getElementById('locationFilter').value,
+                  date_from: document.getElementById('dateFromFilter').value,
+                  date_to: document.getElementById('dateToFilter').value
+                };
+
+                const params = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                  if (value) params.append(key, value);
+                });
+
+                const response = await fetch(`/api/v1/material/transactions?${params}`);
+                const result = await response.json();
+
+                transactions = result.data || [];
+                renderTransactions();
+              } catch (error) {
+                console.error('Error loading transactions:', error);
+                const errorState = `
+                  <div class="px-6 py-12 text-center">
+                    <i data-lucide="alert-circle" class="w-8 h-8 mx-auto text-red-500 dark:text-red-400 mb-4"></i>
+                    <p class="text-red-600 dark:text-red-400">Failed to load transactions</p>
+                  </div>
+                `;
+                document.getElementById('transactionsTableBody').innerHTML = `<tr><td colspan="8">${errorState}</td></tr>`;
+                document.getElementById('transactionsCardBody').innerHTML = errorState;
+                if (typeof lucide !== 'undefined') {
+                  lucide.createIcons();
+                }
+              }
+            }
+
+            // Render transactions
+            function renderTransactions() {
+              const tbody = document.getElementById('transactionsTableBody');
+              const cardBody = document.getElementById('transactionsCardBody');
+
+              if (transactions.length === 0) {
+                const emptyState = `
+                  <div class="px-6 py-12 text-center">
+                    <i data-lucide="inbox" class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 dark:text-gray-300">No transactions found</p>
+                  </div>
+                `;
+                tbody.innerHTML = `<tr><td colspan="8">${emptyState}</td></tr>`;
+                cardBody.innerHTML = emptyState;
+              } else {
+                // Desktop table view
+                tbody.innerHTML = transactions.map(transaction => {
+                  const isPositive = transaction.stock_impact === 'positive';
+                  const icon = isPositive ? 'arrow-down-left' : 'arrow-up-right';
+                  const iconBg = isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-orange-100 dark:bg-orange-900/30';
+                  const iconColor = isPositive ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400';
+                  const badgeBg = isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-orange-100 dark:bg-orange-900/30';
+                  const badgeText = isPositive ? 'text-green-800 dark:text-green-400' : 'text-orange-800 dark:text-orange-400';
+
+                  return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                          <div class="p-1 ${iconBg} rounded mr-3">
+                            <i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i>
+                          </div>
+                          <div>
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">${transaction.transaction_number}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">${transaction.transaction_type_name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">${transaction.material_name}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">${transaction.sku_code}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${transaction.location_name}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}">
+                          ${isPositive ? '+' : '-'}${transaction.quantity}
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeBg} ${badgeText}">
+                          ${transaction.stock_impact}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        ${new Date(transaction.transaction_date).toLocaleDateString()}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${transaction.user_name || 'System'}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewTransaction(${transaction.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('');
+
+                // Mobile card view
+                cardBody.innerHTML = transactions.map(transaction => {
+                  const isPositive = transaction.stock_impact === 'positive';
+                  const icon = isPositive ? 'arrow-down-left' : 'arrow-up-right';
+                  const iconBg = isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-orange-100 dark:bg-orange-900/30';
+                  const iconColor = isPositive ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400';
+
+                  return `
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center">
+                          <div class="p-1 ${iconBg} rounded mr-3">
+                            <i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i>
+                          </div>
+                          <div>
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">${transaction.transaction_number}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${transaction.transaction_type_name}</div>
+                          </div>
+                        </div>
+                        <button onclick="viewTransaction(${transaction.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm font-medium">
+                          View
+                        </button>
+                      </div>
+                      
+                      <div class="space-y-2">
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">Material:</span>
+                          <span class="text-sm text-gray-900 dark:text-white">${transaction.material_name}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">SKU:</span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400">${transaction.sku_code}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">Location:</span>
+                          <span class="text-sm text-gray-900 dark:text-white">${transaction.location_name}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">Quantity:</span>
+                          <span class="text-sm font-medium ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}">
+                            ${isPositive ? '+' : '-'}${transaction.quantity}
+                          </span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">Date:</span>
+                          <span class="text-sm text-gray-900 dark:text-white">${new Date(transaction.transaction_date).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">User:</span>
+                          <span class="text-sm text-gray-900 dark:text-white">${transaction.user_name || 'System'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('');
+              }
+
+              // Re-initialize icons
+              if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+              }
+            }
+
+            // Modal Functions
+            function openAddTransactionModal() {
+              document.getElementById('transactionModalTitle').textContent = 'New Transaction';
+              document.getElementById('transactionSubmitText').textContent = 'Create Transaction';
+              document.getElementById('transactionForm').reset();
+              document.getElementById('transactionId').value = '';
+              document.getElementById('reasonField').classList.add('hidden');
+
+              // Set default transaction date to now
+              const now = new Date();
+              const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+              document.getElementById('transactionDate').value = localDateTime;
+
+              document.getElementById('transactionModal').classList.remove('hidden');
+            }
+
+            function closeTransactionModal() {
+              document.getElementById('transactionModal').classList.add('hidden');
+            }
+
+            // Form submission
+            document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+              e.preventDefault();
+
+              const formData = new FormData(this);
+              const data = Object.fromEntries(formData);
+
+              try {
+                const response = await fetch('/api/v1/material/transactions', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  closeTransactionModal();
+                  loadTransactions();
+
+                  // Show success toast
+                  const message = `Transaction ${result.data.transaction_number} created successfully`;
+                  showSuccessToast(message);
+                } else {
+                  showErrorToast('Error: ' + result.error);
+                }
+              } catch (error) {
+                console.error('Error creating transaction:', error);
+                showErrorToast('Failed to create transaction');
+              }
+            });
+
+            function viewTransaction(transactionId) {
+              // Implementation for viewing transaction details
+            }
+          </script>
+        </section>
+      </main>
+
+      <%- include('../../../../partials/_footer') %>
+    </div>
+  </body>
+</html>

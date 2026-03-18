@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+
+  <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_subnav', { section: 'Procurement', user }) %>
+      <main class="flex-1 bg-white dark:bg-gray-900">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <header class="mb-6">
+            <div>
+              <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Milk Procurement</h1>
+              <p class="text-slate-600 dark:text-slate-300 mt-2">Dashboard</p>
+            </div>
+          </header>
+
+          <!-- Quick Actions -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <a href="/procurement/cpp" class="flex items-center gap-4 p-5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors group" title="Collection Point">
+                <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                  <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-base font-semibold text-gray-900 dark:text-gray-100">CPP</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Collection Point</div>
+                </div>
+              </a>
+              <a href="/procurement/rcc" class="flex items-center gap-4 p-5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group" title="Regional Collection Center">
+                <div class="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
+                  <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-base font-semibold text-gray-900 dark:text-gray-100">RCC</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Regional Collection Center</div>
+                </div>
+              </a>
+              <% if (typeof user !== 'undefined' && user && (user.role === 'admin' || user.role === 'plant_manager')) { %>
+              <a href="/procurement/mp" class="flex items-center gap-4 p-5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors group" title="Main Plant">
+                <div class="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+                  <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-base font-semibold text-gray-900 dark:text-gray-100">MP</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Main Plant</div>
+                </div>
+              </a>
+              <% } %> <% if (typeof user !== 'undefined' && user && (user.role === 'admin' || (user.permissions && user.permissions.procurement && user.permissions.procurement.billing))) { %>
+              <a href="/procurement/billing" class="flex items-center gap-4 p-5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors group" title="Billing">
+                <div class="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+                  <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-base font-semibold text-gray-900 dark:text-gray-100">Billing</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Financial Management</div>
+                </div>
+              </a>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Dashboard Section -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Summary</h2>
+              <div class="flex items-center gap-3">
+                <label for="rangeDays" class="text-sm text-slate-600 dark:text-slate-300">Range</label>
+                <select id="rangeDays" class="h-10 px-3 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm">
+                  <option value="1">Today</option>
+                  <option value="7">Last 7 days</option>
+                  <option value="30" selected>Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+                <div id="customRangeContainer" class="hidden items-center gap-2">
+                  <input type="date" id="customStart" class="h-10 px-3 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm" />
+                  <span class="text-sm text-slate-500">to</span>
+                  <input type="date" id="customEnd" class="h-10 px-3 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div id="dashboardSpinner" class="w-full py-6 flex items-center justify-center">
+              <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span class="text-sm">Loading dashboard…</span>
+              </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Total Volume -->
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Total Volume</p>
+                      <p class="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1" id="totalVolume">0 L</p>
+                    </div>
+                    <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CPP Count -->
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-green-600 dark:text-green-400">Active CPPs</p>
+                      <p class="text-2xl font-bold text-green-900 dark:text-green-100 mt-1" id="cppCount">0</p>
+                    </div>
+                    <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                      <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Average Fat -->
+                <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-orange-600 dark:text-orange-400">Avg Fat</p>
+                      <p class="text-2xl font-bold text-orange-900 dark:text-orange-100 mt-1" id="avgFat">0.0%</p>
+                    </div>
+                    <div class="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                      <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Average SNF -->
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-purple-600 dark:text-purple-400">Avg SNF</p>
+                      <p class="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1" id="avgSnf">0.0%</p>
+                    </div>
+                    <div class="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                      <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Milk Type Breakdown -->
+              <div id="milkTypeBreakdown" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Filled by JavaScript -->
+              </div>
+
+              <!-- Daily Volume Trend Chart -->
+              <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Volume Trend</h3>
+                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+                  <div class="mb-4">
+                    <div class="flex flex-wrap gap-4 text-sm">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <span class="text-gray-600 dark:text-gray-300">Total Volume</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-gray-600 dark:text-gray-300">A1 Milk</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span class="text-gray-600 dark:text-gray-300">A2 Milk</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span class="text-gray-600 dark:text-gray-300">Buffalo Milk</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Chart Canvas -->
+                  <div class="relative" style="height: 400px">
+                    <canvas id="volumeChart"></canvas>
+
+                    <!-- Loading Spinner -->
+                    <div id="chartLoading" class="absolute inset-0 hidden items-center justify-center bg-white dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-75">
+                      <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                        <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        <span class="text-sm">Loading chart data...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% if (user && (user.role === 'ADMIN' || user.role === 'PO')) { %>
+          <div class="mt-12">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6 flex items-center">
+              <svg class="w-5 h-5 text-gray-600 dark:text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Admin Tools
+            </h3>
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-4">
+              <a href="/admin/rcc" class="group bg-gray-50 dark:bg-gray-800 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 block">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors mr-4" style="margin-right: 16px !important">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">RCC</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Manage Centers</div>
+                  </div>
+                </div>
+              </a>
+
+              <a href="/admin/cpp" class="group bg-gray-50 dark:bg-gray-800 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 block">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors mr-4" style="margin-right: 16px !important">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">CPP</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Manage Points</div>
+                  </div>
+                </div>
+              </a>
+
+              <a href="/admin/farmers" class="group bg-gray-50 dark:bg-gray-800 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 block">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors mr-4" style="margin-right: 16px !important">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Farmers</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Manage Farmers</div>
+                  </div>
+                </div>
+              </a>
+
+              <a href="/admin/rate-charts" class="group bg-gray-50 dark:bg-gray-800 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 block">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors mr-4" style="margin-right: 16px !important">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Rate Charts</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Manage Rates</div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+          <% } %>
+        </section>
+      </main>
+    </div>
+    <script src="/assets/js/main.js" defer></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script>
+      // Chart functionality
+      let volumeChart = null;
+
+      function initializeChart() {
+        try {
+          const canvas = document.getElementById("volumeChart");
+          if (!canvas) return;
+
+          const ctx = canvas.getContext("2d");
+
+          // Register the datalabels plugin if available
+          let datalabelsEnabled = false;
+          if (typeof ChartDataLabels !== "undefined") {
+            try {
+              Chart.register(ChartDataLabels);
+              datalabelsEnabled = true;
+            } catch (e) {
+              console.warn("Failed to register ChartDataLabels plugin:", e);
+            }
+          }
+
+          // Helper function to detect dark mode
+          function isDarkMode() {
+            return document.documentElement.classList.contains("dark") || document.body.classList.contains("dark") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          }
+
+          // Set colors based on theme with better contrast
+          const darkMode = isDarkMode();
+          const textColor = darkMode ? "#d1d5db" : "#1f2937"; // lighter gray for dark mode (#d1d5db), darker for light mode
+          const gridColor = darkMode ? "rgba(156, 163, 175, 0.2)" : "rgba(229, 231, 235, 0.4)";
+          const titleColor = darkMode ? "#e5e7eb" : "#111827"; // very light gray for dark mode, very dark for light mode
+
+          volumeChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  label: "Total Volume",
+                  data: [],
+                  borderColor: "#8b5cf6",
+                  backgroundColor: "rgba(139, 92, 246, 0.1)",
+                  borderWidth: 3,
+                  fill: true,
+                  tension: 0.4,
+                },
+                {
+                  label: "A1 Milk",
+                  data: [],
+                  borderColor: "#10b981",
+                  backgroundColor: "rgba(16, 185, 129, 0.1)",
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.4,
+                },
+                {
+                  label: "A2 Milk",
+                  data: [],
+                  borderColor: "#ef4444",
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.4,
+                },
+                {
+                  label: "Buffalo Milk",
+                  data: [],
+                  borderColor: "#3b82f6",
+                  backgroundColor: "rgba(59, 130, 246, 0.1)",
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 30,
+                  right: 10,
+                  bottom: 10,
+                  left: 10,
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  mode: "index",
+                  intersect: false,
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  titleColor: "white",
+                  bodyColor: "white",
+                  borderColor: "#e5e7eb",
+                  borderWidth: 1,
+                  callbacks: {
+                    label: function (context) {
+                      return context.dataset.label + ": " + context.parsed.y.toFixed(1) + " L";
+                    },
+                  },
+                },
+                ...(datalabelsEnabled && {
+                  datalabels: {
+                    display: function (context) {
+                      // Show labels for all datasets (Total Volume, A1, A2, Buffalo)
+                      // Get the value from the dataset data array
+                      const dataPoint = context.dataset.data[context.dataIndex];
+                      const value = typeof dataPoint === "object" && dataPoint !== null ? dataPoint.y || dataPoint : dataPoint;
+
+                      // Show label if value exists and is greater than 0
+                      return value !== null && value !== undefined && value !== "" && !isNaN(Number(value)) && Number(value) > 0;
+                    },
+                    color: function (context) {
+                      // Total Volume line shows white labels
+                      if (context.datasetIndex === 0) {
+                        return "#ffffff";
+                      }
+                      // Match the border color of each dataset for others
+                      const colors = ["#8b5cf6", "#10b981", "#ef4444", "#3b82f6"]; // Total (purple), A1 (green), A2 (red), Buffalo (blue)
+                      return colors[context.datasetIndex] || "#374151";
+                    },
+                    font: {
+                      size: 10,
+                      weight: "normal",
+                    },
+                    formatter: function (value, context) {
+                      // Get the actual value from the dataset data array
+                      const dataPoint = context.dataset.data[context.dataIndex];
+                      const dataValue = typeof dataPoint === "object" && dataPoint !== null ? dataPoint.y || dataPoint : dataPoint || value || 0;
+                      const numValue = Number(dataValue);
+
+                      if (!isNaN(numValue) && numValue > 0) {
+                        return numValue.toFixed(0);
+                      }
+                      return "";
+                    },
+                    anchor: "end",
+                    align: "top",
+                    offset: 4,
+                    clamp: true,
+                  },
+                }),
+              },
+              scales: {
+                x: {
+                  display: true,
+                  title: {
+                    display: true,
+                    text: "Date",
+                    color: titleColor,
+                    font: {
+                      size: 13,
+                      weight: "bold",
+                    },
+                    padding: {
+                      top: 10,
+                    },
+                  },
+                  grid: {
+                    display: false,
+                    color: gridColor,
+                  },
+                  ticks: {
+                    color: textColor,
+                    font: {
+                      size: 11,
+                      weight: "500",
+                    },
+                    maxRotation: 45,
+                    minRotation: 0,
+                  },
+                },
+                y: {
+                  display: true,
+                  title: {
+                    display: true,
+                    text: "Volume (Liters)",
+                    color: titleColor,
+                    font: {
+                      size: 13,
+                      weight: "bold",
+                    },
+                    padding: {
+                      bottom: 10,
+                    },
+                  },
+                  grid: {
+                    color: gridColor,
+                    drawBorder: false,
+                  },
+                  ticks: {
+                    color: textColor,
+                    font: {
+                      size: 11,
+                      weight: "500",
+                    },
+                    callback: function (value) {
+                      return value.toFixed(0) + "L";
+                    },
+                  },
+                },
+              },
+              interaction: {
+                mode: "nearest",
+                axis: "x",
+                intersect: false,
+              },
+            },
+          });
+        } catch (error) {
+          console.error("Error initializing chart:", error);
+        }
+      }
+
+      function formatDateLabel(label) {
+        if (!label) return "";
+
+        // If already in DD/MM format, return as is
+        if (/^\d{2}\/\d{2}$/.test(label)) {
+          return label;
+        }
+
+        // Try parsing as date string (handles formats like "Jan 15", "2024-01-15", etc.)
+        try {
+          const date = new Date(label);
+          if (!isNaN(date.getTime())) {
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            return day + "/" + month;
+          }
+        } catch (e) {
+          // Try to parse month abbreviations like "Jan 15"
+          const monthMap = {
+            Jan: "01",
+            Feb: "02",
+            Mar: "03",
+            Apr: "04",
+            May: "05",
+            Jun: "06",
+            Jul: "07",
+            Aug: "08",
+            Sep: "09",
+            Oct: "10",
+            Nov: "11",
+            Dec: "12",
+          };
+
+          const parts = label.trim().split(" ");
+          if (parts.length >= 2) {
+            const monthStr = parts[0];
+            const dayStr = parts[1];
+            if (monthMap[monthStr] && dayStr) {
+              const day = String(parseInt(dayStr)).padStart(2, "0");
+              return day + "/" + monthMap[monthStr];
+            }
+          }
+        }
+
+        return label;
+      }
+
+      function updateChartColors() {
+        if (!volumeChart) return;
+
+        const darkMode = document.documentElement.classList.contains("dark") || document.body.classList.contains("dark") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+        const textColor = darkMode ? "#d1d5db" : "#1f2937";
+        const gridColor = darkMode ? "rgba(156, 163, 175, 0.2)" : "rgba(229, 231, 235, 0.4)";
+        const titleColor = darkMode ? "#e5e7eb" : "#111827";
+
+        // Update axis colors
+        if (volumeChart.options.scales) {
+          if (volumeChart.options.scales.x) {
+            volumeChart.options.scales.x.title.color = titleColor;
+            volumeChart.options.scales.x.ticks.color = textColor;
+          }
+          if (volumeChart.options.scales.y) {
+            volumeChart.options.scales.y.title.color = titleColor;
+            volumeChart.options.scales.y.ticks.color = textColor;
+            volumeChart.options.scales.y.grid.color = gridColor;
+          }
+        }
+
+        volumeChart.update("none");
+      }
+
+      function updateChart(data) {
+        if (!volumeChart) return;
+
+        // Format labels as DD/MM
+        const formattedLabels = (data.labels || []).map(formatDateLabel);
+
+        volumeChart.data.labels = formattedLabels;
+        volumeChart.data.datasets[0].data = data.datasets.total || [];
+        volumeChart.data.datasets[1].data = data.datasets.milkTypes?.A1 || [];
+        volumeChart.data.datasets[2].data = data.datasets.milkTypes?.A2 || [];
+        volumeChart.data.datasets[3].data = data.datasets.milkTypes?.Buffalo || [];
+
+        // Update colors in case theme changed
+        updateChartColors();
+      }
+
+      function showChartLoading(show) {
+        const loading = document.getElementById("chartLoading");
+        if (loading) {
+          loading.style.display = show ? "flex" : "none";
+        }
+      }
+
+      async function loadDashboard(days, endDate) {
+        const spinner = document.getElementById("dashboardSpinner");
+        const content = document.getElementById("dashboardContent");
+        spinner.classList.remove("hidden");
+        content.classList.add("hidden");
+        showChartLoading(true);
+
+        try {
+          const qs = new URLSearchParams();
+          qs.append('days', String(days));
+          if (endDate) qs.append('endDate', endDate);
+          const res = await fetch(`/api/procurement/dashboard/chart?${qs.toString()}`);
+          const json = await res.json();
+          if (!json.success) throw new Error("Failed to load");
+
+          const data = json.data;
+          const volumes = data.datasets.total || [];
+          const cppCounts = data.datasets.cppCount || [];
+          const avgFatArr = data.datasets.avgFat || [];
+          const avgSnfArr = data.datasets.avgSnf || [];
+
+          const totalVolume = data.summary?.totalVolume || volumes.reduce((a, b) => a + (b || 0), 0);
+          const avgFat = avgFatArr.length ? avgFatArr.reduce((a, b) => a + (b || 0), 0) / avgFatArr.length : 0;
+          const avgSnf = avgSnfArr.length ? avgSnfArr.reduce((a, b) => a + (b || 0), 0) / avgSnfArr.length : 0;
+          const avgCpp = cppCounts.length ? Math.round(cppCounts.reduce((a, b) => a + (b || 0), 0) / cppCounts.length) : 0;
+
+          document.getElementById("totalVolume").textContent = (totalVolume || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }) + " L";
+          document.getElementById("cppCount").textContent = avgCpp;
+          document.getElementById("avgFat").textContent = (avgFat || 0).toFixed(2) + "%";
+          document.getElementById("avgSnf").textContent = (avgSnf || 0).toFixed(2) + "%";
+
+          const milkTypeContainer = document.getElementById("milkTypeBreakdown");
+          const milkTypes = data.datasets.milkTypes || {};
+          const entries = Object.entries(milkTypes);
+          if (entries.length) {
+            milkTypeContainer.innerHTML = entries
+              .map(([type, arr]) => {
+                const sum = (arr || []).reduce((a, b) => a + (b || 0), 0);
+                return `
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${type}</span>
+                    <span class="text-lg font-bold text-gray-900 dark:text-white">${sum.toLocaleString("en-IN", { maximumFractionDigits: 2 })} L</span>
+                  </div>
+                </div>
+              `;
+              })
+              .join("");
+          } else {
+            milkTypeContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm col-span-full text-center py-4">No milk type data available</p>';
+          }
+
+          // Update chart with data
+          if (volumeChart) {
+            updateChart(data);
+          }
+
+          spinner.classList.add("hidden");
+          content.classList.remove("hidden");
+          showChartLoading(false);
+        } catch (e) {
+          spinner.innerHTML = '<p class="text-gray-600 dark:text-gray-300 text-sm">Unable to load dashboard</p>';
+          showChartLoading(false);
+          console.error(e);
+        }
+      }
+
+      function initDashboard() {
+        // Initialize chart first
+        if (typeof Chart !== "undefined") {
+          initializeChart();
+        } else {
+          // Wait for Chart.js to load
+          setTimeout(initializeChart, 100);
+        }
+
+        const rangeEl = document.getElementById("rangeDays");
+        const customWrap = document.getElementById("customRangeContainer");
+        const customStart = document.getElementById("customStart");
+        const customEnd = document.getElementById("customEnd");
+
+        const todayStr = new Date().toISOString().slice(0,10);
+        if (customStart) customStart.value = todayStr;
+        if (customEnd) customEnd.value = todayStr;
+
+        function computeDaysDiff(startStr, endStr){
+          try{
+            const s = new Date(startStr);
+            const e = new Date(endStr);
+            const diffMs = e - s;
+            if (isNaN(diffMs) || diffMs < 0) return null;
+            return Math.floor(diffMs / (1000*60*60*24)) + 1;
+          }catch(_){ return null; }
+        }
+
+        function loadForSelection(){
+          const val = rangeEl.value;
+          if (val === 'custom'){
+            if (customWrap) customWrap.classList.remove('hidden');
+            const d = computeDaysDiff(customStart.value, customEnd.value) || 1;
+            const end = customEnd.value || todayStr;
+            loadDashboard(d, end);
+          } else {
+            if (customWrap) customWrap.classList.add('hidden');
+            const num = parseInt(val || '30', 10);
+            loadDashboard(num, todayStr);
+          }
+        }
+
+        loadForSelection();
+        rangeEl.addEventListener('change', loadForSelection);
+        if (customStart) customStart.addEventListener('change', loadForSelection);
+        if (customEnd) customEnd.addEventListener('change', loadForSelection);
+
+        // Watch for theme changes
+        const observer = new MutationObserver(() => {
+          if (volumeChart) {
+            updateChartColors();
+          }
+        });
+
+        observer.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+
+        observer.observe(document.body, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initDashboard);
+      } else {
+        initDashboard();
+      }
+    </script>
+  </body>
+</html>

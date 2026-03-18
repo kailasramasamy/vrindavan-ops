@@ -1,0 +1,144 @@
+<%- include('../../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+
+<style>
+  /* Dark mode support for month input and its native picker modal */
+  .dark input[type="month"] {
+    color-scheme: dark;
+  }
+  
+  /* Style the calendar picker indicator icon */
+  input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  
+  input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  
+  /* Dark mode: ensure icon is visible */
+  .dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) invert(1);
+  }
+</style>
+
+<body class="bg-slate-50 dark:bg-gray-900">
+  <%- include('../../../../partials/_subnav', { user, section: 'Payments', subsection: 'Electricity Payments' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Electricity Payments</h1>
+          <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            Track and manage electricity bill payments based on invoice amounts.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm">
+            <label for="electricityPaymentsMonth" class="text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
+            <input type="month" id="electricityPaymentsMonth" class="bg-transparent border-0 text-sm text-gray-900 dark:text-white focus:ring-0">
+          </div>
+        </div>
+      </div>
+
+      <section id="electricityPaymentsSummary" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Total Invoices</p>
+          <p id="cycleInvoiceCount" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">-</p>
+          <p id="cycleDates" class="text-xs text-gray-400 dark:text-gray-500 mt-2">-</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Total Invoice Amount</p>
+          <p id="cycleInvoiceAmount" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">₹0.00</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Base invoice amount</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Total Adjustments</p>
+          <p id="cycleAdjustments" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">₹0.00</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+          <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">Net Pay</p>
+          <p id="cycleNetPay" class="text-2xl font-bold text-gray-900 dark:text-white mt-2">₹0.00</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Invoice + adjustments</p>
+        </div>
+      </section>
+
+      <!-- Payment Records Section -->
+      <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+        <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Electricity Payments</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Review invoice-based payments and track payment status. Click "Update Invoice" to add or modify invoice details.</p>
+            <p id="electricityPaymentsHeaderRange" class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden"></p>
+          </div>
+          <div class="flex flex-wrap gap-3 items-center">
+            <select id="electricityPaymentsStatusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="ready">Ready</option>
+              <option value="paid">Paid</option>
+              <option value="on_hold">On Hold</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </header>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Meter</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invoice Number</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invoice Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invoice Amount</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Adjustments</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net Pay</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="electricityPaymentsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr id="electricityPaymentsLoadingRow" class="hidden">
+                <td colspan="8" class="px-6 py-12 text-center">
+                  <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+                  </div>
+                </td>
+              </tr>
+              <tr id="electricityPaymentsEmptyRow">
+                <td colspan="8" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                  <div class="flex flex-col items-center gap-2">
+                    <p>No electricity payments found for this month.</p>
+                    <p class="text-xs">Click "Update Invoice" for a meter to create a payment record.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    window.ELECTRICITY_PAYMENTS_DEFAULT_MONTH = "<%= defaultMonth %>";
+  </script>
+  <script src="/assets/js/payments-electricity.js?v=<%= Date.now() %>"></script>
+</body>
+</html>
+

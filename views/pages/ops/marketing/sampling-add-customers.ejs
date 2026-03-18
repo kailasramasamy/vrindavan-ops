@@ -1,0 +1,762 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { currentPage: currentPage, section: 'Marketing', subsection: 'Product Sampling', user: user }) %>
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 shadow">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="flex items-center space-x-3">
+              <a href="/marketing/sampling/<%= campaignId %>" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </a>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Add Customers to Campaign</h1>
+            </div>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" id="campaignInfo">Loading campaign information...</p>
+          </div>
+          <div>
+            <a href="/marketing/sampling/<%= campaignId %>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Back to Campaign
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 mt-8">
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <!-- Filters -->
+        <div class="space-y-4 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Sample Product (they haven't ordered) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Sample Product (Haven't ordered in last 30 days)
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="sampleProductSearch" 
+                  placeholder="Search products..." 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  onkeyup="searchSampleProducts()"
+                  autocomplete="off">
+                <div id="sampleProductResults" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"></div>
+              </div>
+              <input type="hidden" id="selectedSampleProductId">
+              <input type="hidden" id="selectedSampleProductName">
+              <div id="selectedSampleProductDisplay" class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm hidden">
+                <span class="text-gray-900 dark:text-white"></span>
+                <button type="button" onclick="clearSampleProductSelection()" class="ml-2 text-red-600 hover:text-red-800 dark:text-red-400 text-xs">Clear</button>
+              </div>
+            </div>
+
+            <!-- Reference Product (they order regularly) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Reference Product (Customers order regularly)
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="referenceProductSearch" 
+                  placeholder="Search products..." 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  onkeyup="searchReferenceProducts()"
+                  autocomplete="off">
+                <div id="referenceProductResults" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"></div>
+              </div>
+              <input type="hidden" id="selectedReferenceProductId">
+              <input type="hidden" id="selectedReferenceProductName">
+              <div id="selectedReferenceProductDisplay" class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm hidden">
+                <span class="text-gray-900 dark:text-white"></span>
+                <button type="button" onclick="clearReferenceProductSelection()" class="ml-2 text-red-600 hover:text-red-800 dark:text-red-400 text-xs">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sampling Date -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Sampling Date
+                <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="date" 
+                id="samplingDate" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                required>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Select the date when samples will be sent to these customers</p>
+            </div>
+            <div></div>
+          </div>
+
+          <!-- Search Button -->
+          <div class="flex justify-center">
+            <button id="findCustomersBtn" onclick="loadTopBuyers()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center">
+              <span id="findCustomersText">Find Customers</span>
+              <span id="findCustomersSpinner" class="hidden ml-2">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Table -->
+        <div id="buyersContainer" class="hidden">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Total: <span id="totalBuyersCount">0</span> customers found
+              </h4>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Customers who order Reference Product regularly but haven't ordered Sample Product in last 30 days
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="toggleAllBuyers()" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 px-3 py-1 border border-blue-600 dark:border-blue-400 rounded">
+                Toggle All
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-md">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">
+                    <input type="checkbox" id="selectAllBuyers" onchange="toggleAllBuyers()" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer ID</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders (A)</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Revenue (A)</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Order (A)</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody id="buyersTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Dynamic content -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Pagination -->
+          <div id="paginationContainer" class="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button id="prevPageMobile" onclick="changePage(currentPage - 1)" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Previous
+              </button>
+              <button id="nextPageMobile" onclick="changePage(currentPage + 1)" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+              </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  Showing <span id="pageStart">0</span> to <span id="pageEnd">0</span> of <span id="pageTotal">0</span> customers
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button id="prevPage" onclick="changePage(currentPage - 1)" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <span class="sr-only">Previous</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  <span id="paginationNumbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <!-- Page numbers will be inserted here -->
+                  </span>
+                  <button id="nextPage" onclick="changePage(currentPage + 1)" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="sr-only">Next</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button onclick="addSelectedCustomers()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Add <span id="selectedCount">0</span> Selected Customers
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <script>
+    let campaignId = '<%= campaignId %>';
+    let campaign = null;
+    let selectedCustomers = new Set();
+    let allProducts = [];
+    let allBuyers = [];
+    let debounceTimer = null;
+    let currentPage = 1;
+    const itemsPerPage = 20;
+    let lastSelectedIndex = -1; // Track last clicked checkbox index for shift selection
+
+    // Load initial data
+    document.addEventListener("DOMContentLoaded", function() {
+      // Set default sampling date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('samplingDate').value = today;
+      
+      loadCampaignDetails();
+      loadProducts();
+    });
+
+    async function loadCampaignDetails() {
+      try {
+        const response = await fetch(`/marketing/api/sampling/campaigns/${campaignId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          campaign = result.data;
+          document.getElementById('campaignInfo').textContent = `Campaign: ${campaign.campaign_name} - Sample Product: ${campaign.product_name}`;
+          
+          // Pre-fill sample product with campaign product
+          if (campaign.product_id && allProducts.length > 0) {
+            const sampleProduct = allProducts.find(p => p.id == campaign.product_id);
+            if (sampleProduct) {
+              document.getElementById('selectedSampleProductId').value = campaign.product_id;
+              document.getElementById('selectedSampleProductName').value = campaign.product_name;
+              document.getElementById('sampleProductSearch').value = campaign.product_name;
+              const sampleDisplay = document.getElementById('selectedSampleProductDisplay');
+              sampleDisplay.querySelector('span').textContent = campaign.product_name;
+              sampleDisplay.classList.remove('hidden');
+            }
+          }
+          
+          // Pre-fill reference product if available from existing customers
+          if (campaign.reference_product_id && allProducts.length > 0) {
+            const referenceProduct = allProducts.find(p => p.id == campaign.reference_product_id);
+            if (referenceProduct) {
+              const referenceName = campaign.reference_product_name || referenceProduct.name;
+              document.getElementById('selectedReferenceProductId').value = campaign.reference_product_id;
+              document.getElementById('selectedReferenceProductName').value = referenceName;
+              document.getElementById('referenceProductSearch').value = referenceName;
+              const referenceDisplay = document.getElementById('selectedReferenceProductDisplay');
+              referenceDisplay.querySelector('span').textContent = referenceName;
+              referenceDisplay.classList.remove('hidden');
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading campaign details:", error);
+      }
+    }
+
+    async function loadProducts() {
+      try {
+        const response = await fetch('/marketing/api/sampling/products?limit=200');
+        const result = await response.json();
+        if (result.success) {
+          allProducts = result.data;
+          // Pre-fill sample product after products are loaded
+          if (campaign && campaign.product_id) {
+            const sampleProduct = allProducts.find(p => p.id == campaign.product_id);
+            if (sampleProduct) {
+              document.getElementById('selectedSampleProductId').value = campaign.product_id;
+              document.getElementById('selectedSampleProductName').value = campaign.product_name;
+              document.getElementById('sampleProductSearch').value = campaign.product_name;
+              const sampleDisplay = document.getElementById('selectedSampleProductDisplay');
+              sampleDisplay.querySelector('span').textContent = campaign.product_name;
+              sampleDisplay.classList.remove('hidden');
+            }
+          }
+          // Pre-fill reference product after products are loaded
+          if (campaign && campaign.reference_product_id) {
+            const referenceProduct = allProducts.find(p => p.id == campaign.reference_product_id);
+            if (referenceProduct) {
+              const referenceName = campaign.reference_product_name || referenceProduct.name;
+              document.getElementById('selectedReferenceProductId').value = campaign.reference_product_id;
+              document.getElementById('selectedReferenceProductName').value = referenceName;
+              document.getElementById('referenceProductSearch').value = referenceName;
+              const referenceDisplay = document.getElementById('selectedReferenceProductDisplay');
+              referenceDisplay.querySelector('span').textContent = referenceName;
+              referenceDisplay.classList.remove('hidden');
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
+    }
+
+    function searchReferenceProducts() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const searchTerm = document.getElementById('referenceProductSearch').value.toLowerCase();
+        const results = allProducts.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          (p.sku_code && p.sku_code.toLowerCase().includes(searchTerm))
+        ).slice(0, 10);
+
+        const resultsDiv = document.getElementById('referenceProductResults');
+        if (searchTerm && results.length > 0) {
+          resultsDiv.innerHTML = results.map(p => `
+            <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" onclick="selectReferenceProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${p.name}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">${p.unit || ''} - ₹${parseFloat(p.price || 0).toFixed(2)}</div>
+            </div>
+          `).join('');
+          resultsDiv.classList.remove('hidden');
+        } else {
+          resultsDiv.classList.add('hidden');
+        }
+      }, 300);
+    }
+
+    function selectReferenceProduct(id, name) {
+      document.getElementById('selectedReferenceProductId').value = id;
+      document.getElementById('selectedReferenceProductName').value = name;
+      document.getElementById('referenceProductSearch').value = name;
+      document.getElementById('referenceProductResults').classList.add('hidden');
+      
+      const displayDiv = document.getElementById('selectedReferenceProductDisplay');
+      displayDiv.querySelector('span').textContent = name;
+      displayDiv.classList.remove('hidden');
+    }
+
+    function clearReferenceProductSelection() {
+      document.getElementById('selectedReferenceProductId').value = '';
+      document.getElementById('selectedReferenceProductName').value = '';
+      document.getElementById('referenceProductSearch').value = '';
+      document.getElementById('selectedReferenceProductDisplay').classList.add('hidden');
+      document.getElementById('referenceProductResults').classList.add('hidden');
+    }
+
+    function searchSampleProducts() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const searchTerm = document.getElementById('sampleProductSearch').value.toLowerCase();
+        const results = allProducts.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          (p.sku_code && p.sku_code.toLowerCase().includes(searchTerm))
+        ).slice(0, 10);
+
+        const resultsDiv = document.getElementById('sampleProductResults');
+        if (searchTerm && results.length > 0) {
+          resultsDiv.innerHTML = results.map(p => `
+            <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" onclick="selectSampleProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">${p.name}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">${p.unit || ''} - ₹${parseFloat(p.price || 0).toFixed(2)}</div>
+            </div>
+          `).join('');
+          resultsDiv.classList.remove('hidden');
+        } else {
+          resultsDiv.classList.add('hidden');
+        }
+      }, 300);
+    }
+
+    function selectSampleProduct(id, name) {
+      document.getElementById('selectedSampleProductId').value = id;
+      document.getElementById('selectedSampleProductName').value = name;
+      document.getElementById('sampleProductSearch').value = name;
+      document.getElementById('sampleProductResults').classList.add('hidden');
+      
+      const displayDiv = document.getElementById('selectedSampleProductDisplay');
+      displayDiv.querySelector('span').textContent = name;
+      displayDiv.classList.remove('hidden');
+    }
+
+    function clearSampleProductSelection() {
+      document.getElementById('selectedSampleProductId').value = '';
+      document.getElementById('selectedSampleProductName').value = '';
+      document.getElementById('sampleProductSearch').value = '';
+      document.getElementById('selectedSampleProductDisplay').classList.add('hidden');
+      document.getElementById('sampleProductResults').classList.add('hidden');
+    }
+
+    async function loadTopBuyers() {
+      const referenceProductId = document.getElementById('selectedReferenceProductId').value;
+      const sampleProductId = document.getElementById('selectedSampleProductId').value;
+
+      if (!referenceProductId || !sampleProductId) {
+        showErrorToast('Please select both Sample Product and Reference Product');
+        return;
+      }
+
+      // Show loading spinner in button
+      const findBtn = document.getElementById('findCustomersBtn');
+      const findText = document.getElementById('findCustomersText');
+      const findSpinner = document.getElementById('findCustomersSpinner');
+      findBtn.disabled = true;
+      findText.classList.add('hidden');
+      findSpinner.classList.remove('hidden');
+
+      try {
+        const tbody = document.getElementById('buyersTableBody');
+        // Clear table and show empty state while loading (no spinner)
+        tbody.innerHTML = '';
+        document.getElementById('buyersContainer').classList.remove('hidden');
+        selectedCustomers.clear();
+        updateSelectedCount();
+        currentPage = 1;
+        lastSelectedIndex = -1; // Reset shift selection tracking
+
+        // Fetch with limit 500 to avoid proxy timeouts (default), allow up to 1000
+        const response = await fetch(`/marketing/api/sampling/customers/top-buyers?reference_product_id=${referenceProductId}&sample_product_id=${sampleProductId}&campaign_id=${campaignId}&limit=500`);
+        
+        // Check if response is OK before parsing JSON
+        if (!response.ok) {
+          // Handle 502, 504, and other proxy/network errors
+          if (response.status === 502 || response.status === 504) {
+            throw new Error('Server timeout. The query is taking too long. Please try again with fewer customers or contact support.');
+          }
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText || 'Server error occurred' };
+          }
+          throw new Error(errorData.error || `Server error (${response.status})`);
+        }
+        
+        const result = await response.json();
+
+        // Hide loading spinner and re-enable button
+        findBtn.disabled = false;
+        findText.classList.remove('hidden');
+        findSpinner.classList.add('hidden');
+
+        if (result.success) {
+          allBuyers = result.data;
+          document.getElementById('totalBuyersCount').textContent = allBuyers.length;
+          renderBuyersTable();
+          updatePagination();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-red-500 dark:text-red-400">Error: ${result.error || 'Failed to load customers'}</td></tr>`;
+          showErrorToast(result.error || 'Failed to load customers');
+        }
+      } catch (error) {
+        console.error("Error loading top buyers:", error);
+        const tbody = document.getElementById('buyersTableBody');
+        const errorMessage = error.message || 'Error loading customers. Please try again.';
+        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-red-500 dark:text-red-400">${errorMessage}</td></tr>`;
+        showErrorToast(errorMessage);
+        
+        // Hide loading spinner and re-enable button
+        findBtn.disabled = false;
+        findText.classList.remove('hidden');
+        findSpinner.classList.add('hidden');
+      }
+    }
+
+    function renderBuyersTable() {
+      const tbody = document.getElementById('buyersTableBody');
+      tbody.innerHTML = '';
+
+      if (allBuyers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">No customers found matching the criteria.</td></tr>';
+        return;
+      }
+
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedBuyers = allBuyers.slice(startIndex, endIndex);
+
+      paginatedBuyers.forEach((buyer, index) => {
+        const row = document.createElement('tr');
+        row.className = buyer.already_added ? 'opacity-50' : '';
+        
+        // Calculate the actual index in allBuyers array
+        const actualIndex = startIndex + index;
+        const customerId = parseInt(buyer.customer_id);
+        const isSelected = selectedCustomers.has(customerId);
+        
+        row.innerHTML = `
+          <td class="px-4 py-3 whitespace-nowrap">
+            ${buyer.already_added ? '<span class="text-xs text-gray-400">-</span>' : '<input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 buyer-checkbox" value="' + customerId + '" data-index="' + actualIndex + '" ' + (isSelected ? 'checked' : '') + '>'}
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">${buyer.customer_id}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">${buyer.customer_name || 'N/A'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">${buyer.customer_phone || 'N/A'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">${buyer.reference_product_orders || 0}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹${(buyer.reference_product_total_amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">${buyer.reference_product_last_order_date ? new Date(buyer.reference_product_last_order_date).toLocaleDateString() : 'N/A'}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            ${buyer.already_added ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">Already Added</span>' : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-300">Available</span>'}
+          </td>
+        `;
+
+        // Attach checkbox event listener after adding to DOM
+        // Use 'click' instead of 'change' to properly capture shift key state
+        const checkboxEl = row.querySelector('.buyer-checkbox');
+        if (checkboxEl) {
+          checkboxEl.addEventListener('click', function(e) {
+            const idx = parseInt(e.target.dataset.index);
+            if (!isNaN(idx)) {
+              handleCheckboxChange(e, idx);
+            }
+          });
+        }
+
+        tbody.appendChild(row);
+      });
+
+      updateSelectAllCheckbox();
+    }
+
+    function handleCheckboxChange(event, currentIndex) {
+      const checkbox = event.target;
+      const customerId = parseInt(checkbox.value);
+      const isShiftPressed = event.shiftKey;
+      
+      // Use our Set as the source of truth, not the checkbox state
+      const isCurrentlySelected = selectedCustomers.has(customerId);
+      const willBeChecked = !isCurrentlySelected;
+
+      // If shift key is pressed and we have a previous selection
+      if (isShiftPressed && lastSelectedIndex !== -1 && lastSelectedIndex !== currentIndex) {
+        // Prevent default to manually control checkbox states
+        event.preventDefault();
+        
+        // Determine the range between last selected and current
+        const startIdx = Math.min(lastSelectedIndex, currentIndex);
+        const endIdx = Math.max(lastSelectedIndex, currentIndex);
+        
+        // Use the intended state based on our Set, not checkbox visual state
+        const shouldSelect = willBeChecked;
+        
+        // Select/deselect all in range (only available buyers, not already added)
+        for (let i = startIdx; i <= endIdx; i++) {
+          const buyer = allBuyers[i];
+          if (buyer && !buyer.already_added) {
+            const buyerCustomerId = parseInt(buyer.customer_id);
+            if (shouldSelect) {
+              selectedCustomers.add(buyerCustomerId);
+            } else {
+              selectedCustomers.delete(buyerCustomerId);
+            }
+          }
+        }
+        
+        // Update last selected index to current after range selection
+        lastSelectedIndex = currentIndex;
+        
+        // Re-render the table to update all checkboxes
+        renderBuyersTable();
+      } else {
+        // Normal single selection
+        if (willBeChecked) {
+          selectedCustomers.add(customerId);
+        } else {
+          selectedCustomers.delete(customerId);
+        }
+        
+        // Update last selected index on single click (not shift click)
+        lastSelectedIndex = currentIndex;
+        
+        // For single selection, only update counts, don't re-render
+        updateSelectAllCheckbox();
+      }
+
+      updateSelectedCount();
+    }
+
+    function changePage(page) {
+      const totalPages = Math.ceil(allBuyers.length / itemsPerPage);
+      if (page < 1 || page > totalPages) return;
+      
+      currentPage = page;
+      // Don't reset lastSelectedIndex when changing pages - it's based on allBuyers array, not page
+      renderBuyersTable();
+      updatePagination();
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(allBuyers.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, allBuyers.length);
+
+      // Update page info
+      document.getElementById('pageStart').textContent = allBuyers.length > 0 ? startIndex + 1 : 0;
+      document.getElementById('pageEnd').textContent = endIndex;
+      document.getElementById('pageTotal').textContent = allBuyers.length;
+
+      // Update pagination buttons
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const prevPageMobile = document.getElementById('prevPageMobile');
+      const nextPageMobile = document.getElementById('nextPageMobile');
+
+      prevPage.disabled = currentPage === 1;
+      nextPage.disabled = currentPage === totalPages;
+      prevPageMobile.disabled = currentPage === 1;
+      nextPageMobile.disabled = currentPage === totalPages;
+
+      // Update page numbers
+      const paginationNumbers = document.getElementById('paginationNumbers');
+      let pageNumbersHTML = '';
+      
+      if (totalPages <= 7) {
+        // Show all pages if 7 or fewer
+        for (let i = 1; i <= totalPages; i++) {
+          pageNumbersHTML += `<button onclick="changePage(${i})" class="relative inline-flex items-center px-4 py-2 border ${i === currentPage ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 z-10' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'} text-sm font-medium">${i}</button>`;
+        }
+      } else {
+        // Show first, last, current, and neighbors
+        if (currentPage > 2) {
+          pageNumbersHTML += `<button onclick="changePage(1)" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm font-medium">1</button>`;
+          if (currentPage > 3) {
+            pageNumbersHTML += `<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">...</span>`;
+          }
+        }
+        
+        for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
+          pageNumbersHTML += `<button onclick="changePage(${i})" class="relative inline-flex items-center px-4 py-2 border ${i === currentPage ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 z-10' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'} text-sm font-medium">${i}</button>`;
+        }
+        
+        if (currentPage < totalPages - 1) {
+          if (currentPage < totalPages - 2) {
+            pageNumbersHTML += `<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">...</span>`;
+          }
+          pageNumbersHTML += `<button onclick="changePage(${totalPages})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm font-medium">${totalPages}</button>`;
+        }
+      }
+      
+      paginationNumbers.innerHTML = pageNumbersHTML;
+    }
+
+    function toggleAllBuyers() {
+      const selectAllCheckbox = document.getElementById('selectAllBuyers');
+      // When change event fires, checkbox.checked is already in the new state
+      const shouldSelectAll = selectAllCheckbox.checked;
+
+      // Get paginated buyers for current page
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedBuyers = allBuyers.slice(startIndex, endIndex);
+
+      // Toggle selection for current page only
+      paginatedBuyers.filter(b => !b.already_added).forEach(buyer => {
+        if (shouldSelectAll) {
+          selectedCustomers.add(buyer.customer_id);
+        } else {
+          selectedCustomers.delete(buyer.customer_id);
+        }
+      });
+
+      // Re-render to update all checkboxes
+      renderBuyersTable();
+      
+      // Update the select all checkbox state after rendering
+      updateSelectAllCheckbox();
+      updateSelectedCount();
+    }
+
+    function updateSelectAllCheckbox() {
+      const checkboxes = document.querySelectorAll('.buyer-checkbox');
+      if (checkboxes.length === 0) {
+        return;
+      }
+      
+      const checkedCount = Array.from(checkboxes).filter(cb => {
+        const customerId = parseInt(cb.value);
+        return selectedCustomers.has(customerId);
+      }).length;
+      
+      const availableCount = checkboxes.length;
+      const selectAllCheckbox = document.getElementById('selectAllBuyers');
+      
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = availableCount > 0 && checkedCount === availableCount;
+      }
+    }
+
+    function updateSelectedCount() {
+      document.getElementById('selectedCount').textContent = selectedCustomers.size;
+    }
+
+    async function addSelectedCustomers() {
+      if (selectedCustomers.size === 0) {
+        showErrorToast('Please select at least one customer');
+        return;
+      }
+
+      const referenceProductId = document.getElementById('selectedReferenceProductId').value;
+      const referenceProductName = document.getElementById('selectedReferenceProductName').value;
+      const samplingDate = document.getElementById('samplingDate').value;
+      
+      if (!referenceProductId) {
+        showErrorToast('Please select a Reference Product');
+        return;
+      }
+
+      if (!samplingDate) {
+        showErrorToast('Please select a Sampling Date');
+        return;
+      }
+
+      const buyers = Array.from(selectedCustomers).map(cid => {
+        const buyer = allBuyers.find(b => b.customer_id === cid);
+        return {
+          customer_id: cid,
+          customer_name: buyer?.customer_name || 'N/A',
+          customer_phone: buyer?.customer_phone || 'N/A',
+          reference_product_id: referenceProductId,
+          reference_product_orders: buyer?.reference_product_orders || 0,
+          sampling_date: samplingDate
+        };
+      });
+
+      try {
+        const response = await fetch(`/marketing/api/sampling/campaigns/${campaignId}/customers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            customers: buyers,
+            sampling_date: samplingDate
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast(`Successfully added ${buyers.length} customers to the campaign for ${samplingDate}!`, 3000);
+          setTimeout(() => {
+            window.location.href = `/marketing/sampling/${campaignId}`;
+          }, 1000);
+        } else {
+          showErrorToast('Failed to add customers: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error("Error adding customers:", error);
+        showErrorToast('Failed to add customers');
+      }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.relative')) {
+        document.getElementById('referenceProductResults').classList.add('hidden');
+        document.getElementById('sampleProductResults').classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
+

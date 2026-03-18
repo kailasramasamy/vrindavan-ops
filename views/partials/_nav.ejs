@@ -1,0 +1,136 @@
+<!-- /views/partials/_nav.ejs -->
+<% const isNavDark = typeof navDark !== 'undefined' && navDark; %>
+<header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 <%= isNavDark ? 'bg-slate-900/85 text-white' : 'bg-brand-bg/70' %>">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <!-- Brand -->
+    <a href="/" class="flex items-center gap-3">
+      <!-- Logo with white circle behind -->
+      <span class="flex items-center justify-center rounded-full bg-white w-10 h-10">
+        <img src="/assets/img/vrindavan-logo.png" alt="Vrindavan Farm" class="w-6 h-6 object-contain" />
+      </span>
+      <span class="font-bold text-lg">VRINDAVAN FARM</span>
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav class="hidden md:flex items-center gap-6 text-sm <%= isNavDark ? 'text-white' : '' %>">
+      <a href="/products" class="hover:text-brand-accent">Products</a>
+      <a href="/offers" class="hover:text-brand-accent">Offers</a>
+      <a href="/catalog" class="hover:text-brand-accent">Catalog</a>
+      <a href="/podcast" class="hover:text-brand-accent">Podcast</a>
+      <a href="/gallery" class="hover:text-brand-accent">Gallery</a>
+      <a href="/mto" class="hover:text-brand-accent">Made to Order</a>
+      <a href="/download" class="btn btn-primary">Get the App</a>
+    </nav>
+
+    <!-- Burger (mobile) -->
+    <button type="button" class="md:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 <%= isNavDark ? 'text-white' : '' %>" aria-controls="mobileNav" aria-expanded="false" data-burger>
+      <span class="sr-only">Open main menu</span>
+      <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile Nav Panel -->
+  <div id="mobileNav" class="md:hidden hidden border-t border-white/10 w-full max-w-[100vw] <%= isNavDark ? 'bg-slate-900/95' : 'bg-brand-bg/95' %>">
+    <nav class="px-4 py-4 flex flex-col gap-3 text-sm <%= isNavDark ? 'text-white' : '' %>">
+      <a href="/products" class="py-2 hover:text-brand-accent">Products</a>
+      <a href="/offers" class="py-2 hover:text-brand-accent">Offers</a>
+      <a href="/catalog" class="py-2 hover:text-brand-accent">Catalog</a>
+      <a href="/podcast" class="py-2 hover:text-brand-accent">Podcast</a>
+      <a href="/gallery" class="py-2 hover:text-brand-accent">Gallery</a>
+      <a href="/mto" class="py-2 hover:text-brand-accent">Made to Order</a>
+      <a href="/download" class="btn btn-primary mt-2">Get the App</a>
+    </nav>
+  </div>
+
+  <!-- Self-contained burger wiring (no layout shift) -->
+  <script>
+    (() => {
+      if (window.__vr_nav_init) return;
+      window.__vr_nav_init = true;
+
+      const btn = document.querySelector("[data-burger]");
+      const panel = document.getElementById("mobileNav");
+      if (!btn || !panel) return;
+
+      // Ensure no accidental horizontal overflow
+      document.documentElement.style.overflowX = "hidden";
+
+      let scrollY = null;
+      let isNavOpen = false;
+      // iOS/Safari background scroll guard
+      let touchGuard = null;
+
+      const isHidden = () => panel.classList.contains("hidden");
+
+      // Lock by fixing the body (keeps scrollbar gutter; no stretch)
+      const lockBody = () => {
+        scrollY = window.scrollY || window.pageYOffset || 0;
+        const b = document.body;
+        b.style.position = "fixed";
+        b.style.top = `-${scrollY}px`;
+        b.style.left = "0";
+        b.style.right = "0";
+        b.style.width = "100%";
+
+        // Prevent background touch scroll on mobile while still allowing panel scroll
+        touchGuard = (e) => {
+          // Allow scrolling inside the panel
+          if (panel.contains(e.target)) return;
+          e.preventDefault();
+        };
+        document.addEventListener("touchmove", touchGuard, { passive: false });
+      };
+
+      const unlockBody = () => {
+        const b = document.body;
+        b.style.position = "";
+        b.style.top = "";
+        b.style.left = "";
+        b.style.right = "";
+        b.style.width = "";
+        // Restore scroll position - only if nav was actually opened
+        if (isNavOpen && scrollY !== null) {
+          window.scrollTo(0, scrollY);
+        }
+
+        if (touchGuard) {
+          document.removeEventListener("touchmove", touchGuard, { passive: false });
+          touchGuard = null;
+        }
+      };
+
+      const setOpen = (open) => {
+        panel.classList.toggle("hidden", !open);
+        btn.setAttribute("aria-expanded", String(open));
+        if (open) {
+          isNavOpen = true;
+          lockBody();
+        } else {
+          unlockBody();
+          isNavOpen = false;
+        }
+      };
+
+      btn.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          setOpen(isHidden());
+        },
+        { passive: false },
+      );
+
+      // Close on outside click
+      document.addEventListener("click", (e) => {
+        if (!panel.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+      });
+
+      // Close on Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setOpen(false);
+      });
+    })();
+  </script>
+</header>

@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo: { title: 'Purchase Orders - PO Management', description: 'Create, manage, and track purchase orders' } }) %>
+  <link rel="stylesheet" href="/assets/css/po-dark-mode.css" />
+
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'Purchase Orders' }) %>
+
+    <div class="min-h-screen pt-16">
+      <!-- Header -->
+      <div class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="py-8">
+            <div class="md:flex md:items-center md:justify-between">
+              <div class="flex-1 min-w-0">
+                <nav class="flex mb-4" aria-label="Breadcrumb">
+                  <ol class="flex items-center space-x-3">
+                    <li>
+                      <div>
+                        <a href="/" class="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 transition-colors">
+                          <i data-lucide="home" class="h-5 w-5"></i>
+                          <span class="sr-only">Home</span>
+                        </a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-4 w-4 text-gray-400 dark:text-gray-500 mx-2"></i>
+                        <a href="/po/dashboard" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">PO Management</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="h-4 w-4 text-gray-400 dark:text-gray-500 mx-2"></i>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white dark:text-white">Purchase Orders</span>
+                      </div>
+                    </li>
+                  </ol>
+                </nav>
+                <div class="flex items-center space-x-4">
+                  <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                    <i data-lucide="file-text" class="h-6 w-6 text-white"></i>
+                  </div>
+                  <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">Purchase Orders</h1>
+                    <p class="mt-1 text-lg text-gray-600 dark:text-gray-400 dark:text-gray-400">Create, manage, and track purchase orders</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6 flex space-x-3 md:mt-0">
+                <button onclick="refreshPOs()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                  Refresh
+                </button>
+                <a href="/po/purchase-orders/create" class="inline-flex items-center px-6 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+                  Create New PO
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-xl transition-shadow">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                    <i data-lucide="file-text" class="h-6 w-6 text-blue-600 dark:text-blue-400 dark:text-blue-400"></i>
+                  </div>
+                </div>
+                <div class="ml-4 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total POs</dt>
+                    <dd class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white mt-1" id="totalPOs">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-shadow">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
+                    <i data-lucide="edit" class="h-6 w-6 text-yellow-600 dark:text-yellow-400"></i>
+                  </div>
+                </div>
+                <div class="ml-4 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Draft</dt>
+                    <dd class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white mt-1" id="draftPOs">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-shadow">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center">
+                    <i data-lucide="truck" class="h-6 w-6 text-orange-600 dark:text-orange-400"></i>
+                  </div>
+                </div>
+                <div class="ml-4 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">In Transit</dt>
+                    <dd class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white mt-1" id="inTransitPOs">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-shadow">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+                    <i data-lucide="check-circle" class="h-6 w-6 text-green-600 dark:text-green-400"></i>
+                  </div>
+                </div>
+                <div class="ml-4 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Received</dt>
+                    <dd class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white mt-1" id="receivedPOs">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-shadow">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+                    <i data-lucide="dollar-sign" class="h-6 w-6 text-purple-600"></i>
+                  </div>
+                </div>
+                <div class="ml-4 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Value</dt>
+                    <dd class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white mt-1" id="totalValue">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-600">
+          <div class="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-700 dark:to-blue-900/20 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="filter" class="h-4 w-4 text-white"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white dark:text-white">Filters & Search</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Filter purchase orders by various criteria</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div>
+                <label for="searchInput" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Search</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+                  </div>
+                  <input type="text" id="searchInput" placeholder="Search by PO number, vendor..." class="block w-full pl-10 pr-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+                </div>
+              </div>
+              <div>
+                <label for="statusFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select id="statusFilter" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
+                  <option value="">All Status</option>
+                  <option value="draft">Draft</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="approved">Approved</option>
+                  <option value="ordered">Ordered</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="received">Received</option>
+                  <option value="closed">Closed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label for="vendorFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Vendor</label>
+                <select id="vendorFilter" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
+                  <option value="">All Vendors</option>
+                </select>
+              </div>
+              <div>
+                <label for="dateFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+                <input type="date" id="dateFilter" class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase Orders Table -->
+        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden">
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 sm:px-6 py-4">
+            <!-- Mobile Header -->
+            <div class="block md:hidden">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                  <i data-lucide="file-text" class="h-4 w-4 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Purchase Orders</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Manage and track all purchase orders</p>
+                </div>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="refreshPOs()" class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                  Refresh
+                </button>
+                <button onclick="exportPOs()" class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="download" class="h-4 w-4 mr-2"></i>
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <!-- Desktop Header -->
+            <div class="hidden md:flex justify-between items-center">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                  <i data-lucide="file-text" class="h-4 w-4 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Purchase Orders</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Manage and track all purchase orders</p>
+                </div>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="refreshPOs()" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                  Refresh
+                </button>
+                <button onclick="exportPOs()" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                  <i data-lucide="download" class="h-4 w-4 mr-2"></i>
+                  Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-4 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-1/6">PO Details</th>
+                  <th class="px-3 py-4 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-16">Type</th>
+                  <th class="px-4 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-1/5 max-w-32">Vendor</th>
+                  <th class="px-3 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider amount-cell">Amount</th>
+                  <th class="px-3 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider amount-cell">Shipping</th>
+                  <th class="px-3 py-4 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">Status</th>
+                  <th class="px-3 py-4 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">Payment</th>
+                  <th class="px-4 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24">Date</th>
+                  <th class="px-3 py-4 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="posTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                <tr>
+                  <td colspan="9" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <div class="flex flex-col items-center space-y-2">
+                      <i data-lucide="loader" class="w-8 h-8 animate-spin text-gray-400 dark:text-gray-500"></i>
+                      <span>Loading purchase orders...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="block md:hidden">
+            <div id="posMobileBody" class="p-4 space-y-3">
+              <div class="text-center py-8">
+                <i data-lucide="loader" class="w-8 h-8 animate-spin text-gray-400 dark:text-gray-500 mx-auto mb-4"></i>
+                <span class="text-gray-600 dark:text-gray-400">Loading purchase orders...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Showing
+                  <span id="showingStart" class="font-semibold">1</span>
+                  to
+                  <span id="showingEnd" class="font-semibold">10</span>
+                  of
+                  <span id="totalPOsCount" class="font-semibold">0</span>
+                  results
+                </p>
+              </div>
+              <div class="ml-6">
+                <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px">
+                  <button onclick="previousPage()" class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                  </button>
+                  <button onclick="nextPage()" class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Status Modal -->
+    <div id="changeStatusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm">
+      <div class="relative top-4 sm:top-20 mx-auto p-6 border border-gray-200 dark:border-gray-600 w-11/12 sm:w-1/2 lg:w-1/3 xl:w-1/4 shadow-2xl rounded-xl bg-white dark:bg-gray-800 transform transition-all duration-300 ease-out scale-95 opacity-0">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="arrow-right" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="changeStatusTitle">Change Status</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400" id="changeStatusSubtitle">Update purchase order status</p>
+              </div>
+            </div>
+            <button onclick="closeChangeStatusModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <form id="changeStatusForm" class="space-y-6">
+            <div>
+              <label for="newStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Status *</label>
+              <select id="newStatus" name="status" required class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <option value="">Select Status</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="approved">Approved</option>
+                <option value="ordered">Ordered</option>
+                <option value="in_transit">In Transit</option>
+                <option value="received">Received</option>
+                <option value="closed">Closed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="statusNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status Notes</label>
+              <textarea id="statusNotes" name="notes" rows="3" placeholder="Reason for status change or additional notes..." class="block w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4">
+              <button type="button" onclick="closeChangeStatusModal()" class="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-green-600 border-2 border-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 hover:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">Update Status</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* Ensure amount column doesn't overflow */
+      .amount-cell {
+        max-width: 140px;
+        min-width: 120px;
+      }
+
+      /* Actions column width */
+      .actions-cell {
+        min-width: 120px;
+        max-width: 140px;
+      }
+
+      /* Responsive table adjustments */
+      @media (max-width: 768px) {
+        .amount-cell {
+          max-width: 100px;
+          min-width: 80px;
+        }
+        .actions-cell {
+          min-width: 100px;
+          max-width: 120px;
+        }
+      }
+
+      /* Total value card text handling */
+      #totalValue {
+        word-break: break-word;
+        line-height: 1.1;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      @media (max-width: 640px) {
+        #totalValue {
+          font-size: 0.875rem;
+        }
+      }
+
+      /* Edit PO Modal - Force 50% width reduction */
+    </style>
+
+    <script>
+      let purchaseOrders = [];
+      let vendors = [];
+      let currentPage = 1;
+      let posPerPage = 10;
+
+      // Load data on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadVendors();
+        loadPurchaseOrders();
+        setupFilterListeners();
+        setupModalEventListeners();
+        initializeFiltersFromURL();
+      });
+
+      // Initialize filters from URL parameters
+      function initializeFiltersFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get("status");
+        const paymentStatus = urlParams.get("payment_status");
+        const missingInvoice = urlParams.get("missing_invoice");
+
+        // Set status filter if provided in URL
+        if (status) {
+          const statusFilter = document.getElementById("statusFilter");
+          if (statusFilter) {
+            statusFilter.value = status;
+          }
+
+          // Update page title to show active filter
+          updatePageTitleForFilter(status, "status");
+        }
+
+        // Set payment status filter if provided in URL
+        if (paymentStatus) {
+          // We'll need to add a payment status filter dropdown or use existing status filter
+          // For now, we'll store it and apply it in applyFilters
+          window.urlPaymentStatus = paymentStatus;
+
+          // Update page title to show active filter
+          updatePageTitleForFilter(paymentStatus, "payment_status");
+        }
+
+        // Set missing invoice filter if provided in URL
+        if (missingInvoice === "true") {
+          window.urlMissingInvoice = true;
+
+          // Update page title to show active filter
+          updatePageTitleForFilter("missing_invoice", "missing_invoice");
+        }
+      }
+
+      // Update page title to show active filter
+      function updatePageTitleForFilter(value, filterType) {
+        const pageTitle = document.querySelector("h1");
+        if (pageTitle) {
+          let filterText = "";
+          if (filterType === "payment_status") {
+            filterText = value === "pending" ? "Pending Payments" : value === "paid" ? "Paid" : value === "partially_paid" ? "Partially Paid" : value;
+          } else if (filterType === "status") {
+            filterText = value.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
+          } else if (filterType === "missing_invoice") {
+            filterText = "Pending Invoices";
+          }
+
+          if (filterText) {
+            pageTitle.textContent = `Purchase Orders - ${filterText}`;
+          }
+        }
+      }
+
+      // Load vendors for filter
+      async function loadVendors() {
+        try {
+          const response = await fetch("/po/api/v1/vendors");
+          const result = await response.json();
+          if (result.success) {
+            vendors = result.data;
+            populateVendorFilter();
+          }
+        } catch (error) {
+          console.error("Error loading vendors:", error);
+        }
+      }
+
+      // Populate vendor filter
+      function populateVendorFilter() {
+        const vendorFilter = document.getElementById("vendorFilter");
+        const editVendorSelect = document.getElementById("editPOVendor");
+
+        vendors.forEach((vendor) => {
+          const option = new Option(vendor.name, vendor.id);
+          const editOption = new Option(vendor.name, vendor.id);
+
+          if (vendorFilter) {
+            vendorFilter.add(option);
+          }
+          if (editVendorSelect) {
+            editVendorSelect.add(editOption);
+          }
+        });
+      }
+
+      // Load purchase orders
+      async function loadPurchaseOrders() {
+        try {
+          // Build query string based on URL parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          const missingInvoice = urlParams.get("missing_invoice");
+
+          let apiUrl = "/po/api/v1/purchase-orders";
+          if (missingInvoice === "true") {
+            apiUrl += `?missing_invoice=true`;
+          }
+
+          const response = await fetch(apiUrl);
+          const result = await response.json();
+          if (result.success) {
+            purchaseOrders = result.data;
+            updateStats();
+
+            // Check if we have URL parameters and apply filters
+            const hasUrlFilters = urlParams.get("status") || urlParams.get("payment_status") || urlParams.get("missing_invoice");
+
+            if (hasUrlFilters) {
+              applyFilters(); // Apply filters if URL parameters exist
+            } else {
+              renderPurchaseOrders(); // Show all POs if no URL filters
+            }
+          } else {
+            console.error("Error loading purchase orders:", result.error);
+          }
+        } catch (error) {
+          console.error("Error loading purchase orders:", error);
+        }
+      }
+
+      // Update statistics
+      function updateStats() {
+        const totalPOs = purchaseOrders.length;
+        const draftPOs = purchaseOrders.filter((po) => po.status === "draft").length;
+        const inTransitPOs = purchaseOrders.filter((po) => po.status === "in_transit").length;
+        const receivedPOs = purchaseOrders.filter((po) => po.status === "received").length;
+        // Convert total_amount to numbers before adding
+        const totalValue = purchaseOrders.reduce((sum, po) => {
+          const amount = parseFloat(po.total_amount) || 0;
+          return sum + amount;
+        }, 0);
+
+        document.getElementById("totalPOs").textContent = totalPOs;
+        document.getElementById("draftPOs").textContent = draftPOs;
+        document.getElementById("inTransitPOs").textContent = inTransitPOs;
+        document.getElementById("receivedPOs").textContent = receivedPOs;
+
+        // Show value with Indian number system formatting (lakhs)
+        const formattedValue = `₹${totalValue.toLocaleString("en-IN")}`;
+
+        document.getElementById("totalValue").textContent = formattedValue;
+      }
+
+      // Render purchase orders table
+      function renderPurchaseOrders() {
+        const tbody = document.getElementById("posTableBody");
+        const startIndex = (currentPage - 1) * posPerPage;
+        const endIndex = startIndex + posPerPage;
+        const pagePOs = purchaseOrders.slice(startIndex, endIndex);
+
+        if (pagePOs.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                <div class="flex flex-col items-center space-y-2">
+                  <i data-lucide="file-text" class="w-12 h-12 text-gray-300 dark:text-gray-500"></i>
+                  <span class="text-lg font-medium">No purchase orders found</span>
+                  <span class="text-sm">Create your first purchase order to get started</span>
+                </div>
+              </td>
+            </tr>
+          `;
+
+          // Update mobile empty state
+          const mobileBody = document.getElementById("posMobileBody");
+          if (mobileBody) {
+            mobileBody.innerHTML = `
+              <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                <div class="flex flex-col items-center space-y-2">
+                  <i data-lucide="file-text" class="w-12 h-12 text-gray-300 dark:text-gray-500"></i>
+                  <span class="text-lg font-medium">No purchase orders found</span>
+                  <span class="text-sm">Create your first purchase order to get started</span>
+                </div>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        // Create both mobile and desktop views
+        const mobileCards = pagePOs
+          .map(
+            (po) => `
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 mb-3">
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="file-text" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">${po.po_number}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">${po.vendor_name || "Unknown Vendor"}</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPOTypeColor(po.po_type)}">
+              ${po.po_type === "material" ? "Material" : "Product"}
+            </span>
+          </div>
+          
+          <!-- Amount and Status Row -->
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <p class="text-xs text-gray-500">Total Amount</p>
+              <p class="text-lg font-bold text-gray-900 dark:text-white">₹${parseFloat(po.total_amount || 0).toLocaleString("en-IN")}</p>
+              <p class="text-xs text-gray-500">GST: ₹${parseFloat(po.gst_amount || 0).toLocaleString("en-IN")}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Shipping</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(po.shipping_cost || 0).toLocaleString("en-IN")}</p>
+            </div>
+          </div>
+          
+          <!-- Status Badges -->
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(po.status)} border border-opacity-20 shadow-sm">
+              ${getStatusText(po.status)}
+            </span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(po.payment_status)}">
+              ${getPaymentStatusText(po.payment_status)}
+            </span>
+          </div>
+          
+          <!-- Date and Payment Info -->
+          <div class="grid grid-cols-2 gap-4 mb-3 text-sm">
+            <div>
+              <p class="text-xs text-gray-500">PO Date</p>
+              <p class="font-medium text-gray-900 dark:text-white">${formatDate(po.po_date)}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Due Date</p>
+              <p class="font-medium text-gray-900 dark:text-white">${formatDate(po.expected_delivery_date)}</p>
+            </div>
+          </div>
+          
+          <!-- Payment Details -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3 mb-3">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-600 dark:text-gray-400 dark:text-gray-400">Amount Paid:</span>
+              <span class="font-medium text-gray-900 dark:text-white">₹${parseFloat(po.total_paid || 0).toLocaleString("en-IN")}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm mt-1">
+              <span class="text-gray-600 dark:text-gray-400 dark:text-gray-400">Items:</span>
+              <span class="font-medium text-gray-900 dark:text-white">${po.item_count || 0} items</span>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex justify-end space-x-2">
+            <a href="/po/purchase-orders/${po.id}" class="inline-flex items-center px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors">
+              <i data-lucide="eye" class="h-4 w-4 mr-1"></i>
+              View
+            </a>
+            <button onclick="changeStatus(${po.id})" class="inline-flex items-center px-3 py-1.5 text-sm text-green-600 dark:text-green-400 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors">
+              <i data-lucide="arrow-right" class="h-4 w-4 mr-1"></i>
+              Status
+            </button>
+            <a href="/po/purchase-orders/${po.id}/edit" class="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white hover:bg-gray-50 rounded-lg transition-colors">
+              <i data-lucide="edit" class="h-4 w-4 mr-1"></i>
+              Edit
+            </a>
+          </div>
+        </div>
+      `,
+          )
+          .join("");
+
+        const desktopTable = pagePOs
+          .map(
+            (po) => `
+    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+      <td class="px-4 py-4 whitespace-nowrap">
+        <div class="flex items-center space-x-3">
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+              <i data-lucide="file-text" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">${po.po_number}</div>
+            <div class="text-xs text-gray-500 mt-1 truncate">${po.item_count || 0} items</div>
+            <div class="text-xs text-gray-500 mt-1 truncate">${po.payment_terms || "N/A"}</div>
+          </div>
+        </div>
+      </td>
+      <td class="px-3 py-4 whitespace-nowrap text-center">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPOTypeColor(po.po_type)}">
+          ${po.po_type === "material" ? "Material" : "Product"}
+        </span>
+      </td>
+      <td class="px-4 py-4">
+        <div class="text-sm font-medium text-gray-900 dark:text-white break-words">${po.vendor_name || "Unknown Vendor"}</div>
+        <div class="text-xs text-gray-500 mt-1 break-words">${po.contact_person_name || "No contact"}</div>
+      </td>
+       <td class="px-3 py-4 text-right amount-cell whitespace-nowrap">
+         <div class="text-sm font-bold text-gray-900 dark:text-white">₹${parseFloat(po.total_amount || 0).toLocaleString("en-IN")}</div>
+         <div class="text-xs text-gray-500">GST: ₹${parseFloat(po.gst_amount || 0).toLocaleString("en-IN")}</div>
+       </td>
+       <td class="px-3 py-4 text-right amount-cell whitespace-nowrap">
+         <div class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(po.shipping_cost || 0).toLocaleString("en-IN")}</div>
+         <div class="text-xs text-gray-500">Shipping</div>
+       </td>
+      <td class="px-3 py-4 whitespace-nowrap text-center">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(po.status)} border border-opacity-20 shadow-sm">
+          ${getStatusText(po.status)}
+        </span>
+      </td>
+      <td class="px-3 py-4 whitespace-nowrap text-center">
+        <div class="flex flex-col items-center space-y-1">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(po.payment_status)}">
+            ${getPaymentStatusText(po.payment_status)}
+          </span>
+          <div class="text-xs text-gray-500">₹${parseFloat(po.total_paid || 0).toLocaleString("en-IN")}</div>
+        </div>
+      </td>
+      <td class="px-4 py-4 whitespace-nowrap">
+        <div class="text-sm font-medium text-gray-900 dark:text-white">${formatDate(po.po_date)}</div>
+        <div class="text-xs text-gray-500 mt-1">Due: ${formatDate(po.expected_delivery_date)}</div>
+      </td>
+      <td class="px-3 py-4 whitespace-nowrap text-center actions-cell">
+        <div class="flex justify-center space-x-1">
+          <a href="/po/purchase-orders/${po.id}" class="inline-flex items-center px-2 py-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+            <i data-lucide="eye" class="h-4 w-4"></i>
+          </a>
+          <button onclick="changeStatus(${po.id})" class="inline-flex items-center px-2 py-1.5 text-green-600 dark:text-green-400 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors" title="Change Status">
+            <i data-lucide="arrow-right" class="h-4 w-4"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `,
+          )
+          .join("");
+
+        // Update desktop table
+        tbody.innerHTML = desktopTable;
+
+        // Update mobile cards
+        const mobileBody = document.getElementById("posMobileBody");
+        if (mobileBody) {
+          mobileBody.innerHTML = mobileCards;
+        }
+
+        // Update pagination info
+        document.getElementById("showingStart").textContent = startIndex + 1;
+        document.getElementById("showingEnd").textContent = Math.min(endIndex, purchaseOrders.length);
+        document.getElementById("totalPOsCount").textContent = purchaseOrders.length;
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Helper functions
+      function getStatusColor(status) {
+        const colors = {
+          draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
+          submitted: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+          approved: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+          ordered: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+          in_transit: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+          received: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+          closed: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+          cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+        };
+        return colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      }
+
+      function getStatusText(status) {
+        const texts = {
+          draft: "Draft",
+          submitted: "Submitted",
+          approved: "Approved",
+          ordered: "Ordered",
+          in_transit: "In Transit",
+          received: "Received",
+          closed: "Closed",
+          cancelled: "Cancelled",
+        };
+        return texts[status] || status;
+      }
+
+      function getPaymentStatusText(status) {
+        const texts = {
+          pending: "Pending",
+          partially_paid: "Partially Paid",
+          paid: "Paid",
+          overdue: "Overdue",
+        };
+        return texts[status] || status;
+      }
+
+      function getPaymentStatusColor(status) {
+        const colors = {
+          pending: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-700",
+          partially_paid: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700",
+          paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700",
+          overdue: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-700",
+        };
+        return colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600";
+      }
+
+      function getPOTypeColor(poType) {
+        return poType === "material" 
+          ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+          : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return "-";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-IN");
+      }
+
+      // Modal state
+      let currentPOId = null;
+
+      // Action functions
+
+      function changeStatus(id) {
+        const po = purchaseOrders.find((p) => p.id === id);
+        if (!po) return;
+
+        currentPOId = id;
+
+        // Set current status as default
+        document.getElementById("newStatus").value = po.status || "";
+        document.getElementById("statusNotes").value = "";
+
+        // Update modal title
+        document.getElementById("changeStatusTitle").textContent = `Change Status - ${po.po_number}`;
+        document.getElementById("changeStatusSubtitle").textContent = `Current status: ${getStatusText(po.status)}`;
+
+        // Show modal
+        const modal = document.getElementById("changeStatusModal");
+        modal.classList.remove("hidden");
+
+        // Add animation
+        setTimeout(() => {
+          modal.querySelector(".transform").classList.add("scale-100", "opacity-100");
+        }, 10);
+      }
+
+      // Modal close functions
+
+      function closeChangeStatusModal() {
+        const modal = document.getElementById("changeStatusModal");
+        modal.querySelector(".transform").classList.remove("scale-100", "opacity-100");
+
+        setTimeout(() => {
+          modal.classList.add("hidden");
+        }, 200);
+
+        currentPOId = null;
+        document.getElementById("changeStatusForm").reset();
+      }
+
+      // Setup filter listeners for auto-apply
+      function setupFilterListeners() {
+        const searchInput = document.getElementById("searchInput");
+        const statusFilter = document.getElementById("statusFilter");
+        const vendorFilter = document.getElementById("vendorFilter");
+        const dateFilter = document.getElementById("dateFilter");
+
+        // Add event listeners for auto-filtering
+        searchInput.addEventListener("input", debounce(applyFilters, 300));
+        statusFilter.addEventListener("change", applyFilters);
+        vendorFilter.addEventListener("change", applyFilters);
+        dateFilter.addEventListener("change", applyFilters);
+      }
+
+      // Debounce function to limit API calls
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
+      // Filter functions
+      function applyFilters() {
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        const status = document.getElementById("statusFilter").value;
+        const vendor = document.getElementById("vendorFilter").value;
+        const date = document.getElementById("dateFilter").value;
+        const paymentStatus = window.urlPaymentStatus; // From URL parameter
+        const missingInvoice = window.urlMissingInvoice; // From URL parameter
+
+        let filteredPOs = [...purchaseOrders];
+
+        // Apply search filter
+        if (search) {
+          filteredPOs = filteredPOs.filter((po) => po.po_number.toLowerCase().includes(search) || (po.vendor_name && po.vendor_name.toLowerCase().includes(search)) || (po.notes && po.notes.toLowerCase().includes(search)));
+        }
+
+        // Apply status filter
+        if (status) {
+          filteredPOs = filteredPOs.filter((po) => po.status === status);
+        }
+
+        // Apply payment status filter (from URL)
+        if (paymentStatus) {
+          filteredPOs = filteredPOs.filter((po) => po.payment_status === paymentStatus);
+        }
+
+        // Apply missing invoice filter (from URL)
+        // Note: The API already filters this, so we don't need to filter again here
+        // This is just for consistency with other filters
+        if (missingInvoice) {
+          filteredPOs = filteredPOs.filter((po) => po.invoice_count === 0 && po.status !== "draft" && po.status !== "cancelled");
+        }
+
+        // Apply vendor filter
+        if (vendor) {
+          filteredPOs = filteredPOs.filter((po) => po.vendor_id == vendor);
+        }
+
+        // Apply date filter
+        if (date) {
+          filteredPOs = filteredPOs.filter((po) => {
+            const poDate = new Date(po.po_date).toISOString().split("T")[0];
+            return poDate === date;
+          });
+        }
+
+        // Update the display with filtered results
+        displayFilteredPOs(filteredPOs);
+      }
+
+      // Display filtered purchase orders
+      function displayFilteredPOs(filteredPOs) {
+        const tbody = document.getElementById("posTableBody");
+        const startIndex = (currentPage - 1) * posPerPage;
+        const endIndex = startIndex + posPerPage;
+        const pagePOs = filteredPOs.slice(startIndex, endIndex);
+
+        if (pagePOs.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                <div class="flex flex-col items-center space-y-2">
+                  <i data-lucide="file-text" class="w-12 h-12 text-gray-300"></i>
+                  <span class="text-lg font-medium">No purchase orders found</span>
+                  <span class="text-sm">Try adjusting your filters or create a new purchase order</span>
+                </div>
+              </td>
+            </tr>
+          `;
+
+          // Update mobile empty state
+          const mobileBody = document.getElementById("posMobileBody");
+          if (mobileBody) {
+            mobileBody.innerHTML = `
+              <div class="text-center py-12 text-gray-500">
+                <div class="flex flex-col items-center space-y-2">
+                  <i data-lucide="file-text" class="w-12 h-12 text-gray-300"></i>
+                  <span class="text-lg font-medium">No purchase orders found</span>
+                  <span class="text-sm">Try adjusting your filters or create a new purchase order</span>
+                </div>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        // Create both mobile and desktop views
+        const mobileCards = pagePOs
+          .map(
+            (po) => `
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 mb-3">
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="file-text" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">${po.po_number}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">${po.vendor_name || "Unknown Vendor"}</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPOTypeColor(po.po_type)}">
+              ${po.po_type === "material" ? "Material" : "Product"}
+            </span>
+          </div>
+          
+          <!-- Amount and Status Row -->
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <p class="text-xs text-gray-500">Total Amount</p>
+              <p class="text-lg font-bold text-gray-900 dark:text-white">₹${parseFloat(po.total_amount || 0).toLocaleString("en-IN")}</p>
+              <p class="text-xs text-gray-500">GST: ₹${parseFloat(po.gst_amount || 0).toLocaleString("en-IN")}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Shipping</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(po.shipping_cost || 0).toLocaleString("en-IN")}</p>
+            </div>
+          </div>
+          
+          <!-- Status Badges -->
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(po.status)} border border-opacity-20 shadow-sm">
+              ${getStatusText(po.status)}
+            </span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(po.payment_status)}">
+              ${getPaymentStatusText(po.payment_status)}
+            </span>
+          </div>
+          
+          <!-- Date and Payment Info -->
+          <div class="grid grid-cols-2 gap-4 mb-3 text-sm">
+            <div>
+              <p class="text-xs text-gray-500">PO Date</p>
+              <p class="font-medium text-gray-900 dark:text-white">${formatDate(po.po_date)}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Due Date</p>
+              <p class="font-medium text-gray-900 dark:text-white">${formatDate(po.expected_delivery_date)}</p>
+            </div>
+          </div>
+          
+          <!-- Payment Details -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3 mb-3">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-600 dark:text-gray-400 dark:text-gray-400">Amount Paid:</span>
+              <span class="font-medium text-gray-900 dark:text-white">₹${parseFloat(po.total_paid || 0).toLocaleString("en-IN")}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm mt-1">
+              <span class="text-gray-600 dark:text-gray-400 dark:text-gray-400">Items:</span>
+              <span class="font-medium text-gray-900 dark:text-white">${po.item_count || 0} items</span>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex justify-end space-x-2">
+            <a href="/po/purchase-orders/${po.id}" class="inline-flex items-center px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors">
+              <i data-lucide="eye" class="h-4 w-4 mr-1"></i>
+              View
+            </a>
+            <button onclick="changeStatus(${po.id})" class="inline-flex items-center px-3 py-1.5 text-sm text-green-600 dark:text-green-400 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors">
+              <i data-lucide="arrow-right" class="h-4 w-4 mr-1"></i>
+              Status
+            </button>
+            <a href="/po/purchase-orders/${po.id}/edit" class="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white hover:bg-gray-50 rounded-lg transition-colors">
+              <i data-lucide="edit" class="h-4 w-4 mr-1"></i>
+              Edit
+            </a>
+          </div>
+        </div>
+      `,
+          )
+          .join("");
+
+        const desktopTable = pagePOs
+          .map(
+            (po) => `
+     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+       <td class="px-4 py-4 whitespace-nowrap">
+         <div class="flex items-center space-x-3">
+           <div class="flex-shrink-0">
+             <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+               <i data-lucide="file-text" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+             </div>
+           </div>
+           <div class="min-w-0 flex-1">
+             <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">${po.po_number}</div>
+             <div class="text-xs text-gray-500 mt-1 truncate">${po.item_count || 0} items</div>
+             <div class="text-xs text-gray-500 mt-1 truncate">${po.payment_terms || "N/A"}</div>
+           </div>
+         </div>
+       </td>
+       <td class="px-3 py-4 whitespace-nowrap text-center">
+         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPOTypeColor(po.po_type)}">
+           ${po.po_type === "material" ? "Material" : "Product"}
+         </span>
+       </td>
+       <td class="px-4 py-4">
+         <div class="text-sm font-medium text-gray-900 dark:text-white break-words">${po.vendor_name || "Unknown Vendor"}</div>
+         <div class="text-xs text-gray-500 mt-1 break-words">${po.contact_person_name || "No contact"}</div>
+       </td>
+       <td class="px-3 py-4 text-right amount-cell whitespace-nowrap">
+         <div class="text-sm font-bold text-gray-900 dark:text-white">₹${parseFloat(po.total_amount || 0).toLocaleString("en-IN")}</div>
+         <div class="text-xs text-gray-500">GST: ₹${parseFloat(po.gst_amount || 0).toLocaleString("en-IN")}</div>
+       </td>
+       <td class="px-3 py-4 text-right amount-cell whitespace-nowrap">
+         <div class="text-sm font-medium text-gray-900 dark:text-white">₹${parseFloat(po.shipping_cost || 0).toLocaleString("en-IN")}</div>
+         <div class="text-xs text-gray-500">Shipping</div>
+       </td>
+       <td class="px-3 py-4 whitespace-nowrap text-center">
+         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(po.status)} border border-opacity-20 shadow-sm">
+           ${getStatusText(po.status)}
+         </span>
+       </td>
+       <td class="px-3 py-4 whitespace-nowrap text-center">
+         <div class="flex flex-col items-center space-y-1">
+           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(po.payment_status)}">
+             ${getPaymentStatusText(po.payment_status)}
+           </span>
+           <div class="text-xs text-gray-500">₹${parseFloat(po.total_paid || 0).toLocaleString("en-IN")}</div>
+         </div>
+       </td>
+       <td class="px-4 py-4 whitespace-nowrap">
+         <div class="text-sm font-medium text-gray-900 dark:text-white">${formatDate(po.po_date)}</div>
+         <div class="text-xs text-gray-500 mt-1">Due: ${formatDate(po.expected_delivery_date)}</div>
+       </td>
+       <td class="px-3 py-4 whitespace-nowrap text-center actions-cell">
+         <div class="flex justify-center space-x-1">
+           <a href="/po/purchase-orders/${po.id}" class="inline-flex items-center px-2 py-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+             <i data-lucide="eye" class="h-4 w-4"></i>
+           </a>
+           <button onclick="changeStatus(${po.id})" class="inline-flex items-center px-2 py-1.5 text-green-600 dark:text-green-400 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors" title="Change Status">
+             <i data-lucide="arrow-right" class="h-4 w-4"></i>
+           </button>
+         </div>
+       </td>
+     </tr>
+   `,
+          )
+          .join("");
+
+        // Update desktop table
+        tbody.innerHTML = desktopTable;
+
+        // Update mobile cards
+        const mobileBody = document.getElementById("posMobileBody");
+        if (mobileBody) {
+          mobileBody.innerHTML = mobileCards;
+        }
+
+        // Update pagination info
+        document.getElementById("showingStart").textContent = startIndex + 1;
+        document.getElementById("showingEnd").textContent = Math.min(endIndex, filteredPOs.length);
+        document.getElementById("totalPOsCount").textContent = filteredPOs.length;
+
+        // Re-initialize icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // Clear all filters
+      function clearFilters() {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("statusFilter").value = "";
+        document.getElementById("vendorFilter").value = "";
+        document.getElementById("dateFilter").value = "";
+        currentPage = 1;
+        renderPurchaseOrders();
+      }
+
+      function refreshPOs() {
+        loadPurchaseOrders();
+      }
+
+      function exportPOs() {
+        // TODO: Implement export functionality
+        console.log("Export POs");
+      }
+
+      // Pagination
+      function previousPage() {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPurchaseOrders();
+        }
+      }
+
+      function nextPage() {
+        const totalPages = Math.ceil(purchaseOrders.length / posPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPurchaseOrders();
+        }
+      }
+
+      // Setup modal event listeners
+      function setupModalEventListeners() {
+        // Edit PO form submission
+
+        // Change Status form submission
+        document.getElementById("changeStatusForm").addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          if (!currentPOId) return;
+
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData.entries());
+
+          try {
+            const response = await fetch(`/po/api/v1/purchase-orders/${currentPOId}/status`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              if (typeof showSuccessToast !== "undefined") {
+                showSuccessToast("Purchase order status updated successfully");
+              } else {
+                alert("Purchase order status updated successfully");
+              }
+              closeChangeStatusModal();
+              loadPurchaseOrders(); // Refresh the list
+            } else {
+              if (typeof showErrorToast !== "undefined") {
+                showErrorToast(result.error || "Error updating status");
+              } else {
+                alert("Error updating status: " + (result.error || "Unknown error"));
+              }
+            }
+          } catch (error) {
+            console.error("Error updating status:", error);
+            if (typeof showErrorToast !== "undefined") {
+              showErrorToast("Error updating status");
+            } else {
+              alert("Error updating status");
+            }
+          }
+        });
+      }
+
+      // Toast notification
+      function showToast(message, type = "info") {
+        // TODO: Implement toast notification
+        console.log(`${type.toUpperCase()}: ${message}`);
+      }
+    </script>
+
+    <%- include('../../../../partials/_footer') %> <%- include('../../../../partials/_toast') %>
+  </body>
+</html>

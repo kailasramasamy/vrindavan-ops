@@ -1,0 +1,1282 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { currentPage: currentPage, section: 'Marketing', subsection: 'Ad Details' }) %>
+
+  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 rounded-xl p-6 text-white shadow-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <h1 id="adTitle" class="text-3xl font-bold mb-2">Ad Details</h1>
+            <p class="text-blue-100 dark:text-blue-200">View and manage ad creative details</p>
+            <div class="mt-4 flex items-center space-x-4">
+              <span id="adStatusBadge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white"></span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="/marketing/ads" class="inline-flex items-center px-4 py-2 border border-white border-opacity-30 rounded-lg text-sm font-medium text-white bg-white bg-opacity-10 hover:bg-opacity-20">
+              ← Back to Ads
+            </a>
+            <button id="editAd" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-blue-600 bg-white hover:bg-gray-50">
+              Edit Ad
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-500 dark:text-gray-400">Loading ad details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden text-center py-12">
+      <p class="text-red-500">Failed to load ad details</p>
+    </div>
+
+    <!-- Ad Details -->
+    <div id="adDetails" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Assets Section -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Assets</h2>
+              <button id="addAssetsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                Add Assets
+              </button>
+            </div>
+            <div id="assetsContainer" class="grid grid-cols-2 gap-4 mb-4">
+              <!-- Assets will be loaded here -->
+            </div>
+            <div id="noAssetsMessage" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden">
+              <p>No assets assigned. Click "Add Assets" to assign assets to this ad.</p>
+            </div>
+          </div>
+
+          <!-- Texts Section -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Text Versions</h2>
+              <button id="addTextBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                Add Text Version
+              </button>
+            </div>
+            <div id="textsContainer" class="space-y-4 mb-4">
+              <!-- Texts will be loaded here -->
+            </div>
+            <div id="noTextsMessage" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden">
+              <p>No text versions added. Click "Add Text Version" to add platform-specific text.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Overview -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Overview</h2>
+            <div id="overviewContent" class="space-y-4">
+              <!-- Overview content -->
+            </div>
+          </div>
+
+          <!-- Approval Section -->
+          <div id="approvalSection" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Approval</h2>
+            <div id="approvalContent" class="space-y-4">
+              <!-- Approval content -->
+            </div>
+          </div>
+
+          <!-- Publishing Section -->
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Publishing</h2>
+            <button id="publishBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium mb-4">
+              Record Publication
+            </button>
+            <div id="publishingsContainer" class="space-y-2">
+              <!-- Publishing records -->
+            </div>
+            <div id="noPublishingsMessage" class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm hidden">
+              No publishing records yet
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Assets Modal -->
+  <div id="addAssetsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add Assets to Ad</h3>
+        
+        <!-- Upload New Assets -->
+        <div class="mb-6">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload New Assets</h4>
+          <form id="uploadAssetsForm" enctype="multipart/form-data" class="mb-4">
+            <input type="file" id="assetFiles" multiple accept="image/*,video/*" class="mb-2 w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Upload
+            </button>
+          </form>
+        </div>
+
+        <!-- Select Existing Assets -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Existing Assets</h4>
+          <div id="availableAssetsContainer" class="grid grid-cols-4 gap-4 max-h-96 overflow-y-auto mb-4">
+            <!-- Available assets will be loaded here -->
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button id="cancelAddAssets" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Cancel
+            </button>
+            <button id="saveAssets" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Save Assets
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Text Version Modal -->
+  <div id="addTextModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 mb-10">
+      <div class="mb-4">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Add Text Version</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Create platform-specific text content for your ad</p>
+      </div>
+      <form id="addTextForm" class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="textPlatform" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Platform</label>
+            <select id="textPlatform" required class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 py-2 px-3">
+              <option value="">Select Platform</option>
+            </select>
+          </div>
+          <div>
+            <label for="textType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Text Type</label>
+            <select id="textType" required class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 py-2 px-3">
+              <option value="">Select Type</option>
+              <option value="caption">Caption</option>
+              <option value="headline">Headline</option>
+              <option value="description">Description</option>
+              <option value="cta">CTA (Call to Action)</option>
+              <option value="whatsapp_message">WhatsApp Message</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label for="textContent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+          <textarea id="textContent" rows="10" required class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-3 resize-y" placeholder="Enter your text content here..."></textarea>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">You can add multiple lines and format your text as needed</p>
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button type="button" id="cancelAddText" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+            Save Text Version
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Record Publication Modal -->
+  <div id="publishModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Record Publication</h3>
+        <form id="publishForm" class="space-y-4">
+          <div>
+            <label for="publishPlatform" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Platform</label>
+            <select id="publishPlatform" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
+              <option value="">Select Platform</option>
+            </select>
+          </div>
+          <div>
+            <label for="publishPlacement" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Placement</label>
+            <select id="publishPlacement" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
+              <option value="feed">Feed</option>
+              <option value="story">Story</option>
+              <option value="reels">Reels</option>
+              <option value="broadcast">Broadcast</option>
+              <option value="post">Post</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="publishDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Published Date & Time</label>
+            <input type="datetime-local" id="publishDate" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
+          </div>
+          <div>
+            <label for="externalCampaignId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">External Campaign ID (optional)</label>
+            <input type="text" id="externalCampaignId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm" placeholder="e.g., Meta Campaign ID">
+          </div>
+          <div>
+            <label for="externalAdId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">External Ad ID (optional)</label>
+            <input type="text" id="externalAdId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm" placeholder="e.g., Meta Ad ID">
+          </div>
+          <div>
+            <label for="linkUsed" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Link Used (optional)</label>
+            <input type="url" id="linkUsed" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm" placeholder="https://...">
+          </div>
+          <div>
+            <label for="publishNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes (optional)</label>
+            <textarea id="publishNotes" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm" placeholder="Additional notes..."></textarea>
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button type="button" id="cancelPublish" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Cancel
+            </button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Record Publication
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/marketing/api/ad-content';
+    const adId = '<%= adId %>';
+    let selectedAssetIds = [];
+    let availableAssets = [];
+    let platforms = [];
+
+    // Load platforms
+    async function loadPlatforms() {
+      try {
+        const response = await fetch(`${API_BASE}/platforms`);
+        const data = await response.json();
+        if (data.success && data.data) {
+          platforms = data.data;
+          
+          // Populate text platform select
+          const textPlatformSelect = document.getElementById('textPlatform');
+          platforms.forEach(platform => {
+            const option = document.createElement('option');
+            option.value = platform.id;
+            option.textContent = platform.name;
+            textPlatformSelect.appendChild(option);
+          });
+          
+          // Populate publish platform select
+          const publishPlatformSelect = document.getElementById('publishPlatform');
+          platforms.forEach(platform => {
+            const option = document.createElement('option');
+            option.value = platform.id;
+            option.textContent = platform.name;
+            publishPlatformSelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading platforms:', error);
+      }
+    }
+
+    // Load available assets
+    async function loadAvailableAssets() {
+      try {
+        const response = await fetch(`${API_BASE}/assets`);
+        const data = await response.json();
+        if (data.success && data.data) {
+          availableAssets = data.data;
+          renderAvailableAssets();
+        }
+      } catch (error) {
+        console.error('Error loading available assets:', error);
+      }
+    }
+
+    // Render available assets in modal
+    function renderAvailableAssets() {
+      const container = document.getElementById('availableAssetsContainer');
+      
+      // Get existing asset IDs for this ad
+      let existingAssetIds = [];
+      try {
+        if (window.currentAdData && window.currentAdData.assets) {
+          existingAssetIds = window.currentAdData.assets.map(a => a.id);
+        }
+      } catch (e) {
+        console.error('Error getting existing assets:', e);
+      }
+      
+      container.innerHTML = availableAssets.map(asset => {
+        const isSelected = selectedAssetIds.includes(asset.id);
+        const isExisting = existingAssetIds.includes(asset.id);
+        return `
+          <div class="border rounded-lg overflow-hidden cursor-pointer ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isExisting ? 'border-green-500 border-2' : ''}" onclick="toggleAsset(${asset.id})">
+            ${asset.file_type === 'image' ? `
+              <img src="${asset.file_path}" alt="${asset.original_filename}" class="w-full h-24 object-cover">
+            ` : `
+              <div class="w-full h-24 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            `}
+            <div class="p-2">
+              <p class="text-xs text-gray-600 dark:text-gray-400 truncate" title="${asset.original_filename}">${asset.original_filename}</p>
+              ${isSelected ? '<p class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">Selected</p>' : ''}
+              ${isExisting && !isSelected ? '<p class="text-xs text-green-600 dark:text-green-400 mt-1">Currently assigned</p>' : ''}
+              ${isExisting && isSelected ? '<p class="text-xs text-green-600 dark:text-green-400 mt-1">Assigned & Selected</p>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Toggle asset selection (global function for onclick)
+    window.toggleAsset = function(assetId) {
+      const index = selectedAssetIds.indexOf(assetId);
+      if (index > -1) {
+        selectedAssetIds.splice(index, 1);
+      } else {
+        selectedAssetIds.push(assetId);
+      }
+      renderAvailableAssets();
+    };
+
+    // Copy image to clipboard (global function for onclick)
+    window.copyImageToClipboard = async function(imagePath, buttonElement) {
+      try {
+        // Fetch the original image file
+        const response = await fetch(imagePath);
+        if (!response.ok) {
+          throw new Error('Failed to fetch image');
+        }
+        
+        const blob = await response.blob();
+        
+        // Check if Clipboard API supports images
+        if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+          try {
+            // Create ClipboardItem with the image blob
+            const clipboardItem = new ClipboardItem({
+              [blob.type]: blob
+            });
+            
+            await navigator.clipboard.write([clipboardItem]);
+            showImageCopyFeedback(buttonElement);
+          } catch (clipboardError) {
+            // If clipboard write fails, try fallback method
+            console.warn('Clipboard API failed, trying fallback:', clipboardError);
+            fallbackCopyImageToClipboard(imagePath, buttonElement);
+          }
+        } else {
+          // Fallback for browsers that don't support ClipboardItem
+          fallbackCopyImageToClipboard(imagePath, buttonElement);
+        }
+      } catch (error) {
+        console.error('Error copying image:', error);
+        alert('Failed to copy image. Your browser may not support this feature, or the image may be too large.');
+      }
+    };
+
+    // Fallback method for copying images (creates a temporary canvas)
+    function fallbackCopyImageToClipboard(imagePath, buttonElement) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = function() {
+        try {
+          // Create a canvas with the image
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          
+          // Convert canvas to blob
+          canvas.toBlob(async (blob) => {
+            try {
+              if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+                const clipboardItem = new ClipboardItem({
+                  [blob.type]: blob
+                });
+                await navigator.clipboard.write([clipboardItem]);
+                showImageCopyFeedback(buttonElement);
+              } else {
+                // Last resort: download the image
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = imagePath.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert('Image downloaded. Please paste it manually into WhatsApp.');
+              }
+            } catch (err) {
+              console.error('Fallback copy failed:', err);
+              alert('Unable to copy image. Please right-click and save the image, then paste it manually.');
+            }
+          }, 'image/png');
+        } catch (error) {
+          console.error('Canvas copy failed:', error);
+          alert('Unable to copy image. Please right-click and save the image, then paste it manually.');
+        }
+      };
+      
+      img.onerror = function() {
+        alert('Failed to load image. Please check if the image is accessible.');
+      };
+      
+      img.src = imagePath;
+    }
+
+    // Show visual feedback when image is copied
+    function showImageCopyFeedback(buttonElement) {
+      const copyIcon = buttonElement.querySelector('.copy-icon');
+      const checkIcon = buttonElement.querySelector('.check-icon');
+      
+      // Hide copy icon, show check icon
+      if (copyIcon) copyIcon.classList.add('hidden');
+      if (checkIcon) checkIcon.classList.remove('hidden');
+      
+      // Change button color to green
+      buttonElement.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+      buttonElement.classList.add('bg-green-600', 'hover:bg-green-700');
+      
+      // Reset after 2 seconds
+      setTimeout(() => {
+        if (copyIcon) copyIcon.classList.remove('hidden');
+        if (checkIcon) checkIcon.classList.add('hidden');
+        buttonElement.classList.remove('bg-green-600', 'hover:bg-green-700');
+        buttonElement.classList.add('bg-blue-600', 'hover:bg-blue-700');
+      }, 2000);
+    }
+
+    // Remove asset from ad (global function for onclick)
+    window.removeAsset = function(assetId) {
+      if (confirm('Remove this asset from the ad?')) {
+        fetch(`${API_BASE}/ads/${adId}/assets/${assetId}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            loadAdDetails();
+          } else {
+            alert('Failed to remove asset');
+          }
+        })
+        .catch(error => {
+          console.error('Error removing asset:', error);
+          alert('Failed to remove asset');
+        });
+      }
+    };
+
+    // Copy text to clipboard
+    function copyTextToClipboard(text, buttonElement) {
+      // Use the modern Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showCopyFeedback(buttonElement);
+        }).catch(err => {
+          console.error('Failed to copy text:', err);
+          fallbackCopyTextToClipboard(text, buttonElement);
+        });
+      } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(text, buttonElement);
+      }
+    }
+
+    // Fallback copy method for older browsers
+    function fallbackCopyTextToClipboard(text, buttonElement) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showCopyFeedback(buttonElement);
+        } else {
+          alert('Failed to copy text. Please select and copy manually.');
+        }
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+        alert('Failed to copy text. Please select and copy manually.');
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    // Show visual feedback when text is copied
+    function showCopyFeedback(buttonElement) {
+      const copyIcon = buttonElement.querySelector('.copy-icon');
+      const checkIcon = buttonElement.querySelector('.check-icon');
+      
+      // Hide copy icon, show check icon
+      if (copyIcon) copyIcon.classList.add('hidden');
+      if (checkIcon) checkIcon.classList.remove('hidden');
+      
+      // Change button color to green
+      buttonElement.classList.remove('text-gray-600', 'hover:text-gray-800', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+      buttonElement.classList.add('text-green-600', 'dark:text-green-400');
+      
+      // Reset after 2 seconds
+      setTimeout(() => {
+        if (copyIcon) copyIcon.classList.remove('hidden');
+        if (checkIcon) checkIcon.classList.add('hidden');
+        buttonElement.classList.remove('text-green-600', 'dark:text-green-400');
+        buttonElement.classList.add('text-gray-600', 'hover:text-gray-800', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+      }, 2000);
+    }
+
+    // Edit text version (global function)
+    window.editText = function(textId, platformId, textType, content) {
+      // Populate the form with existing data
+      if (platformId && platformId !== '' && platformId !== 'null') {
+        document.getElementById('textPlatform').value = platformId;
+      } else {
+        document.getElementById('textPlatform').value = '';
+      }
+      document.getElementById('textType').value = textType || '';
+      document.getElementById('textContent').value = content || '';
+      
+      // Store the text ID for update
+      document.getElementById('addTextForm').dataset.textId = textId;
+      
+      // Change modal title and button
+      document.querySelector('#addTextModal h3').textContent = 'Edit Text Version';
+      document.querySelector('#addTextForm button[type="submit"]').textContent = 'Update Text Version';
+      
+      // Show modal
+      document.getElementById('addTextModal').classList.remove('hidden');
+    };
+
+    // Delete text version (global function for onclick)
+    window.deleteText = function(textId) {
+      if (confirm('Delete this text version?')) {
+        fetch(`${API_BASE}/texts/${textId}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            loadAdDetails();
+          } else {
+            alert('Failed to delete text');
+          }
+        })
+        .catch(error => {
+          console.error('Error deleting text:', error);
+          alert('Failed to delete text');
+        });
+      }
+    };
+
+    // Show add assets modal
+    document.getElementById('addAssetsBtn').addEventListener('click', async () => {
+      selectedAssetIds = [];
+      
+      // Load existing assets for this ad to show which are already assigned
+      try {
+        const adResponse = await fetch(`${API_BASE}/ads/${adId}`);
+        const adData = await adResponse.json();
+        if (adData.success && adData.data && adData.data.assets) {
+          // Pre-select existing assets in the modal
+          const existingAssetIds = adData.data.assets.map(a => a.id);
+          selectedAssetIds = [...existingAssetIds];
+        }
+      } catch (error) {
+        console.error('Error loading existing assets:', error);
+      }
+      
+      loadAvailableAssets();
+      document.getElementById('addAssetsModal').classList.remove('hidden');
+    });
+
+    // Hide add assets modal
+    document.getElementById('cancelAddAssets').addEventListener('click', () => {
+      document.getElementById('addAssetsModal').classList.add('hidden');
+      selectedAssetIds = [];
+    });
+
+    // Upload new assets
+    document.getElementById('uploadAssetsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      const files = document.getElementById('assetFiles').files;
+      
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/assets/upload`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json'
+          },
+          body: formData
+        });
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Non-JSON response:', text);
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          // Add uploaded assets to selected list
+          data.data.forEach(asset => {
+            if (!selectedAssetIds.includes(asset.id)) {
+              selectedAssetIds.push(asset.id);
+            }
+          });
+          loadAvailableAssets();
+          document.getElementById('assetFiles').value = '';
+          
+          if (window.toastManager) {
+            window.toastManager.success(`Successfully uploaded ${data.data.length} asset(s)`);
+          }
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          if (window.toastManager) {
+            window.toastManager.error('Upload failed: ' + errorMsg);
+          } else {
+            alert('Upload failed: ' + errorMsg);
+          }
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        const errorMsg = error.message || 'Upload failed. Please try again.';
+        if (window.toastManager) {
+          window.toastManager.error(errorMsg);
+        } else {
+          alert(errorMsg);
+        }
+      }
+    });
+
+    // Save assets to ad
+    document.getElementById('saveAssets').addEventListener('click', async () => {
+      if (selectedAssetIds.length === 0) {
+        alert('Please select at least one asset');
+        return;
+      }
+
+      try {
+        // Get existing assets to determine if we're appending or replacing
+        const adResponse = await fetch(`${API_BASE}/ads/${adId}`);
+        const adData = await adResponse.json();
+        const existingAssetIds = adData.success && adData.data && adData.data.assets 
+          ? adData.data.assets.map(a => a.id) 
+          : [];
+        
+        // Check if user wants to replace or append
+        // If all selected assets are new, append. If user unselected existing ones, replace.
+        const hasUnselectedExisting = existingAssetIds.some(id => !selectedAssetIds.includes(id));
+        const replaceExisting = hasUnselectedExisting;
+        
+        const response = await fetch(`${API_BASE}/ads/${adId}/assets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            asset_ids: selectedAssetIds,
+            display_orders: selectedAssetIds.map((_, i) => i),
+            primary_asset_id: selectedAssetIds[0],
+            replace_existing: replaceExisting
+          })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('addAssetsModal').classList.add('hidden');
+          selectedAssetIds = [];
+          loadAdDetails();
+        } else {
+          alert('Failed to save assets: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error saving assets:', error);
+        alert('Failed to save assets');
+      }
+    });
+
+    // Show add text modal
+    document.getElementById('addTextBtn').addEventListener('click', () => {
+      document.getElementById('addTextForm').reset();
+      delete document.getElementById('addTextForm').dataset.textId;
+      document.querySelector('#addTextModal h3').textContent = 'Add Text Version';
+      document.querySelector('#addTextForm button[type="submit"]').textContent = 'Save Text Version';
+      document.getElementById('addTextModal').classList.remove('hidden');
+    });
+
+    // Hide add text modal
+    document.getElementById('cancelAddText').addEventListener('click', () => {
+      document.getElementById('addTextModal').classList.add('hidden');
+    });
+
+    // Save or update text version
+    document.getElementById('addTextForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const textId = document.getElementById('addTextForm').dataset.textId;
+      const textData = {
+        platform_id: document.getElementById('textPlatform').value,
+        text_type: document.getElementById('textType').value,
+        content: document.getElementById('textContent').value
+      };
+
+      try {
+        let response;
+        if (textId) {
+          // Update existing text
+          response = await fetch(`${API_BASE}/ads/${adId}/texts/${textId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              platform_id: textData.platform_id,
+              text_type: textData.text_type,
+              content: textData.content
+            })
+          });
+        } else {
+          // Create new text
+          response = await fetch(`${API_BASE}/ads/${adId}/texts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              texts: [textData]
+            })
+          });
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('addTextModal').classList.add('hidden');
+          document.getElementById('addTextForm').reset();
+          delete document.getElementById('addTextForm').dataset.textId;
+          loadAdDetails();
+        } else {
+          alert('Failed to save text: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error saving text:', error);
+        alert('Failed to save text');
+      }
+    });
+
+
+    async function loadAdDetails() {
+      const loadingState = document.getElementById('loadingState');
+      const errorState = document.getElementById('errorState');
+      const adDetails = document.getElementById('adDetails');
+
+      try {
+        const response = await fetch(`${API_BASE}/ads/${adId}`);
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          const ad = data.data;
+          
+          // Store ad data globally for asset modal
+          window.currentAdData = ad;
+          
+          // Update header
+          document.getElementById('adTitle').textContent = ad.name || 'Untitled Ad';
+          const statusBadge = document.getElementById('adStatusBadge');
+          statusBadge.textContent = ad.status || 'draft';
+          statusBadge.className = `inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+            ad.status === 'approved' ? 'bg-green-500' :
+            ad.status === 'in_review' ? 'bg-yellow-500' :
+            ad.status === 'published' ? 'bg-blue-500' :
+            'bg-gray-500'
+          } text-white`;
+
+          // Update overview
+          const overviewContent = document.getElementById('overviewContent');
+          overviewContent.innerHTML = `
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Description</label>
+              <p class="text-sm text-gray-900 dark:text-white">${ad.description || 'No description'}</p>
+            </div>
+            ${ad.campaign_name ? `
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Campaign</label>
+              <p class="text-sm text-gray-900 dark:text-white font-medium">${ad.campaign_name}</p>
+            </div>
+            ` : ''}
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Created By</label>
+              <p class="text-sm text-gray-900 dark:text-white font-medium">${ad.created_by_name || 'Unknown'}</p>
+            </div>
+          `;
+
+          // Load assets with aspect ratio handling
+          const assetsContainer = document.getElementById('assetsContainer');
+          const noAssetsMessage = document.getElementById('noAssetsMessage');
+          if (ad.assets && ad.assets.length > 0) {
+            assetsContainer.innerHTML = ad.assets.map(asset => {
+              // Calculate aspect ratio
+              let aspectRatio = 'aspect-square'; // default
+              if (asset.width && asset.height) {
+                const ratio = asset.width / asset.height;
+                if (ratio > 1.3) {
+                  aspectRatio = 'aspect-video'; // landscape (16:9)
+                } else if (ratio < 0.7) {
+                  aspectRatio = 'aspect-[9/16]'; // portrait (9:16)
+                } else {
+                  aspectRatio = 'aspect-square'; // square (1:1)
+                }
+              }
+              
+              return `
+              <div class="border rounded-lg overflow-hidden relative group bg-gray-100 dark:bg-gray-700">
+                <div class="${aspectRatio} w-full">
+                  ${asset.file_type === 'image' ? `
+                    <img src="${asset.file_path}" alt="${asset.original_filename}" class="w-full h-full object-contain" data-asset-path="${asset.file_path}" data-asset-id="${asset.id}">
+                  ` : `
+                    <div class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      </svg>
+                    </div>
+                  `}
+                </div>
+                <div class="p-2 bg-white dark:bg-gray-800">
+                  <p class="text-xs text-gray-600 dark:text-gray-400 truncate" title="${asset.original_filename}">${asset.original_filename}</p>
+                  ${asset.is_primary ? '<span class="text-xs text-blue-600 dark:text-blue-400">Primary</span>' : ''}
+                </div>
+                ${asset.file_type === 'image' ? `
+                <button onclick="copyImageToClipboard('${asset.file_path}', this)" class="absolute top-2 left-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg copy-image-btn" title="Copy image">
+                  <svg class="w-4 h-4 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  <svg class="w-4 h-4 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </button>
+                ` : ''}
+                <button onclick="removeAsset(${asset.id})" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            `;
+            }).join('');
+            noAssetsMessage.classList.add('hidden');
+          } else {
+            assetsContainer.innerHTML = '';
+            noAssetsMessage.classList.remove('hidden');
+          }
+
+          // Load texts
+          const textsContainer = document.getElementById('textsContainer');
+          const noTextsMessage = document.getElementById('noTextsMessage');
+          if (ad.texts && ad.texts.length > 0) {
+            // Store text data in a way that avoids HTML attribute issues
+            const textsData = {};
+            
+            textsContainer.innerHTML = ad.texts.map((text, index) => {
+              // Store data in a global object to avoid attribute escaping issues
+              const dataKey = `text_${text.id}_${index}`;
+              textsData[dataKey] = {
+                id: text.id,
+                platformId: text.platform_id || '',
+                textType: text.text_type || '',
+                content: text.content || ''
+              };
+              
+              return `
+              <div class="border rounded-lg p-4 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-sm font-semibold text-gray-900 dark:text-white">${text.platform_name || 'General'}</span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">•</span>
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wide">${text.text_type}</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 ml-4">
+                    <button 
+                      class="copy-text-btn text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" 
+                      title="Copy text"
+                      data-key="${dataKey}">
+                      <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      </svg>
+                      <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                    </button>
+                    <button 
+                      class="edit-text-btn text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors" 
+                      title="Edit"
+                      data-key="${dataKey}">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                    <button onclick="deleteText(${text.id})" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900 transition-colors" title="Delete">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 mt-2">
+                  <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">${text.content}</p>
+                </div>
+              </div>
+            `;
+            }).join('');
+            
+            // Store texts data globally for this ad
+            window.currentTextsData = textsData;
+            
+            // Add event listeners to copy buttons
+            textsContainer.querySelectorAll('.copy-text-btn').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const dataKey = this.dataset.key;
+                const textData = window.currentTextsData[dataKey];
+                if (textData) {
+                  copyTextToClipboard(textData.content, this);
+                }
+              });
+            });
+            
+            // Add event listeners to edit buttons
+            textsContainer.querySelectorAll('.edit-text-btn').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const dataKey = this.dataset.key;
+                const textData = window.currentTextsData[dataKey];
+                if (textData) {
+                  editText(textData.id, textData.platformId, textData.textType, textData.content);
+                }
+              });
+            });
+            
+            noTextsMessage.classList.add('hidden');
+          } else {
+            textsContainer.innerHTML = '';
+            noTextsMessage.classList.remove('hidden');
+          }
+
+          // Function to get platform icon
+          function getPlatformIcon(platformCode, platformName) {
+            const code = (platformCode || '').toLowerCase();
+            const name = (platformName || '').toLowerCase();
+            
+            // Instagram
+            if (code === 'instagram' || name.includes('instagram')) {
+              return `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>`;
+            }
+            
+            // Facebook
+            if (code === 'facebook' || name.includes('facebook')) {
+              return `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>`;
+            }
+            
+            // WhatsApp
+            if (code === 'whatsapp' || name.includes('whatsapp')) {
+              return `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>`;
+            }
+            
+            // Twitter/X
+            if (code === 'twitter' || name.includes('twitter') || name.includes('x')) {
+              return `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>`;
+            }
+            
+            // LinkedIn
+            if (code === 'linkedin' || name.includes('linkedin')) {
+              return `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>`;
+            }
+            
+            // Default icon
+            return `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342c0 .576.373 1.084.95 1.26l3.196.99c.5.155.99-.155.99-.65v-1.5c0-.495-.49-.805-.99-.65l-3.196.99c-.577.176-.95.684-.95 1.26zm-2.5-2.5c0 .576.373 1.084.95 1.26l3.196.99c.5.155.99-.155.99-.65v-1.5c0-.495-.49-.805-.99-.65l-3.196.99c-.577.176-.95.684-.95 1.26zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"/>
+            </svg>`;
+          }
+          
+          // Load publishings
+          const publishingsContainer = document.getElementById('publishingsContainer');
+          const noPublishingsMessage = document.getElementById('noPublishingsMessage');
+          if (ad.publishings && ad.publishings.length > 0) {
+            publishingsContainer.innerHTML = ad.publishings.map(pub => {
+              const platformIcon = getPlatformIcon(pub.platform_code, pub.platform_name);
+              const placementLabels = {
+                'feed': 'Feed',
+                'story': 'Story',
+                'reels': 'Reels',
+                'broadcast': 'Broadcast',
+                'post': 'Post',
+                'other': 'Other'
+              };
+              
+              return `
+              <div class="border rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-sm transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="text-blue-600 dark:text-blue-400">
+                      ${platformIcon}
+                    </div>
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">${pub.platform_name}</span>
+                  </div>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">${new Date(pub.published_at).toLocaleDateString()}</span>
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">${placementLabels[pub.placement] || pub.placement}</span>
+                </div>
+                ${pub.external_campaign_id ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-2">Campaign ID: <span class="font-mono">${pub.external_campaign_id}</span></p>` : ''}
+                ${pub.external_ad_id ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Ad ID: <span class="font-mono">${pub.external_ad_id}</span></p>` : ''}
+                ${pub.link_used ? `<p class="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate" title="${pub.link_used}">Link: <a href="${pub.link_used}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${pub.link_used}</a></p>` : ''}
+              </div>
+            `;
+            }).join('');
+            noPublishingsMessage.classList.add('hidden');
+          } else {
+            publishingsContainer.innerHTML = '';
+            noPublishingsMessage.classList.remove('hidden');
+          }
+
+          // Show approval section if needed
+          const approvalSection = document.getElementById('approvalSection');
+          if (ad.status === 'in_review' || ad.status === 'draft') {
+            approvalSection.innerHTML = `
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Approval</h2>
+              <div class="space-y-2">
+                <button id="approveBtn" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  Approve
+                </button>
+                <button id="rejectBtn" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  Reject
+                </button>
+              </div>
+            `;
+            
+            // Add approval handlers
+            setTimeout(() => {
+              const approveBtn = document.getElementById('approveBtn');
+              const rejectBtn = document.getElementById('rejectBtn');
+              
+              if (approveBtn) {
+                approveBtn.addEventListener('click', async () => {
+                  try {
+                    const response = await fetch(`${API_BASE}/ads/${adId}/approve`, {
+                      method: 'POST'
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                      loadAdDetails();
+                    } else {
+                      alert('Failed to approve ad: ' + (data.error || 'Unknown error'));
+                    }
+                  } catch (error) {
+                    console.error('Error approving ad:', error);
+                    alert('Failed to approve ad');
+                  }
+                });
+              }
+              
+              if (rejectBtn) {
+                rejectBtn.addEventListener('click', () => {
+                  const reason = prompt('Please provide a reason for rejection:');
+                  if (reason) {
+                    fetch(`${API_BASE}/ads/${adId}/reject`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ rejection_reason: reason })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.success) {
+                        loadAdDetails();
+                      } else {
+                        alert('Failed to reject ad: ' + (data.error || 'Unknown error'));
+                      }
+                    })
+                    .catch(error => {
+                      console.error('Error rejecting ad:', error);
+                      alert('Failed to reject ad');
+                    });
+                  }
+                });
+              }
+            }, 100);
+          } else {
+            // Get approval status badge class
+            const getApprovalBadgeClass = (status) => {
+              const classes = {
+                'approved': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'rejected': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+              };
+              return classes[status] || classes['pending'];
+            };
+            
+            const approvalStatus = ad.approval_status || 'pending';
+            const statusLabel = approvalStatus.charAt(0).toUpperCase() + approvalStatus.slice(1);
+            
+            approvalSection.innerHTML = `
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Approval Status</h2>
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</span>
+                  <span class="px-3 py-1 text-xs font-semibold rounded-full ${getApprovalBadgeClass(approvalStatus)}">
+                    ${statusLabel}
+                  </span>
+                </div>
+                ${ad.approved_by_name ? `
+                <div>
+                  <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Approved by</span>
+                  <p class="text-sm text-gray-900 dark:text-white font-medium mt-1">${ad.approved_by_name}</p>
+                </div>
+                ` : ''}
+                ${ad.approved_at ? `
+                <div>
+                  <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Date</span>
+                  <p class="text-sm text-gray-900 dark:text-white font-medium mt-1">${new Date(ad.approved_at).toLocaleDateString()}</p>
+                </div>
+                ` : ''}
+                ${ad.rejection_reason ? `
+                <div>
+                  <span class="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide">Rejection Reason</span>
+                  <p class="text-sm text-red-700 dark:text-red-300 mt-1">${ad.rejection_reason}</p>
+                </div>
+                ` : ''}
+              </div>
+            `;
+          }
+
+          adDetails.classList.remove('hidden');
+        } else {
+          errorState.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error loading ad details:', error);
+        errorState.classList.remove('hidden');
+      } finally {
+        loadingState.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('editAd').addEventListener('click', () => {
+      window.location.href = `/marketing/ads/${adId}/edit`;
+    });
+
+    // Show publish modal
+    document.getElementById('publishBtn').addEventListener('click', () => {
+      // Set default date/time to now
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('publishDate').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+      
+      document.getElementById('publishForm').reset();
+      document.getElementById('publishDate').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+      document.getElementById('publishModal').classList.remove('hidden');
+    });
+
+    // Hide publish modal
+    document.getElementById('cancelPublish').addEventListener('click', () => {
+      document.getElementById('publishModal').classList.add('hidden');
+    });
+
+    // Save publishing record
+    document.getElementById('publishForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const publishDate = document.getElementById('publishDate').value;
+      const publishingData = {
+        ad_id: parseInt(adId),
+        platform_id: parseInt(document.getElementById('publishPlatform').value),
+        placement: document.getElementById('publishPlacement').value,
+        published_at: new Date(publishDate).toISOString(),
+        external_campaign_id: document.getElementById('externalCampaignId').value || null,
+        external_ad_id: document.getElementById('externalAdId').value || null,
+        link_used: document.getElementById('linkUsed').value || null,
+        notes: document.getElementById('publishNotes').value || null
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/publishings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(publishingData)
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('publishModal').classList.add('hidden');
+          loadAdDetails();
+        } else {
+          alert('Failed to record publishing: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error recording publishing:', error);
+        alert('Failed to record publishing');
+      }
+    });
+
+    // Close modals on background click
+    document.getElementById('addAssetsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'addAssetsModal') {
+        document.getElementById('addAssetsModal').classList.add('hidden');
+      }
+    });
+
+    document.getElementById('addTextModal').addEventListener('click', (e) => {
+      if (e.target.id === 'addTextModal') {
+        document.getElementById('addTextModal').classList.add('hidden');
+      }
+    });
+
+    document.getElementById('publishModal').addEventListener('click', (e) => {
+      if (e.target.id === 'publishModal') {
+        document.getElementById('publishModal').classList.add('hidden');
+      }
+    });
+
+    // Initialize
+    loadPlatforms();
+    loadAdDetails();
+  </script>
+</body>
+</html>
+

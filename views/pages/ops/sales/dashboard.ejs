@@ -1,0 +1,472 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/sales-dark-mode.css">
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Sales', subsection: 'Dashboard' }) %>
+
+  
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Sales Dashboard</h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Overview of production, sales, and unsold inventory</p>
+          </div>
+
+          <!-- Date Selector and Actions -->
+          <div class="flex items-center gap-2 sm:gap-4">
+            <input type="date" id="date-selector" value="<%= date %>" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" />
+            
+            <button onclick="location.reload()" class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap text-sm sm:text-base">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 inline sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span class="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+       <% if (locals.error) { %>
+       <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"><%= error %></div>
+       <% } %>
+
+       <!-- Quick Actions -->
+       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+         <a href="/sales/data-entry" class="group bg-white border-2 border-gray-200 hover:border-blue-500 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+           <div class="flex items-center">
+             <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/20 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+               </svg>
+             </div>
+             <div class="flex-1 min-w-0">
+               <h3 class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">Sales Data Entry</h3>
+               <p class="text-xs sm:text-sm text-gray-600 truncate">Record partner sales</p>
+             </div>
+             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+             </svg>
+           </div>
+         </a>
+
+         <a href="/sales/partners" class="group bg-white border-2 border-gray-200 hover:border-purple-500 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+           <div class="flex items-center">
+             <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 dark:bg-purple-900/20 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+               </svg>
+             </div>
+             <div class="flex-1 min-w-0">
+               <h3 class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-purple-600 transition-colors truncate">Manage Partners</h3>
+               <p class="text-xs sm:text-sm text-gray-600 truncate">Add and configure partners</p>
+             </div>
+             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+             </svg>
+           </div>
+         </a>
+
+         <a href="/sales/reports" class="group bg-white border-2 border-gray-200 hover:border-green-500 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+           <div class="flex items-center">
+             <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 dark:bg-green-900/20 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+               </svg>
+             </div>
+             <div class="flex-1 min-w-0">
+               <h3 class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-green-600 transition-colors truncate">Sales Reports</h3>
+               <p class="text-xs sm:text-sm text-gray-600 truncate">View analytics & export</p>
+             </div>
+             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+             </svg>
+           </div>
+         </a>
+
+         <a href="/sales/product-mappings" class="group bg-white border-2 border-gray-200 hover:border-indigo-500 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+           <div class="flex items-center">
+             <div class="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 dark:bg-indigo-900/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+               </svg>
+             </div>
+             <div class="flex-1 min-w-0">
+               <h3 class="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">Product Mappings</h3>
+               <p class="text-xs sm:text-sm text-gray-600 truncate">Map external products</p>
+             </div>
+             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+             </svg>
+           </div>
+         </a>
+       </div>
+
+       <!-- Metrics Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+        <!-- Total Production -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">Total Production</h3>
+            <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+          </div>
+           <p class="text-3xl font-bold text-blue-700 dark:text-blue-300"><%= Math.round(parseFloat(metrics.total_produced || 0)) %></p>
+           <p class="text-sm text-blue-600 dark:text-blue-400 mt-1">Units produced today</p>
+         </div>
+
+         <!-- Total Sales -->
+         <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 shadow-sm">
+           <div class="flex items-center justify-between mb-2">
+             <h3 class="text-lg font-semibold text-green-900 dark:text-green-100">Total Sales</h3>
+             <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+             </svg>
+           </div>
+           <p class="text-3xl font-bold text-green-700 dark:text-green-300"><%= Math.round(parseFloat(metrics.total_sold || 0)) %></p>
+           <p class="text-sm text-green-600 dark:text-green-400 mt-1">App: <%= Math.round(parseFloat(metrics.total_sold_app || 0)) %> | Partners: <%= Math.round(parseFloat(metrics.total_sold_partners || 0)) %></p>
+         </div>
+
+         <!-- Unsold Balance -->
+         <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-6 shadow-sm">
+           <div class="flex items-center justify-between mb-2">
+             <h3 class="text-lg font-semibold text-orange-900 dark:text-orange-100">Unsold Balance</h3>
+             <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+             </svg>
+           </div>
+           <p class="text-3xl font-bold text-orange-700 dark:text-orange-300"><%= Math.round(parseFloat(metrics.total_unsold || 0)) %></p>
+           <p class="text-sm text-orange-600 dark:text-orange-400 mt-1">Closing stock for today</p>
+         </div>
+
+         <!-- Products Tracked -->
+         <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6 shadow-sm">
+           <div class="flex items-center justify-between mb-2">
+             <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100">Products</h3>
+             <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+             </svg>
+           </div>
+           <p class="text-3xl font-bold text-purple-700 dark:text-purple-300"><%= parseInt(metrics.product_count || 0) %></p>
+           <p class="text-sm text-purple-600 dark:text-purple-400 mt-1">Active products tracked</p>
+         </div>
+      </div>
+
+       <!-- Charts Section -->
+       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+         <!-- Trends Chart -->
+         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+           <h3 class="text-lg font-semibold text-gray-900 mb-4">7-Day Trends</h3>
+           <div class="relative">
+             <canvas id="trendsChart" width="600" height="300"></canvas>
+           </div>
+         </div>
+
+         <!-- Product Distribution -->
+         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+           <h3 class="text-lg font-semibold text-gray-900 mb-4">Production vs Sales</h3>
+           <div class="relative">
+             <canvas id="distributionChart" width="600" height="300"></canvas>
+           </div>
+         </div>
+       </div>
+
+      <!-- Product-wise Summary Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Product-wise Summary</h2>
+          <p class="text-sm text-gray-600">Detailed breakdown by product</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Milk Type</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Opening Stock</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Produced</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sold (App)</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sold (Partners)</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sold</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Closing Stock</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% if (summary && summary.length > 0) { %> <% summary.forEach(item => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0">
+                      <div class="w-10 h-10 bg-gray-200 rounded-lg overflow-hidden">
+                        <% if (item.image_url) { %>
+                          <img src="<%= item.image_url %>" alt="<%= item.product_name %>" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <% } %>
+                        <div class="w-full h-full flex items-center justify-center" style="<%= item.image_url ? 'display: none;' : '' %>">
+                          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="font-medium text-gray-900"><%= item.product_name %></div>
+                      <div class="text-sm text-gray-500"><%= item.unit_size %></div>
+                    </div>
+                  </div>
+                </td>
+                 <td class="px-6 py-4 whitespace-nowrap">
+                   <% const milkTypeBadge = item.milk_type === 'A1' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' : item.milk_type === 'A2' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'; %>
+                   <span class="px-2 py-1 text-xs font-semibold rounded-full <%= milkTypeBadge %>"><%= item.milk_type %></span>
+                 </td>
+                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900"><%= Math.round(parseFloat(item.opening_stock || 0)) %></td>
+                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-600"><%= Math.round(parseFloat(item.quantity_produced || 0)) %></td>
+                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600"><%= Math.round(parseFloat(item.quantity_sold_app || 0)) %></td>
+                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600"><%= Math.round(parseFloat(item.quantity_sold_partners || 0)) %></td>
+                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-green-700"><%= Math.round(parseFloat(item.quantity_sold_total || 0)) %></td>
+                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-orange-600"><%= Math.round(parseFloat(item.closing_stock || 0)) %></td>
+              </tr>
+              <% }); %> <% } else { %>
+              <tr>
+                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                  </svg>
+                  <p>No data available for this date</p>
+                  <p class="text-sm mt-1">Production and sales data will appear here once added</p>
+                </td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+              Showing <span class="font-medium"><%= ((pagination.page - 1) * pagination.limit) + 1 %></span>
+              to <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.total) %></span>
+              of <span class="font-medium"><%= pagination.total %></span> products
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <!-- Previous Button -->
+              <a href="?date=<%= date %>&page=<%= pagination.page - 1 %>" 
+                 class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed <%= pagination.page <= 1 ? 'pointer-events-none opacity-50' : '' %>">
+                <span class="sr-only">Previous</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </a>
+              
+              <!-- Page Numbers -->
+              <div class="flex items-center gap-1">
+                <% 
+                  let startPage = Math.max(1, pagination.page - 2);
+                  let endPage = Math.min(pagination.totalPages, pagination.page + 2);
+                  
+                  // Show first page if not in range
+                  if (startPage > 1) { %>
+                    <a href="?date=<%= date %>&page=1" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 <%= pagination.page === 1 ? 'bg-blue-50 border-blue-500 text-blue-600' : '' %>">1</a>
+                    <% if (startPage > 2) { %>
+                      <span class="px-2 text-gray-500">...</span>
+                    <% } %>
+                <% } %>
+                
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                  <a href="?date=<%= date %>&page=<%= i %>" 
+                     class="px-3 py-2 text-sm font-medium rounded-lg border <%= pagination.page === i ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50' %>">
+                    <%= i %>
+                  </a>
+                <% } %>
+                
+                <!-- Show last page if not in range -->
+                <% if (endPage < pagination.totalPages) { %>
+                  <% if (endPage < pagination.totalPages - 1) { %>
+                    <span class="px-2 text-gray-500">...</span>
+                  <% } %>
+                  <a href="?date=<%= date %>&page=<%= pagination.totalPages %>" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 <%= pagination.page === pagination.totalPages ? 'bg-blue-50 border-blue-500 text-blue-600' : '' %>"><%= pagination.totalPages %></a>
+                <% } %>
+              </div>
+              
+              <!-- Next Button -->
+              <a href="?date=<%= date %>&page=<%= pagination.page + 1 %>" 
+                 class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed <%= pagination.page >= pagination.totalPages ? 'pointer-events-none opacity-50' : '' %>">
+                <span class="sr-only">Next</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+        <% } %>
+       </div>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+  <%- include('../../../partials/_toast') %>
+
+     <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+      // Register datalabels plugin if available
+      if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+      } else if (typeof window.ChartDataLabels !== 'undefined') {
+        Chart.register(window.ChartDataLabels);
+      }
+      
+      // Date selector change handler
+      document.getElementById('date-selector').addEventListener('change', function(e) {
+        window.location.href = `?date=${e.target.value}`;
+      });
+
+      // Initialize charts
+      const trendsData = <%- JSON.stringify(trends) %>;
+      const trendsCtx = document.getElementById('trendsChart');
+      
+      if (trendsCtx) {
+        new Chart(trendsCtx, {
+          type: 'line',
+          data: {
+            labels: trendsData.map(d => new Date(d.summary_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+            datasets: [
+              {
+                label: 'Produced',
+                data: trendsData.map(d => parseFloat(d.total_produced || 0)),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Sold',
+                data: trendsData.map(d => parseFloat(d.total_sold || 0)),
+                borderColor: 'rgb(34, 197, 94)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Unsold',
+                data: trendsData.map(d => parseFloat(d.total_unsold || 0)),
+                borderColor: 'rgb(249, 115, 22)',
+                backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                tension: 0.4,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              datalabels: {
+                display: true,
+                align: 'top',
+                anchor: 'end',
+                offset: 4,
+                color: function(context) {
+                  return context.dataset.borderColor;
+                },
+                font: {
+                  weight: 'bold',
+                  size: 11
+                },
+                formatter: function(value) {
+                  return Math.round(value);
+                },
+                clamp: false,
+                clip: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+
+      // Distribution Chart
+      const metrics = <%- JSON.stringify(metrics) %>;
+      const distributionCtx = document.getElementById('distributionChart');
+      
+      if (distributionCtx) {
+        new Chart(distributionCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Sold (App)', 'Sold (Partners)', 'Unsold'],
+            datasets: [{
+              data: [
+                parseFloat(metrics.total_sold_app || 0),
+                parseFloat(metrics.total_sold_partners || 0),
+                parseFloat(metrics.total_unsold || 0)
+              ],
+              backgroundColor: [
+                'rgba(34, 197, 94, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(249, 115, 22, 0.8)'
+              ],
+              borderWidth: 2,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              datalabels: {
+                display: function(context) {
+                  return context.dataset.data[context.dataIndex] > 0;
+                },
+                color: '#ffffff',
+                anchor: 'center',
+                align: 'center',
+                font: {
+                  weight: 'bold',
+                  size: 14
+                },
+                formatter: function(value) {
+                  return Math.round(value);
+                },
+                textStrokeColor: 'rgba(0, 0, 0, 0.5)',
+                textStrokeWidth: 2,
+                padding: 0
+              }
+            }
+          }
+        });
+      }
+
+     </script>
+</body>
+</html>

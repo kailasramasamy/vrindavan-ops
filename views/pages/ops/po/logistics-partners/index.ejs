@@ -1,0 +1,716 @@
+<%- include('../../../../partials/_head', { seo }) %>
+<link rel="stylesheet" href="/assets/css/po-dark-mode.css">
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../../partials/_subnav', { user, section: 'PO', subsection: 'Logistics Partners' }) %>
+
+  <div class="min-h-screen pt-16">
+
+    <!-- Page Header -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="truck" class="w-5 h-5 text-white stats-icon"></i>
+              </div>
+              <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Logistics Partners</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Manage shipping and logistics partners</p>
+              </div>
+            </div>
+            <button onclick="openAddPartnerModal()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              <i data-lucide="plus" class="h-4 w-4 mr-2 action-icon"></i>
+              Add Partner
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg stats-card">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 stats-card-icon-container bg-blue-100 dark:bg-blue-900/20">
+                <i data-lucide="truck" class="h-6 w-6 text-blue-600 dark:text-blue-400 stats-icon"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Partners</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="totalPartners">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg stats-card">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 stats-card-icon-container bg-green-100 dark:bg-green-900/20">
+                <i data-lucide="check-circle" class="h-6 w-6 text-green-600 dark:text-green-400 stats-icon"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Partners</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="activePartners">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg stats-card">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 stats-card-icon-container bg-purple-100 dark:bg-purple-900/20">
+                <i data-lucide="globe" class="h-6 w-6 text-purple-600 dark:text-purple-400 stats-icon"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">International</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="internationalPartners">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg stats-card">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 stats-card-icon-container bg-orange-100 dark:bg-orange-900/20">
+                <i data-lucide="home" class="h-6 w-6 text-orange-600 dark:text-orange-400 stats-icon"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Domestic</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="domesticPartners">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partners Table -->
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Logistics Partners</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Company</th>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contact</th>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">City</th>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Service Type</th>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pricing</th>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="partnersTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+              <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <div class="flex flex-col items-center">
+                    <i data-lucide="loader" class="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin mb-2"></i>
+                    <span>Loading logistics partners...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Partner Modal -->
+  <div id="partnerModal" class="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-60 dark:bg-opacity-75 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-6 border w-11/12 md:w-3/4 lg:w-5/12 shadow-2xl rounded-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="mt-2">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-600">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+              <i data-lucide="truck" class="h-4 w-4 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modalTitle">Add Logistics Partner</h3>
+          </div>
+          <button onclick="closePartnerModal()" class="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i data-lucide="x" class="h-5 w-5"></i>
+          </button>
+        </div>
+
+        <form id="partnerForm" novalidate>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Company Name -->
+            <div class="md:col-span-2">
+              <label for="companyName" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Company Name *</label>
+              <input type="text" id="companyName" name="company_name" required class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Enter company name" />
+            </div>
+
+            <!-- Contact Person -->
+            <div>
+              <label for="contactPerson" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Contact Person</label>
+              <input type="text" id="contactPerson" name="contact_person" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Contact person name" />
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label for="phone" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Phone</label>
+              <input type="tel" id="phone" name="phone" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Phone number" />
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label for="email" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Email</label>
+              <input type="email" id="email" name="email" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Email address" />
+            </div>
+
+            <!-- Service Type -->
+            <div>
+              <label for="serviceType" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Service Type</label>
+              <select id="serviceType" name="service_type" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
+                <option value="domestic">Domestic</option>
+                <option value="international">International</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+
+            <!-- Pricing Model -->
+            <div>
+              <label for="pricingModel" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Pricing Model</label>
+              <select id="pricingModel" name="pricing_model" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
+                <option value="per_kg">Per KG</option>
+                <option value="per_km">Per KM</option>
+                <option value="fixed">Fixed Rate</option>
+                <option value="negotiated">Negotiated</option>
+              </select>
+            </div>
+
+            <!-- Base Rate -->
+            <div>
+              <label for="baseRate" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Base Rate (₹)</label>
+              <input type="number" id="baseRate" name="base_rate" step="0.01" min="0" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="0.00" />
+            </div>
+
+            <!-- GSTIN -->
+            <div>
+              <label for="gstin" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">GSTIN</label>
+              <input type="text" id="gstin" name="gstin" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="GSTIN number" />
+            </div>
+
+            <!-- Address -->
+            <div class="md:col-span-2">
+              <label for="address" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Address</label>
+              <textarea id="address" name="address" rows="2" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none" placeholder="Company address"></textarea>
+            </div>
+
+            <!-- City, State, Pincode -->
+            <div>
+              <label for="city" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">City</label>
+              <input type="text" id="city" name="city" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="City" />
+            </div>
+
+            <div>
+              <label for="state" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">State</label>
+              <input type="text" id="state" name="state" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="State" />
+            </div>
+
+            <div>
+              <label for="pincode" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Pincode</label>
+              <input type="text" id="pincode" name="pincode" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Pincode" />
+            </div>
+
+            <!-- Tracking URL -->
+            <div>
+              <label for="trackingUrl" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Tracking URL</label>
+              <input type="url" id="trackingUrl" name="tracking_url" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="https://tracking.example.com" />
+            </div>
+
+            <!-- Payment Terms -->
+            <div>
+              <label for="paymentTerms" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Payment Terms</label>
+              <input type="text" id="paymentTerms" name="payment_terms" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="e.g., 15 days" />
+            </div>
+
+            <!-- Delivery Areas -->
+            <div class="md:col-span-2">
+              <label for="deliveryAreas" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Delivery Areas</label>
+              <textarea id="deliveryAreas" name="delivery_areas" rows="2" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none" placeholder="List delivery areas (one per line)"></textarea>
+            </div>
+
+            <!-- Notes -->
+            <div class="md:col-span-2">
+              <label for="notes" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Notes</label>
+              <textarea id="notes" name="notes" rows="2" class="block w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none" placeholder="Additional notes"></textarea>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
+            <button type="button" onclick="closePartnerModal()" class="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-3 border-2 border-transparent rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+              <span id="submitButtonText">Add Partner</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../../partials/_toast') %>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    // Force initialize Lucide icons with multiple attempts
+    function forceInitializeIcons() {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+        console.log('Lucide icons initialized');
+      } else {
+        console.log('Lucide not available, retrying...');
+        setTimeout(forceInitializeIcons, 100);
+      }
+    }
+    
+    // Fallback SVG icons if Lucide fails
+    function createFallbackIcons() {
+      const iconMap = {
+        'truck': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16,8 20,8 23,11 23,16 16,16"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+        'check-circle': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>',
+        'globe': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+        'home': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>',
+        'plus': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+        'edit': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+        'trash-2': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>'
+      };
+      
+      document.querySelectorAll('[data-lucide]').forEach(icon => {
+        if (!icon.querySelector('svg')) {
+          const iconName = icon.getAttribute('data-lucide');
+          if (iconMap[iconName]) {
+            icon.innerHTML = iconMap[iconName];
+            console.log(`Fallback icon created for: ${iconName}`);
+          }
+        }
+      });
+    }
+    
+    // Initialize on DOM ready and after a delay
+    document.addEventListener('DOMContentLoaded', function() {
+      forceInitializeIcons();
+      setTimeout(createFallbackIcons, 1000);
+    });
+    setTimeout(forceInitializeIcons, 500);
+  </script>
+  
+  <style>
+    /* Reset and force icon visibility */
+    [data-lucide] {
+      display: inline-block !important;
+      width: 1em !important;
+      height: 1em !important;
+      stroke: currentColor !important;
+      fill: none !important;
+      stroke-width: 2 !important;
+      stroke-linecap: round !important;
+      stroke-linejoin: round !important;
+      vertical-align: middle !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      background: none !important;
+      box-shadow: none !important;
+    }
+    
+    /* Stats card icon containers - ensure proper spacing */
+    .stats-card-icon-container {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      border-radius: 8px !important;
+      margin-right: 16px !important;
+      flex-shrink: 0 !important;
+    }
+    
+    /* Specific icon styling for stats cards */
+    .stats-icon {
+      width: 24px !important;
+      height: 24px !important;
+      display: inline-block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Action button icons */
+    .action-icon {
+      width: 16px !important;
+      height: 16px !important;
+      display: inline-block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Company icons in table */
+    .company-icon {
+      width: 20px !important;
+      height: 20px !important;
+      display: inline-block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Fix stats card layout */
+    .stats-card .flex {
+      align-items: center !important;
+    }
+    
+    .stats-card .flex-shrink-0 {
+      margin-right: 16px !important;
+    }
+    
+    /* Remove any background or border from icon elements */
+    [data-lucide] * {
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    /* Ensure proper spacing in stats cards */
+    .stats-card dl {
+      margin: 0 !important;
+    }
+    
+    .stats-card dt {
+      margin-bottom: 4px !important;
+    }
+    
+    .stats-card dd {
+      margin: 0 !important;
+    }
+    
+    /* Modal improvements */
+    #partnerModal {
+      backdrop-filter: blur(4px);
+    }
+    
+    #partnerModal .relative {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Form field focus improvements */
+    #partnerForm input:focus,
+    #partnerForm select:focus,
+    #partnerForm textarea:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+    
+    /* Button hover effects */
+    #partnerForm button:hover {
+      transform: translateY(-1px);
+    }
+  </style>
+
+  <script>
+    let logisticsPartners = [];
+    let editingPartnerId = null;
+
+    // Load logistics partners on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadLogisticsPartners();
+    });
+
+    // Load logistics partners
+    async function loadLogisticsPartners() {
+      try {
+        const response = await fetch('/po/api/v1/logistics-partners');
+        const result = await response.json();
+        
+        if (result.success) {
+          logisticsPartners = result.data;
+          renderPartnersTable();
+          updateStats();
+        } else {
+          showErrorToast('Error loading logistics partners: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error loading logistics partners:', error);
+        showErrorToast('Error loading logistics partners');
+      }
+    }
+
+    // Render partners table
+    function renderPartnersTable() {
+      const tbody = document.getElementById('partnersTableBody');
+      
+      if (logisticsPartners.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+              <div class="flex flex-col items-center">
+                <i data-lucide="truck" class="h-8 w-8 text-gray-400 dark:text-gray-500 mb-2 stats-icon"></i>
+                <span>No logistics partners found</span>
+                <button onclick="openAddPartnerModal()" class="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                  Add your first partner
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = logisticsPartners.map(partner => `
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10">
+                <div class="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                  <i data-lucide="truck" class="h-5 w-5 text-blue-600 dark:text-blue-400 company-icon"></i>
+                </div>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900 dark:text-white">${partner.company_name}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">${partner.gstin || 'No GSTIN'}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 dark:text-white">${partner.contact_person || '-'}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">${partner.phone || '-'}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 dark:text-white">${partner.city || '-'}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">${partner.state || '-'}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getServiceTypeBadgeClass(partner.service_type)}">
+              ${partner.service_type.charAt(0).toUpperCase() + partner.service_type.slice(1)}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 dark:text-white">${partner.pricing_model.replace('_', ' ').toUpperCase()}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">₹${partner.base_rate || '0'}/${partner.pricing_model === 'per_kg' ? 'kg' : partner.pricing_model === 'per_km' ? 'km' : 'rate'}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${partner.is_active ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400'}">
+              ${partner.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <div class="flex justify-end space-x-2">
+              <button onclick="editPartner(${partner.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Edit Partner">
+                <i data-lucide="edit" class="h-4 w-4 action-icon"></i>
+              </button>
+              <button onclick="deletePartner(${partner.id})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Delete Partner">
+                <i data-lucide="trash-2" class="h-4 w-4 action-icon"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Re-initialize Lucide icons with delay
+      setTimeout(() => {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+          console.log('Icons re-initialized after table update');
+        }
+        // Also create fallback icons for any that didn't load
+        createFallbackIcons();
+      }, 100);
+    }
+
+    // Get service type badge class
+    function getServiceTypeBadgeClass(serviceType) {
+      switch (serviceType) {
+        case 'domestic':
+          return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
+        case 'international':
+          return 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400';
+        case 'both':
+          return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400';
+        default:
+          return 'bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400';
+      }
+    }
+
+    // Update stats
+    function updateStats() {
+      const total = logisticsPartners.length;
+      const active = logisticsPartners.filter(p => p.is_active).length;
+      const international = logisticsPartners.filter(p => p.service_type === 'international' || p.service_type === 'both').length;
+      const domestic = logisticsPartners.filter(p => p.service_type === 'domestic' || p.service_type === 'both').length;
+
+      document.getElementById('totalPartners').textContent = total;
+      document.getElementById('activePartners').textContent = active;
+      document.getElementById('internationalPartners').textContent = international;
+      document.getElementById('domesticPartners').textContent = domestic;
+    }
+
+    // Open add partner modal
+    function openAddPartnerModal() {
+      editingPartnerId = null;
+      document.getElementById('modalTitle').textContent = 'Add Logistics Partner';
+      document.getElementById('submitButtonText').textContent = 'Add Partner';
+      document.getElementById('partnerForm').reset();
+      
+      const modal = document.getElementById('partnerModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.querySelector('.transform').classList.remove('scale-95', 'opacity-0');
+        modal.querySelector('.transform').classList.add('scale-100', 'opacity-100');
+      }, 10);
+      
+      // Initialize icons in modal
+      setTimeout(() => {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+        createFallbackIcons();
+      }, 100);
+    }
+
+    // Edit partner
+    function editPartner(id) {
+      const partner = logisticsPartners.find(p => p.id === id);
+      if (!partner) return;
+
+      editingPartnerId = id;
+      document.getElementById('modalTitle').textContent = 'Edit Logistics Partner';
+      document.getElementById('submitButtonText').textContent = 'Update Partner';
+
+      // Populate form
+      document.getElementById('companyName').value = partner.company_name || '';
+      document.getElementById('contactPerson').value = partner.contact_person || '';
+      document.getElementById('phone').value = partner.phone || '';
+      document.getElementById('email').value = partner.email || '';
+      document.getElementById('serviceType').value = partner.service_type || 'domestic';
+      document.getElementById('pricingModel').value = partner.pricing_model || 'per_kg';
+      document.getElementById('baseRate').value = partner.base_rate || '';
+      document.getElementById('gstin').value = partner.gstin || '';
+      document.getElementById('address').value = partner.address || '';
+      document.getElementById('city').value = partner.city || '';
+      document.getElementById('state').value = partner.state || '';
+      document.getElementById('pincode').value = partner.pincode || '';
+      document.getElementById('trackingUrl').value = partner.tracking_url || '';
+      document.getElementById('paymentTerms').value = partner.payment_terms || '';
+      document.getElementById('deliveryAreas').value = partner.delivery_areas || '';
+      document.getElementById('notes').value = partner.notes || '';
+
+      const modal = document.getElementById('partnerModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.querySelector('.transform').classList.remove('scale-95', 'opacity-0');
+        modal.querySelector('.transform').classList.add('scale-100', 'opacity-100');
+      }, 10);
+      
+      // Initialize icons in modal
+      setTimeout(() => {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+        createFallbackIcons();
+      }, 100);
+    }
+
+    // Close partner modal
+    function closePartnerModal() {
+      const modal = document.getElementById('partnerModal');
+      modal.querySelector('.transform').classList.remove('scale-100', 'opacity-100');
+      modal.querySelector('.transform').classList.add('scale-95', 'opacity-0');
+      
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    // Delete partner
+    async function deletePartner(id) {
+      if (!confirm('Are you sure you want to delete this logistics partner?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/po/api/v1/logistics-partners/${id}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast('Logistics partner deleted successfully');
+          loadLogisticsPartners();
+        } else {
+          showErrorToast('Error deleting partner: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error deleting partner:', error);
+        showErrorToast('Error deleting partner');
+      }
+    }
+
+    // Handle form submission
+    document.getElementById('partnerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const partnerData = Object.fromEntries(formData.entries());
+
+      // Manual validation
+      if (!partnerData.company_name.trim()) {
+        showWarningToast('Please enter company name');
+        return;
+      }
+
+      try {
+        const url = editingPartnerId 
+          ? `/po/api/v1/logistics-partners/${editingPartnerId}`
+          : '/po/api/v1/logistics-partners';
+        
+        const method = editingPartnerId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(partnerData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast(editingPartnerId ? 'Partner updated successfully' : 'Partner added successfully');
+          closePartnerModal();
+          loadLogisticsPartners();
+        } else {
+          showErrorToast('Error saving partner: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error saving partner:', error);
+        showErrorToast('Error saving partner');
+      }
+    });
+
+    // Close modal on outside click
+    document.getElementById('partnerModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePartnerModal();
+      }
+    });
+  </script>
+</body>
+</html>

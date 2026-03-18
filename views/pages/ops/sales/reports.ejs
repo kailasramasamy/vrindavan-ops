@@ -1,0 +1,695 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/sales-dark-mode.css">
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { user, section: 'Sales', subsection: 'Reports' }) %>
+  
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Sales Reports</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-1">Analyze sales performance across different channels and products</p>
+    </div>
+
+    <% if (locals.error) { %>
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <!-- Partner Sales Trends Charts -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Partner Sales Trends</h2>
+        <div class="flex items-center gap-2">
+          <select id="chartDateRange" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500">
+            <option value="7">Last 7 Days</option>
+            <option value="14">Last 14 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="60">Last 60 Days</option>
+            <option value="90">Last 90 Days</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <% if (partners && partners.length > 0) { %>
+          <% partners.forEach(partner => { %>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <%= partner.partner_name %>
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">(<%= partner.partner_code %>)</span>
+              </h3>
+              <div class="relative" style="height: 300px;">
+                <canvas id="partnerChart<%= partner.id %>"></canvas>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-span-2 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <svg class="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <p class="text-gray-500 dark:text-gray-400">No partners available</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Report Content -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              <% if (report_type === 'summary') { %>
+                Overall Summary Report
+              <% } else if (report_type === 'product') { %>
+                Product-wise Sales Report
+              <% } else if (report_type === 'channel') { %>
+                Channel-wise Sales Report
+              <% } else if (report_type === 'trends') { %>
+                Daily Sales Trends
+              <% } %>
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <%= new Date(start_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %> 
+              to 
+              <%= new Date(end_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+            </p>
+          </div>
+          
+          <% if (report_type === 'summary') { %>
+            <!-- Filters inside header for summary report -->
+            <form id="reportFilters" class="flex flex-wrap items-end gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                <input 
+                  type="date" 
+                  name="start_date" 
+                  value="<%= start_date %>" 
+                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+              
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                <input 
+                  type="date" 
+                  name="end_date" 
+                  value="<%= end_date %>" 
+                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Report Type</label>
+                <select 
+                  name="report_type" 
+                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="summary" <%= report_type === 'summary' ? 'selected' : '' %>>Overall Summary</option>
+                  <option value="product" <%= report_type === 'product' ? 'selected' : '' %>>Product-wise</option>
+                  <option value="channel" <%= report_type === 'channel' ? 'selected' : '' %>>Channel-wise</option>
+                  <option value="trends" <%= report_type === 'trends' ? 'selected' : '' %>>Daily Trends</option>
+                </select>
+              </div>
+
+              <div class="flex items-end gap-2">
+                <button 
+                  type="submit" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                >
+                  Generate
+                </button>
+                <button 
+                  type="button" 
+                  onclick="exportReport()" 
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  title="Export to CSV"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </button>
+              </div>
+            </form>
+          <% } else { %>
+            <!-- Filters outside header for other report types -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <form id="reportFilters" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                  <input 
+                    type="date" 
+                    name="start_date" 
+                    value="<%= start_date %>" 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                  <input 
+                    type="date" 
+                    name="end_date" 
+                    value="<%= end_date %>" 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Report Type</label>
+                  <select 
+                    name="report_type" 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="summary" <%= report_type === 'summary' ? 'selected' : '' %>>Overall Summary</option>
+                    <option value="product" <%= report_type === 'product' ? 'selected' : '' %>>Product-wise</option>
+                    <option value="channel" <%= report_type === 'channel' ? 'selected' : '' %>>Channel-wise</option>
+                    <option value="trends" <%= report_type === 'trends' ? 'selected' : '' %>>Daily Trends</option>
+                  </select>
+                </div>
+
+                <div class="flex items-end gap-2">
+                  <button 
+                    type="submit" 
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Generate
+                  </button>
+                  <button 
+                    type="button" 
+                    onclick="exportReport()" 
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    title="Export to CSV"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <% if (report_type === 'summary') { %>
+          <!-- Overall Summary Report -->
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Milk Type</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Produced</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sold (App)</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sold (Partners)</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Sold</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unsold</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Avg/Day</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% if (reportData && reportData.length > 0) { %>
+                <% reportData.forEach(row => { %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                      <div class="font-medium text-gray-900"><%= row.product_name %></div>
+                      <div class="text-sm text-gray-500"><%= row.unit_size %></div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <% 
+                        const milkTypeBadge = row.milk_type === 'A1' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' : 
+                                             row.milk_type === 'A2' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 
+                                             'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+                      %>
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full <%= milkTypeBadge %>">
+                        <%= row.milk_type %>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-blue-600 font-medium">
+                      <%= Math.round(parseFloat(row.total_produced || 0)) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-green-600">
+                      <%= Math.round(parseFloat(row.total_sold_app || 0)) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-green-600">
+                      <%= Math.round(parseFloat(row.total_sold_partners || 0)) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-green-700">
+                      <%= Math.round(parseFloat(row.total_sold || 0)) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-orange-600 font-medium">
+                      <%= Math.round(parseFloat(row.total_unsold || 0)) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-gray-600">
+                      <%= Math.round(parseFloat(row.avg_sold || 0)) %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                    No data available for the selected date range
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+
+        <% } else if (report_type === 'product') { %>
+          <!-- Product-wise Report -->
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Quantity</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Days Sold</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% if (reportData && reportData.length > 0) { %>
+                <% reportData.forEach(row => { %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                      <div class="font-medium text-gray-900"><%= row.product_name %></div>
+                      <div class="text-sm text-gray-500"><%= row.unit_size %></div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                      <%= row.category_name || 'N/A' %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                      <%= parseFloat(row.total_quantity || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-green-700">
+                      ₹<%= parseFloat(row.total_revenue || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-gray-600">
+                      <%= row.sales_days || 0 %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    No data available for the selected date range
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+
+        <% } else if (report_type === 'channel') { %>
+          <!-- Channel-wise Report -->
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Channel</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Partner</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Records</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Quantity</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% if (reportData && reportData.length > 0) { %>
+                <% reportData.forEach(row => { %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                      <% const channelBadge = row.sales_channel === 'app' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'; %>
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full <%= channelBadge %>">
+                        <%= row.sales_channel === 'app' ? 'Mobile App' : 'Partner' %>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                      <%= row.partner_name || 'Direct App Sales' %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-gray-600">
+                      <%= parseInt(row.record_count || 0) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                      <%= parseFloat(row.total_quantity || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-green-700">
+                      ₹<%= parseFloat(row.total_revenue || 0).toFixed(2) %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    No data available for the selected date range
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+
+        <% } else if (report_type === 'trends') { %>
+          <!-- Daily Trends Report -->
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Produced</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sold (App)</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sold (Partners)</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Sold</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unsold</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% if (reportData && reportData.length > 0) { %>
+                <% reportData.forEach(row => { %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                      <%= new Date(row.summary_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-blue-600 font-medium">
+                      <%= parseFloat(row.total_produced || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-green-600">
+                      <%= parseFloat(row.total_sold_app || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-green-600">
+                      <%= parseFloat(row.total_sold_partners || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-green-700">
+                      <%= parseFloat(row.total_sold || 0).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-orange-600 font-medium">
+                      <%= parseFloat(row.total_unsold || 0).toFixed(2) %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    No data available for the selected date range
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </div>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_toast') %>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script>
+    // Register datalabels plugin after scripts load
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+      Chart.register(ChartDataLabels);
+    }
+  </script>
+
+  <script>
+    document.getElementById('reportFilters').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const params = new URLSearchParams(formData);
+      window.location.href = `?${params.toString()}`;
+    });
+
+    function exportReport() {
+      const reportData = <%- JSON.stringify(reportData) %>;
+      const reportType = '<%= report_type %>';
+      
+      if (!reportData || reportData.length === 0) {
+        showToast('No data to export', 'warning');
+        return;
+      }
+
+      // Convert to CSV
+      let csv = '';
+      const headers = Object.keys(reportData[0]);
+      csv += headers.join(',') + '\n';
+      
+      reportData.forEach(row => {
+        const values = headers.map(header => {
+          const value = row[header] || '';
+          return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
+        });
+        csv += values.join(',') + '\n';
+      });
+
+      // Download
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sales-report-${reportType}-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      showToast('Report exported successfully', 'success');
+    }
+
+    // Partner Sales Trends Charts
+    const partners = <%- JSON.stringify(partners || []) %>;
+    let partnerCharts = {};
+
+    // Function to load partner sales data
+    async function loadPartnerSalesData(days = 7) {
+      try {
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - (days - 1));
+
+        const response = await fetch(`/sales/api/partner-sales-trends?start_date=${startDate.toISOString().split('T')[0]}&end_date=${today.toISOString().split('T')[0]}`);
+        const result = await response.json();
+
+        if (result.success) {
+          renderPartnerCharts(result.data);
+        } else {
+          console.error('Failed to load partner sales data:', result.error);
+        }
+      } catch (error) {
+        console.error('Error loading partner sales data:', error);
+      }
+    }
+
+    // Function to render partner charts
+    function renderPartnerCharts(data) {
+      // Get the selected date range
+      const days = parseInt(document.getElementById('chartDateRange').value || 7);
+      
+      // Generate all dates in the range (using local timezone)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize to start of day
+      const allDates = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        allDates.push(`${year}-${month}-${day}`);
+      }
+
+      // Group data by partner and date
+      const partnerData = {};
+      
+      data.forEach(row => {
+        // Date is already in YYYY-MM-DD format from the API
+        const normalizedDate = row.sale_date;
+
+        if (!partnerData[row.partner_id]) {
+          partnerData[row.partner_id] = {
+            name: row.partner_name,
+            dates: {},
+          };
+        }
+        
+        if (!partnerData[row.partner_id].dates[normalizedDate]) {
+          partnerData[row.partner_id].dates[normalizedDate] = {
+            total: 0,
+            products: []
+          };
+        }
+        
+        const quantity = parseFloat(row.total_quantity || 0);
+        partnerData[row.partner_id].dates[normalizedDate].total += quantity;
+        partnerData[row.partner_id].dates[normalizedDate].products.push({
+          name: row.product_name,
+          milk_type: row.milk_type,
+          quantity: quantity
+        });
+      });
+
+      // Use all dates (sorted by definition)
+      const sortedDates = allDates;
+
+      // Create or update charts for each partner
+      partners.forEach(partner => {
+        const ctx = document.getElementById(`partnerChart${partner.id}`);
+        if (!ctx) return;
+
+        // Prepare data for this partner
+        const chartData = sortedDates.map(date => {
+          const dateData = partnerData[partner.id]?.dates[date];
+          return dateData ? dateData.total : 0;
+        });
+
+        // Prepare tooltip data
+        const tooltipData = sortedDates.map(date => {
+          const dateData = partnerData[partner.id]?.dates[date];
+          return dateData ? dateData.products : [];
+        });
+
+        // Format dates for labels (handle timezone correctly)
+        const labels = sortedDates.map(date => {
+          const [year, month, day] = date.split('-');
+          const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+
+        // Destroy existing chart if it exists
+        if (partnerCharts[partner.id]) {
+          partnerCharts[partner.id].destroy();
+        }
+
+        // Detect dark mode for grid colors
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const yGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+        const xGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+
+        // Create new chart
+        partnerCharts[partner.id] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Total Products Sold',
+              data: chartData,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              pointBackgroundColor: 'rgb(59, 130, 246)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              spanGaps: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              datalabels: {
+                display: true,
+                align: 'top',
+                color: 'rgb(59, 130, 246)',
+                font: {
+                  weight: 'bold',
+                  size: 11
+                },
+                formatter: function(value) {
+                  return value > 0 ? Math.round(value) : '';
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleColor: '#fff',
+                titleFont: {
+                  size: 14,
+                  weight: 'bold'
+                },
+                bodyColor: '#fff',
+                bodyFont: {
+                  size: 13
+                },
+                bodySpacing: 6,
+                displayColors: false,
+                callbacks: {
+                  title: function(context) {
+                    return `${labels[context[0].dataIndex]} - Total: ${chartData[context[0].dataIndex]}`;
+                  },
+                  label: function(context) {
+                    return '';
+                  },
+                  afterLabel: function(context) {
+                    const products = tooltipData[context.dataIndex];
+                    if (!products || products.length === 0) {
+                      return 'No sales';
+                    }
+                    return products.map(p => 
+                      `${p.name} (${p.milk_type}): ${Math.round(p.quantity)}`
+                    );
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0,
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
+                },
+                grid: {
+                  color: yGridColor,
+                  display: true
+                }
+              },
+              x: {
+                ticks: {
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
+                },
+                grid: {
+                  display: true,
+                  color: xGridColor
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+
+    // Date range change handler
+    document.getElementById('chartDateRange').addEventListener('change', function(e) {
+      loadPartnerSalesData(parseInt(e.target.value));
+    });
+
+    // Load initial data on page load
+    if (partners && partners.length > 0) {
+      loadPartnerSalesData(7);
+    }
+  </script>
+</body>
+</html>
+

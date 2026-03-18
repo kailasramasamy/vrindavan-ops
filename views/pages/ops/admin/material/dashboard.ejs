@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../../partials/_subnav', { section: 'Ops', subsection: 'Material', page: 'Dashboard', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Header -->
+  <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-4 sm:py-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Material Management Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Overview of materials, stock levels, and transactions</p>
+          </div>
+          <div class="flex space-x-3">
+            <a href="/material/transactions" class="inline-flex items-center px-3 py-2 sm:px-4 bg-green-600 dark:bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors w-full sm:w-auto justify-center">
+              <i data-lucide="arrow-right-left" class="w-4 h-4 mr-2"></i>
+              New Transaction
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <!-- Total Materials -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Materials</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.totalMaterials %></p>
+          </div>
+          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+            <i data-lucide="package" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <a href="/admin/material/materials" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+            View all materials →
+          </a>
+        </div>
+      </div>
+
+      <!-- Low Stock -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Low Stock Items</p>
+            <p class="text-3xl font-bold text-red-600 dark:text-red-400"><%= stats.lowStockCount %></p>
+          </div>
+          <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <a href="/admin/material/materials?low_stock=true" class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium">
+            View low stock →
+          </a>
+        </div>
+      </div>
+
+      <!-- Receipts Today -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Receipts Today</p>
+            <p class="text-3xl font-bold text-green-600 dark:text-green-400"><%= stats.receiptsToday %></p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+            <i data-lucide="arrow-down-left" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <a href="/material/transactions?type=receive" class="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">
+            View receipts →
+          </a>
+        </div>
+      </div>
+
+      <!-- Issues Today -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Issues Today</p>
+            <p class="text-3xl font-bold text-orange-600 dark:text-orange-400"><%= stats.issuesToday %></p>
+          </div>
+          <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+            <i data-lucide="arrow-up-right" class="w-6 h-6 text-orange-600 dark:text-orange-400"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <a href="/material/transactions?type=issue" class="text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium">
+            View issues →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Material Management -->
+    <div class="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Receive Material -->
+        <a href="/material/transactions?type=receive" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-green-900/40 transition-colors">
+              <i data-lucide="arrow-down-left" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">Receive Material</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Record incoming materials</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Issue Material -->
+        <a href="/material/transactions?type=issue" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/40 transition-colors">
+              <i data-lucide="arrow-up-right" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">Issue Material</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Issue materials to departments</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Transfer Material -->
+        <a href="/material/transactions?type=transfer" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/40 transition-colors">
+              <i data-lucide="arrow-right-left" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">Transfer Material</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Move between locations</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Adjust Stock -->
+        <a href="/material/transactions?type=adjust" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/40 transition-colors">
+              <i data-lucide="settings" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">Adjust Stock</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Correct inventory levels</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Transactions -->
+        <a href="/material/transactions" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg group-hover:bg-gray-200 dark:group-hover:bg-gray-600 transition-colors">
+              <i data-lucide="history" class="w-5 h-5 text-gray-600 dark:text-gray-400"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">Transactions</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">View transaction history</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Reports -->
+        <a href="/material/reports" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg group-hover:bg-gray-200 dark:group-hover:bg-gray-600 transition-colors">
+              <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-600 dark:text-gray-400"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">Reports</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Analytics and reports</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+      <!-- Low Stock Alert -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Alerts</h3>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300">
+              <%= stats.lowStockCount %> items
+            </span>
+          </div>
+        </div>
+        <div class="p-4 sm:p-6">
+          <div id="lowStockList" class="space-y-4">
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+              <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i>
+              <p>Loading low stock items...</p>
+            </div>
+          </div>
+          <div class="mt-4">
+            <a href="/admin/material/materials?low_stock=true" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+              View all low stock items →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Transactions</h3>
+            <a href="/material/transactions" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+              View all →
+            </a>
+          </div>
+        </div>
+        <div class="p-4 sm:p-6">
+          <div id="recentTransactions" class="space-y-4">
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+              <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i>
+              <p>Loading recent transactions...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+        </section>
+      </main>
+      
+      <%- include('../../../../partials/_footer') %>
+    </div>
+  </body>
+</html>
+
+<script>
+// Initialize Lucide icons
+if (typeof lucide !== 'undefined') {
+  lucide.createIcons();
+}
+
+// Load low stock items
+async function loadLowStockItems() {
+  try {
+    const response = await fetch('/api/v1/material/materials/low-stock');
+    const result = await response.json();
+    
+    const container = document.getElementById('lowStockList');
+    
+    if (result.success && result.data.length > 0) {
+      container.innerHTML = result.data.slice(0, 5).map(item => `
+        <div class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div class="flex-1">
+            <div class="flex items-center space-x-3">
+              <div class="p-1 bg-red-100 dark:bg-red-900/40 rounded">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600 dark:text-red-400"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">${item.name}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">${item.sku_code} • ${item.category_name}</p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-red-600 dark:text-red-400">${item.total_stock} ${item.default_uom_symbol}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Min: ${item.min_stock}</p>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = `
+        <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+          <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-2 text-green-500 dark:text-green-400"></i>
+          <p class="text-lg font-medium dark:text-white">All stock levels are normal</p>
+          <p class="text-sm dark:text-gray-300">No low stock alerts at this time</p>
+        </div>
+      `;
+    }
+    
+    // Re-initialize icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  } catch (error) {
+    console.error('Error loading low stock items:', error);
+    document.getElementById('lowStockList').innerHTML = `
+      <div class="text-center text-red-500 py-8">
+        <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+        <p>Failed to load low stock items</p>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+}
+
+// Load recent transactions
+async function loadRecentTransactions() {
+  try {
+    const response = await fetch('/api/v1/material/transactions/recent?limit=5');
+    const result = await response.json();
+    
+    const container = document.getElementById('recentTransactions');
+    
+    if (result.success && result.data.length > 0) {
+      container.innerHTML = result.data.map(transaction => {
+        const isPositive = transaction.stock_impact === 'positive';
+        const icon = isPositive ? 'arrow-down-left' : 'arrow-up-right';
+        const color = isPositive ? 'green' : 'orange';
+        
+        return `
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="p-1 bg-${color}-100 dark:bg-${color}-900/30 rounded">
+                <i data-lucide="${icon}" class="w-4 h-4 text-${color}-600 dark:text-${color}-400"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">${transaction.material_name}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">${transaction.transaction_type_name} • ${transaction.location_name}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium text-gray-900 dark:text-white">${transaction.quantity} ${transaction.default_uom_symbol || ''}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">${new Date(transaction.transaction_date).toLocaleDateString()}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      container.innerHTML = `
+        <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+          <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2"></i>
+          <p class="text-lg font-medium dark:text-white">No recent transactions</p>
+          <p class="text-sm dark:text-gray-300">Transactions will appear here as they are created</p>
+        </div>
+      `;
+    }
+    
+    // Re-initialize icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  } catch (error) {
+    console.error('Error loading recent transactions:', error);
+    document.getElementById('recentTransactions').innerHTML = `
+      <div class="text-center text-red-500 py-8">
+        <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+        <p>Failed to load recent transactions</p>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadLowStockItems();
+  loadRecentTransactions();
+});
+</script>

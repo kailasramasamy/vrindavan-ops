@@ -1,0 +1,1079 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/accounting-dark-mode.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<!-- Indian Number Formatting -->
+<script src="/assets/js/indian-number-format.js"></script>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("accounting_theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <%- include('../../../partials/_subnav', { user, section: 'Accounting', subsection: 'Dashboard' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Accounting Dashboard</h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Financial overview and transaction analytics</p>
+          </div>
+
+          <div class="flex items-center gap-4">
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <a href="/accounting/transactions" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/10 group-hover:bg-blue-100 dark:group-hover:bg-blue-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">Transactions</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">View all transactions</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/beneficiaries" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 dark:bg-purple-900/10 group-hover:bg-purple-100 dark:group-hover:bg-purple-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors truncate">Beneficiaries</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Manage beneficiaries</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/remitters" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 dark:bg-orange-900/10 group-hover:bg-orange-100 dark:group-hover:bg-orange-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-orange-600 transition-colors truncate">Remitters</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Manage remitters</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/wallet-accounting" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 dark:bg-emerald-900/10 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2m0-4h3m-3 0h3a2 2 0 010 4h-3a2 2 0 010-4z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors truncate">Wallet Accounting</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Reconcile wallet recharges & sales</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/wallet-recharges" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-teal-500 dark:hover:border-teal-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/10 group-hover:bg-teal-100 dark:group-hover:bg-teal-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-teal-600 transition-colors truncate">Wallet Recharges</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Monitor daily wallet transactions</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-teal-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/reports" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-green-500 dark:hover:border-green-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 dark:bg-green-900/10 group-hover:bg-green-100 dark:group-hover:bg-green-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-green-600 transition-colors truncate">Reports</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Financial reports</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/categories" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 dark:bg-indigo-900/10 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate">Categories</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Manage categories</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/bank-accounts" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-cyan-500 dark:hover:border-cyan-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-50 dark:bg-cyan-900/10 group-hover:bg-cyan-100 dark:group-hover:bg-cyan-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-cyan-600 transition-colors truncate">Bank Accounts</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Manage accounts</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/import-logs" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 dark:bg-emerald-900/10 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors truncate">Import Logs</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">View import history</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/accounting/invoice-groups" class="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-xl p-3 sm:p-4 transition-all duration-200 hover:shadow-md">
+          <div class="flex items-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 dark:bg-indigo-900/10 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800/20 rounded-lg flex items-center justify-center mr-3 sm:mr-4 transition-colors flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate">Invoice Groups</h3>
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">Group transactions by invoice</p>
+            </div>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+      </div>
+
+      <!-- Date Range Filter -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Date Range</h2>
+          <div class="relative">
+            <button 
+              id="dateFilterBtn"
+              onclick="toggleDateFilter()"
+              class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm text-gray-700 dark:text-gray-300"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span id="dateFilterLabel">Last Month</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div 
+              id="dateFilterDropdown" 
+              class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl z-50"
+            >
+              <div class="p-2">
+                <button onclick="selectDateFilter('last7days')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                  Last 7 Days
+                </button>
+                <button onclick="selectDateFilter('last30days')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                  Last 30 Days
+                </button>
+                <button onclick="selectDateFilter('lastmonth')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                  Last Month
+                </button>
+                <button onclick="selectDateFilter('thismonth')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                  This Month
+                </button>
+                <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                <button onclick="selectDateFilter('monthly')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                  Select Specific Month
+                </button>
+                <button onclick="selectDateFilter('custom')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                  Custom Date Range
+                </button>
+              </div>
+              
+              <!-- Monthly Picker -->
+              <div id="monthlyPicker" class="hidden p-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Select Month</label>
+                    <input 
+                      type="month" 
+                      id="selectedMonth"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-gray-200"
+                    />
+                  </div>
+                  <button 
+                    onclick="applyMonthlyFilter()" 
+                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Apply Month Filter
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Custom Date Range Inputs -->
+              <div id="customDateRange" class="hidden p-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                    <input 
+                      type="date" 
+                      id="customStartDate"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-gray-200"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                    <input 
+                      type="date" 
+                      id="customEndDate"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-gray-200"
+                    />
+                  </div>
+                  <button 
+                    onclick="applyCustomDateRange()"
+                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+        <!-- Total Debit -->
+        <div class="bg-gradient-to-br from-red-500 to-red-600 dark:from-red-500/30 dark:to-red-600/30 rounded-xl p-4 sm:p-6 text-white dark:text-red-50 shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm sm:text-base lg:text-lg font-semibold opacity-90">Total Debit</h3>
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold indian-currency" data-amount="<%= Math.round(parseFloat(summary.total_debit || 0)) %>">₹<%= Math.round(parseFloat(summary.total_debit || 0)) %></p>
+          <p class="text-xs sm:text-sm opacity-80 mt-1">Payments made</p>
+        </div>
+
+        <!-- Total Credit -->
+        <div class="bg-gradient-to-br from-green-500 to-green-600 dark:from-green-500/30 dark:to-green-600/30 rounded-xl p-4 sm:p-6 text-white dark:text-green-50 shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm sm:text-base lg:text-lg font-semibold opacity-90">Total Credit</h3>
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold indian-currency" data-amount="<%= Math.round(parseFloat(summary.total_credit || 0)) %>">₹<%= Math.round(parseFloat(summary.total_credit || 0)) %></p>
+          <p class="text-xs sm:text-sm opacity-80 mt-1">Amount received</p>
+        </div>
+
+        <!-- Net Balance -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/30 dark:to-blue-600/30 rounded-xl p-4 sm:p-6 text-white dark:text-blue-50 shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm sm:text-base lg:text-lg font-semibold opacity-90">Net Balance</h3>
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold indian-currency" data-amount="<%= Math.round(parseFloat(summary.net_balance || 0)) %>">₹<%= Math.round(parseFloat(summary.net_balance || 0)) %></p>
+          <p class="text-xs sm:text-sm opacity-80 mt-1">Credit - Debit</p>
+        </div>
+
+        <!-- Total Transactions -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-500/30 dark:to-purple-600/30 rounded-xl p-4 sm:p-6 text-white dark:text-purple-50 shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm sm:text-base lg:text-lg font-semibold opacity-90">Transactions</h3>
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold"><%= parseInt(summary.total_transactions || 0) %></p>
+          <p class="text-xs sm:text-sm opacity-80 mt-1">
+            <span class="text-green-200"><%= parseInt(summary.matched_count || 0) %> matched</span> • 
+            <span class="text-orange-200"><%= parseInt(summary.unmatched_count || 0) %> pending</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Category-wise Breakdown -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Expense by Category</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Category-wise payment breakdown</p>
+        </div>
+        <div class="p-6">
+          <% if (categoryStats && categoryStats.length > 0) { %>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Left Column: Table -->
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Category</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Transactions</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <% categoryStats.slice(0, 10).forEach(cat => { %>
+                      <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/accounting/transactions?category_id=<%= cat.id %>&start_date=<%= startDate %>&end_date=<%= endDate %>'">
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: <%= cat.color_code %>"></div>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white"><%= cat.category_name %></span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-right text-sm text-gray-600 dark:text-gray-400">
+                          <%= parseInt(cat.transaction_count || 0) %>
+                        </td>
+                        <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900 dark:text-white indian-currency" data-amount="<%= Math.round(parseFloat(cat.total_debit || 0)) %>">
+                          ₹<%= Math.round(parseFloat(cat.total_debit || 0)) %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              
+               <!-- Right Column: Pie Chart -->
+               <div class="flex items-center justify-center">
+                 <div class="relative w-full" style="max-width: 500px; height: 500px;">
+                   <canvas id="categoryPieChart"></canvas>
+                 </div>
+               </div>
+            </div>
+          <% } else { %>
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8">No category data available</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Top Beneficiaries -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Top Beneficiaries</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Highest payment recipients this period</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Beneficiary</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Category</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Transactions</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Paid</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Last Payment</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (topBeneficiaries && topBeneficiaries.length > 0) { %>
+                <% topBeneficiaries.forEach(ben => { %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4">
+                      <div class="font-medium text-gray-900 dark:text-white"><%= ben.beneficiary_name %></div>
+                      <% if (ben.alias) { %>
+                        <div class="text-sm text-gray-500 dark:text-gray-400"><%= ben.alias %></div>
+                      <% } %>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="px-2 py-1 text-xs font-medium rounded-full" style="background-color: <%= ben.color_code %>20; color: <%= ben.color_code %>">
+                        <%= ben.category_name || 'Uncategorized' %>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm text-gray-900 dark:text-white"><%= parseInt(ben.transaction_count || 0) %></td>
+                    <td class="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white indian-currency" data-amount="<%= Math.round(parseFloat(ben.total_paid || 0)) %>">₹<%= Math.round(parseFloat(ben.total_paid || 0)) %></td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      <%= ben.last_payment_date ? new Date(ben.last_payment_date).toLocaleDateString() : '-' %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No beneficiary data available</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Transaction Trends Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mt-6">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction Trends</h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Monthly overview of debits, credits, and net balance</p>
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              Last 24 Months
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="relative" style="height: 350px;">
+            <canvas id="trendsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+  <%- include('../../../partials/_toast') %>
+
+  <script>
+    // Date Filter Functions
+    let currentDateFilter = 'lastmonth';
+
+    // Initialize date filter from localStorage or default
+    function initDateFilter() {
+      const savedFilter = localStorage.getItem('dashboard_date_filter') || 'lastmonth';
+      currentDateFilter = savedFilter;
+      updateDateFilterLabel(savedFilter);
+    }
+
+    function toggleDateFilter() {
+      const dropdown = document.getElementById('dateFilterDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    function selectDateFilter(filter) {
+      // Hide all sub-menus first
+      document.getElementById('customDateRange').classList.add('hidden');
+      document.getElementById('monthlyPicker').classList.add('hidden');
+
+      if (filter === 'custom') {
+        document.getElementById('customDateRange').classList.remove('hidden');
+        return;
+      }
+
+      if (filter === 'monthly') {
+        document.getElementById('monthlyPicker').classList.remove('hidden');
+        // Set default to current month
+        const today = new Date();
+        const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('selectedMonth').value = currentMonth;
+        return;
+      }
+
+      currentDateFilter = filter;
+      localStorage.setItem('dashboard_date_filter', filter);
+      
+      const dates = calculateDateRange(filter);
+      reloadDashboard(dates.startDate, dates.endDate);
+      
+      document.getElementById('dateFilterDropdown').classList.add('hidden');
+    }
+
+    function applyCustomDateRange() {
+      const startDate = document.getElementById('customStartDate').value;
+      const endDate = document.getElementById('customEndDate').value;
+
+      if (!startDate || !endDate) {
+        showToast('Please select both start and end dates', 'error');
+        return;
+      }
+
+      if (new Date(startDate) > new Date(endDate)) {
+        showToast('Start date must be before end date', 'error');
+        return;
+      }
+
+      currentDateFilter = 'custom';
+      localStorage.setItem('dashboard_date_filter', 'custom');
+      localStorage.setItem('dashboard_custom_start', startDate);
+      localStorage.setItem('dashboard_custom_end', endDate);
+
+      reloadDashboard(startDate, endDate);
+      
+      document.getElementById('dateFilterDropdown').classList.add('hidden');
+      document.getElementById('customDateRange').classList.add('hidden');
+    }
+
+    function applyMonthlyFilter() {
+      const selectedMonth = document.getElementById('selectedMonth').value;
+
+      if (!selectedMonth) {
+        showToast('Please select a month', 'error');
+        return;
+      }
+
+      // Parse year and month from YYYY-MM format
+      const [year, month] = selectedMonth.split('-').map(Number);
+      
+      // Calculate first and last day of the month
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      
+      // Format dates
+      function formatDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      const startDate = formatDate(firstDay);
+      const endDate = formatDate(lastDay);
+
+      currentDateFilter = 'monthly';
+      localStorage.setItem('dashboard_date_filter', 'monthly');
+      localStorage.setItem('dashboard_selected_month', selectedMonth);
+
+      // Update label to show selected month
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('dateFilterLabel').textContent = `${monthNames[month - 1]} ${year}`;
+
+      reloadDashboard(startDate, endDate);
+      
+      document.getElementById('dateFilterDropdown').classList.add('hidden');
+      document.getElementById('monthlyPicker').classList.add('hidden');
+    }
+
+    function calculateDateRange(filter) {
+      // Helper function to format date as YYYY-MM-DD in local timezone
+      function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      const today = new Date();
+      let startDate, endDate;
+
+      switch(filter) {
+        case 'last7days':
+          const last7 = new Date();
+          last7.setDate(last7.getDate() - 7);
+          startDate = formatDate(last7);
+          endDate = formatDate(new Date());
+          break;
+        case 'last30days':
+          const last30 = new Date();
+          last30.setDate(last30.getDate() - 30);
+          startDate = formatDate(last30);
+          endDate = formatDate(new Date());
+          break;
+        case 'lastmonth':
+          // Last month = previous complete calendar month
+          // First day of last month
+          const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          startDate = formatDate(firstDayLastMonth);
+          // Last day of last month (day 0 of current month)
+          const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+          endDate = formatDate(lastDayLastMonth);
+          break;
+        case 'thismonth':
+          // This month = current calendar month from 1st to today
+          const firstDayThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          startDate = formatDate(firstDayThisMonth);
+          endDate = formatDate(new Date());
+          break;
+        case 'monthly':
+          // Get selected month from localStorage
+          const selectedMonth = localStorage.getItem('dashboard_selected_month');
+          if (selectedMonth) {
+            const [year, month] = selectedMonth.split('-').map(Number);
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            startDate = formatDate(firstDay);
+            endDate = formatDate(lastDay);
+          } else {
+            // Default to current month
+            const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            startDate = formatDate(firstDayCurrentMonth);
+            endDate = formatDate(new Date());
+          }
+          break;
+        case 'custom':
+          startDate = localStorage.getItem('dashboard_custom_start') || formatDate(new Date());
+          endDate = localStorage.getItem('dashboard_custom_end') || formatDate(new Date());
+          break;
+        default:
+          const defaultStart = new Date();
+          defaultStart.setDate(defaultStart.getDate() - 7);
+          startDate = formatDate(defaultStart);
+          endDate = formatDate(new Date());
+      }
+
+      return { startDate, endDate };
+    }
+
+    function updateDateFilterLabel(filter) {
+      const labels = {
+        'last7days': 'Last 7 Days',
+        'last30days': 'Last 30 Days',
+        'lastmonth': 'Last Month',
+        'thismonth': 'This Month',
+        'custom': 'Custom Range'
+      };
+      
+      if (filter === 'monthly') {
+        const selectedMonth = localStorage.getItem('dashboard_selected_month');
+        if (selectedMonth) {
+          const [year, month] = selectedMonth.split('-').map(Number);
+          const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+          document.getElementById('dateFilterLabel').textContent = `${monthNames[month - 1]} ${year}`;
+        } else {
+          document.getElementById('dateFilterLabel').textContent = 'Monthly';
+        }
+      } else {
+        document.getElementById('dateFilterLabel').textContent = labels[filter] || 'Last 7 Days';
+      }
+    }
+
+    function reloadDashboard(startDate, endDate) {
+      // Show loading state
+      const btn = document.getElementById('dateFilterBtn');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      // Reload page with new date range
+      window.location.href = `/accounting/dashboard?start_date=${startDate}&end_date=${endDate}`;
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('dateFilterDropdown');
+      const btn = document.getElementById('dateFilterBtn');
+      
+      if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
+        dropdown.classList.add('hidden');
+        document.getElementById('customDateRange').classList.add('hidden');
+      }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      initDateFilter();
+      
+      // Apply default filter if no URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.get('start_date') && !urlParams.get('end_date')) {
+        selectDateFilter('lastmonth');
+      }
+      
+      // Set custom date inputs to current values if in custom mode
+      if (currentDateFilter === 'custom') {
+        const startDate = localStorage.getItem('dashboard_custom_start');
+        const endDate = localStorage.getItem('dashboard_custom_end');
+        if (startDate) document.getElementById('customStartDate').value = startDate;
+        if (endDate) document.getElementById('customEndDate').value = endDate;
+      }
+      
+      // Initialize Charts
+      initTrendsChart();
+      initCategoryPieChart();
+      
+      // Format all Indian currency elements
+      const currencyElements = document.querySelectorAll('.indian-currency');
+      currencyElements.forEach(element => {
+        const amount = element.getAttribute('data-amount');
+        if (amount !== null && amount !== undefined) {
+          element.textContent = formatIndianCurrency(parseFloat(amount));
+        }
+      });
+    });
+
+    function initTrendsChart() {
+      const ctx = document.getElementById('trendsChart');
+      if (!ctx) return;
+
+      // Prepare data from server
+      const trendsData = <%- JSON.stringify(monthlyTrends) %>;
+      
+      if (!trendsData || trendsData.length === 0) {
+        ctx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">No transaction data available</div>';
+        return;
+      }
+
+      // Extract and format data - monthly format
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const labels = trendsData.map(d => {
+        const monthName = monthNames[d.month_num - 1];
+        const year = d.year.toString().slice(-2); // Last 2 digits of year
+        return `${monthName} '${year}`;
+      });
+      
+      const debitData = trendsData.map(d => parseFloat(d.total_debit || 0));
+      const creditData = trendsData.map(d => parseFloat(d.total_credit || 0));
+      const netBalanceData = trendsData.map((d, i) => creditData[i] - debitData[i]);
+
+      // Check dark mode
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const textColor = isDarkMode ? '#9CA3AF' : '#6B7280';
+      const gridColor = isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)';
+
+      // Create chart
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Debit (Payments)',
+              data: debitData,
+              borderColor: 'rgb(239, 68, 68)',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: 'rgb(239, 68, 68)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              datalabels: {
+                display: true,
+                align: 'bottom',
+                anchor: 'end',
+                offset: 4,
+                color: isDarkMode ? '#FCA5A5' : '#DC2626',
+                font: {
+                  size: 10,
+                  weight: 'bold',
+                },
+                formatter: function(value) {
+                  if (Math.abs(value) >= 100000) {
+                    return '₹' + (value / 100000).toFixed(1) + 'L';
+                  } else if (Math.abs(value) >= 1000) {
+                    return '₹' + (value / 1000).toFixed(0) + 'K';
+                  }
+                  return '₹' + value.toFixed(0);
+                },
+              },
+            },
+            {
+              label: 'Credit (Receipts)',
+              data: creditData,
+              borderColor: 'rgb(34, 197, 94)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: 'rgb(34, 197, 94)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              datalabels: {
+                display: true,
+                align: 'top',
+                anchor: 'end',
+                offset: 4,
+                color: isDarkMode ? '#86EFAC' : '#16A34A',
+                font: {
+                  size: 10,
+                  weight: 'bold',
+                },
+                formatter: function(value) {
+                  if (Math.abs(value) >= 100000) {
+                    return '₹' + (value / 100000).toFixed(1) + 'L';
+                  } else if (Math.abs(value) >= 1000) {
+                    return '₹' + (value / 1000).toFixed(0) + 'K';
+                  }
+                  return '₹' + value.toFixed(0);
+                },
+              },
+            },
+            {
+              label: 'Net Balance',
+              data: netBalanceData,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: 'rgb(59, 130, 246)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              datalabels: {
+                display: true,
+                align: function(context) {
+                  // Dynamically position based on value
+                  const value = context.dataset.data[context.dataIndex];
+                  return value >= 0 ? 'top' : 'bottom';
+                },
+                anchor: 'end',
+                offset: 6,
+                color: isDarkMode ? '#93C5FD' : '#2563EB',
+                font: {
+                  size: 10,
+                  weight: 'bold',
+                },
+                formatter: function(value) {
+                  if (Math.abs(value) >= 100000) {
+                    return '₹' + (value / 100000).toFixed(1) + 'L';
+                  } else if (Math.abs(value) >= 1000) {
+                    return '₹' + (value / 1000).toFixed(0) + 'K';
+                  }
+                  return '₹' + value.toFixed(0);
+                },
+              },
+            },
+          ],
+        },
+        plugins: [ChartDataLabels],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              align: 'end',
+              labels: {
+                color: textColor,
+                font: {
+                  size: 12,
+                  weight: '500',
+                },
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle',
+              },
+            },
+            tooltip: {
+              enabled: true,
+              backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              titleColor: isDarkMode ? '#F3F4F6' : '#111827',
+              bodyColor: isDarkMode ? '#D1D5DB' : '#374151',
+              borderColor: isDarkMode ? '#4B5563' : '#E5E7EB',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  label += '₹' + Math.round(context.parsed.y).toLocaleString('en-IN');
+                  return label;
+                },
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: textColor,
+                font: {
+                  size: 11,
+                },
+                callback: function(value) {
+                  if (value >= 100000) {
+                    return '₹' + (value / 100000).toFixed(1) + 'L';
+                  } else if (value >= 1000) {
+                    return '₹' + (value / 1000).toFixed(1) + 'K';
+                  }
+                  return '₹' + value;
+                },
+              },
+              grid: {
+                color: gridColor,
+                drawBorder: false,
+              },
+            },
+            x: {
+              ticks: {
+                color: textColor,
+                font: {
+                  size: 11,
+                },
+                maxRotation: 0,
+                minRotation: 0,
+              },
+              grid: {
+                display: false,
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // Reinitialize chart on theme change
+    window.addEventListener('theme-changed', function() {
+      const chartContainer = document.getElementById('trendsChart').parentElement;
+      chartContainer.innerHTML = '<canvas id="trendsChart"></canvas>';
+      initTrendsChart();
+      
+      const pieChartContainer = document.getElementById('categoryPieChart').parentElement;
+      pieChartContainer.innerHTML = '<canvas id="categoryPieChart"></canvas>';
+      initCategoryPieChart();
+    });
+
+    function initCategoryPieChart() {
+      const ctx = document.getElementById('categoryPieChart');
+      if (!ctx) return;
+
+      // Prepare data from server
+      const categoryData = <%- JSON.stringify(categoryStats) %>;
+      
+      if (!categoryData || categoryData.length === 0) {
+        ctx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">No category data available</div>';
+        return;
+      }
+
+      // Extract category names, amounts, and colors
+      const labels = categoryData.slice(0, 10).map(c => c.category_name);
+      const amounts = categoryData.slice(0, 10).map(c => parseFloat(c.total_debit || 0));
+      const colors = categoryData.slice(0, 10).map(c => c.color_code);
+      
+      // Create lighter colors for borders
+      const borderColors = colors.map(color => {
+        // Convert hex to lighter shade for dark mode compatibility
+        return color;
+      });
+
+      // Check dark mode
+      const isDarkMode = document.documentElement.classList.contains('dark');
+
+      // Create chart
+        new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: amounts,
+              backgroundColor: colors,
+              borderColor: isDarkMode ? '#1F2937' : '#FFFFFF',
+              borderWidth: 2,
+              hoverBorderWidth: 3,
+              hoverBorderColor: '#FFFFFF',
+            }],
+          },
+          plugins: [ChartDataLabels],
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            tooltip: {
+              enabled: true,
+              backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              titleColor: isDarkMode ? '#F3F4F6' : '#111827',
+              bodyColor: isDarkMode ? '#D1D5DB' : '#374151',
+              borderColor: isDarkMode ? '#4B5563' : '#E5E7EB',
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ₹${Math.round(value).toLocaleString('en-IN')} (${percentage}%)`;
+                },
+              },
+            },
+            datalabels: {
+              display: true,
+              color: isDarkMode ? '#F3F4F6' : '#FFFFFF',
+              font: {
+                size: 11,
+                weight: 'bold',
+              },
+              formatter: function(value, context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                // Only show label if percentage is > 5%
+                if (percentage > 5) {
+                  if (value >= 100000) {
+                    return '₹' + (value / 100000).toFixed(1) + 'L\n' + percentage + '%';
+                  } else if (value >= 1000) {
+                    return '₹' + (value / 1000).toFixed(0) + 'K\n' + percentage + '%';
+                  }
+                  return '₹' + value.toFixed(0) + '\n' + percentage + '%';
+                }
+                return '';
+              },
+            },
+          },
+        },
+      });
+    }
+  </script>
+</body>
+</html>
+

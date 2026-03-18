@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %> <%- include('../../../../partials/_toast') %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../../partials/_subnav', { section: section, subsection: subsection, page: 'Material Reports', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <div class="min-h-screen bg-gray-50 dark:bg-gray-700/50 dark:bg-gray-900">
+            <!-- Header -->
+            <div class="bg-white dark:bg-gray-800 dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 dark:border-gray-700">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="py-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">Material Reports</h1>
+                      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">Analytics, insights, and export functionality</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button onclick="exportReport('stock-ledger')" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                        Export CSV
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <!-- Report Filters -->
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Report Filters</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label for="reportDateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date From</label>
+                    <input type="date" id="reportDateFrom" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label for="reportDateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date To</label>
+                    <input type="date" id="reportDateTo" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label for="reportCategory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                    <select id="reportCategory" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">All Categories</option>
+                    </select>
+                  </div>
+                  <div class="flex items-end">
+                    <button onclick="generateReport()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Generate Report</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Materials</p>
+                      <p id="totalMaterials" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                      <i data-lucide="package" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Low Stock Items</p>
+                      <p id="lowStockCount" class="text-3xl font-bold text-red-600 dark:text-red-400">-</p>
+                    </div>
+                    <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+                      <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Transactions Today</p>
+                      <p id="transactionsToday" class="text-3xl font-bold text-green-600 dark:text-green-400">-</p>
+                    </div>
+                    <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                      <i data-lucide="arrow-right-left" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Stock Value</p>
+                      <p id="totalStockValue" class="text-3xl font-bold text-purple-600 dark:text-purple-400">-</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                      <i data-lucide="dollar-sign" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Report Sections -->
+              <div class="grid grid-cols-1 gap-8">
+                <!-- Low Stock Report -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Alerts</h3>
+                      <button onclick="exportReport('low-stock')" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Export →</button>
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <div id="lowStockReport" class="space-y-4">
+                      <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+                        <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading low stock report...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Transaction Summary -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction Summary</h3>
+                      <button onclick="exportReport('transactions')" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Export →</button>
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <div id="transactionSummary" class="space-y-4">
+                      <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+                        <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading transaction summary...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Reports -->
+              <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Department Usage -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Department Usage</h3>
+                      <button onclick="exportReport('department-usage')" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Export →</button>
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <div id="departmentUsage" class="space-y-4">
+                      <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+                        <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading department usage...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stock Aging -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Stock Aging (FSN Analysis)</h3>
+                      <button onclick="exportReport('stock-aging')" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Export →</button>
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <div id="stockAging" class="space-y-4">
+                      <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+                        <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading stock aging analysis...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
+                </div>
+                <div class="p-6">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <button onclick="exportReport('stock-ledger')" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                      <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/40 transition-colors">
+                          <i data-lucide="file-text" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-medium text-gray-900 dark:text-white">Stock Ledger</h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-300">Complete transaction history</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button onclick="exportReport('consumption')" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
+                      <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-green-900/40 transition-colors">
+                          <i data-lucide="trending-down" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-medium text-gray-900 dark:text-white">Consumption Report</h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-300">Usage patterns and trends</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button onclick="exportReport('abc-analysis')" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+                      <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:hover:bg-purple-900/40 transition-colors">
+                          <i data-lucide="bar-chart-3" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-medium text-gray-900 dark:text-white">ABC Analysis</h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-300">Value-based categorization</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button onclick="exportReport('reorder-suggestions')" class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+                      <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/40 transition-colors">
+                          <i data-lucide="shopping-cart" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-medium text-gray-900 dark:text-white">Reorder Suggestions</h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-300">Purchase recommendations</p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            // Initialize Lucide icons
+            if (typeof lucide !== "undefined") {
+              lucide.createIcons();
+            }
+
+            // Load data on page load
+            document.addEventListener("DOMContentLoaded", function () {
+              loadReportData();
+              loadCategories();
+            });
+
+            // Load categories for filter
+            async function loadCategories() {
+              try {
+                const response = await fetch("/api/v1/material/categories");
+                const result = await response.json();
+
+                const select = document.getElementById("reportCategory");
+                if (result.success && result.data.length > 0) {
+                  select.innerHTML = '<option value="">All Categories</option>' + result.data.map((cat) => `<option value="${cat.id}">${cat.name}</option>`).join("");
+                }
+              } catch (error) {
+                console.error("Error loading categories:", error);
+              }
+            }
+
+            // Load report data
+            async function loadReportData() {
+              await Promise.all([loadSummaryStats(), loadLowStockReport(), loadTransactionSummary(), loadDepartmentUsage(), loadStockAging()]);
+            }
+
+            // Load summary statistics
+            async function loadSummaryStats() {
+              try {
+                const response = await fetch("/api/v1/material/materials");
+                const result = await response.json();
+
+                if (result.success) {
+                  document.getElementById("totalMaterials").textContent = result.data.length;
+                }
+
+                // Load low stock count
+                const lowStockResponse = await fetch("/api/v1/material/materials/low-stock");
+                const lowStockResult = await lowStockResponse.json();
+
+                if (lowStockResult.success) {
+                  document.getElementById("lowStockCount").textContent = lowStockResult.data.length;
+                }
+
+                // Load today's transactions
+                const today = new Date().toISOString().split("T")[0];
+                const transactionsResponse = await fetch(`/api/v1/material/transactions?date_from=${today}&date_to=${today}`);
+                const transactionsResult = await transactionsResponse.json();
+
+                if (transactionsResult.success) {
+                  document.getElementById("transactionsToday").textContent = transactionsResult.data.length;
+                }
+
+                // Calculate total stock value
+                let totalStockValue = 0;
+                if (result.success && result.data.length > 0) {
+                  totalStockValue = result.data.reduce((sum, material) => {
+                    const stock = parseFloat(material.total_stock || 0);
+                    const unitPrice = parseFloat(material.unit_price || 0);
+                    return sum + stock * unitPrice;
+                  }, 0);
+                }
+                document.getElementById("totalStockValue").textContent = `₹${totalStockValue.toLocaleString()}`;
+              } catch (error) {
+                console.error("Error loading summary stats:", error);
+              }
+            }
+
+            // Load low stock report
+            async function loadLowStockReport() {
+              try {
+                const response = await fetch("/api/v1/material/materials/low-stock");
+                const result = await response.json();
+
+                const container = document.getElementById("lowStockReport");
+
+                if (result.success && result.data.length > 0) {
+                  container.innerHTML = result.data
+                    .slice(0, 10)
+                    .map(
+                      (item) => `
+        <div class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div class="flex-1">
+            <div class="flex items-center space-x-3">
+              <div class="p-1 bg-red-100 dark:bg-red-900/40 rounded">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600 dark:text-red-400"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">${item.material_name}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">${item.sku_code} • ${item.category_name}</p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-red-600 dark:text-red-400">${item.total_stock} ${item.default_uom_symbol}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Min: ${item.min_stock}</p>
+          </div>
+        </div>
+      `,
+                    )
+                    .join("");
+                } else {
+                  container.innerHTML = `
+        <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+          <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-2 text-green-500"></i>
+          <p class="text-lg font-medium">All stock levels are normal</p>
+          <p class="text-sm">No low stock alerts at this time</p>
+        </div>
+      `;
+                }
+
+                if (typeof lucide !== "undefined") {
+                  lucide.createIcons();
+                }
+              } catch (error) {
+                console.error("Error loading low stock report:", error);
+              }
+            }
+
+            // Load transaction summary
+            async function loadTransactionSummary() {
+              try {
+                const response = await fetch("/api/v1/material/transactions/summary");
+                const result = await response.json();
+
+                const container = document.getElementById("transactionSummary");
+
+                if (result.success && result.data.length > 0) {
+                  container.innerHTML = result.data
+                    .map(
+                      (summary) => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+              <i data-lucide="arrow-right-left" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">${summary.transaction_type_name}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">${summary.unique_materials} materials</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-gray-900 dark:text-white">${summary.transaction_count} transactions</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">${summary.total_quantity} qty</p>
+          </div>
+        </div>
+      `,
+                    )
+                    .join("");
+                } else {
+                  container.innerHTML = `
+        <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+          <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2"></i>
+          <p>No transaction data available</p>
+        </div>
+      `;
+                }
+
+                if (typeof lucide !== "undefined") {
+                  lucide.createIcons();
+                }
+              } catch (error) {
+                console.error("Error loading transaction summary:", error);
+              }
+            }
+
+            // Load department usage
+            async function loadDepartmentUsage() {
+              try {
+                const response = await fetch("/api/v1/material/transactions/department-usage");
+                const result = await response.json();
+
+                const container = document.getElementById("departmentUsage");
+
+                if (result.success && result.data.length > 0) {
+                  container.innerHTML = result.data
+                    .map(
+                      (dept) => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="p-1 bg-green-100 dark:bg-green-900/30 rounded">
+              <i data-lucide="building" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">${dept.department}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">${dept.unique_materials} materials</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-gray-900 dark:text-white">${dept.total_quantity} qty</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">${dept.transaction_count} transactions</p>
+          </div>
+        </div>
+      `,
+                    )
+                    .join("");
+                } else {
+                  container.innerHTML = `
+        <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+          <i data-lucide="building" class="w-8 h-8 mx-auto mb-2"></i>
+          <p>No department usage data available</p>
+        </div>
+      `;
+                }
+
+                if (typeof lucide !== "undefined") {
+                  lucide.createIcons();
+                }
+              } catch (error) {
+                console.error("Error loading department usage:", error);
+              }
+            }
+
+            // Load stock aging analysis
+            async function loadStockAging() {
+              // This would be a more complex analysis
+              // For now, show a placeholder
+              const container = document.getElementById("stockAging");
+              container.innerHTML = `
+    <div class="text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-8">
+      <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2"></i>
+      <p class="text-lg font-medium">Stock Aging Analysis</p>
+      <p class="text-sm">FSN (Fast/Slow/Non-moving) analysis coming soon</p>
+    </div>
+  `;
+
+              if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+              }
+            }
+
+            // Generate report based on filters
+            function generateReport() {
+              const filters = {
+                date_from: document.getElementById("reportDateFrom").value,
+                date_to: document.getElementById("reportDateTo").value,
+                category_id: document.getElementById("reportCategory").value,
+              };
+
+              // Reload data with filters
+              loadReportData();
+            }
+
+            // Export report
+            async function exportReport(reportType) {
+              try {
+                const filters = {
+                  date_from: document.getElementById("reportDateFrom").value,
+                  date_to: document.getElementById("reportDateTo").value,
+                  category_id: document.getElementById("reportCategory").value,
+                };
+
+                const params = new URLSearchParams(filters);
+                const url = `/api/v1/material/reports/${reportType}/export?${params}`;
+
+                // Show loading toast
+                showInfoToast(`Generating ${reportType} report...`);
+
+                // Fetch the export data
+                const response = await fetch(url);
+
+                if (response.ok) {
+                  // Create blob and download
+                  const blob = await response.blob();
+                  const downloadUrl = window.URL.createObjectURL(blob);
+
+                  const link = document.createElement("a");
+                  link.href = downloadUrl;
+                  link.download = `${reportType}-${new Date().toISOString().split("T")[0]}.csv`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+
+                  // Clean up the blob URL
+                  window.URL.revokeObjectURL(downloadUrl);
+
+                  showSuccessToast(`${reportType} report exported successfully!`);
+                } else {
+                  const errorData = await response.json();
+                  showErrorToast(`Failed to export report: ${errorData.error || "Unknown error"}`);
+                }
+              } catch (error) {
+                console.error("Error exporting report:", error);
+                showErrorToast("Failed to export report. Please try again.");
+              }
+            }
+          </script>
+        </section>
+      </main>
+
+      <%- include('../../../../partials/_footer') %>
+    </div>
+  </body>
+</html>

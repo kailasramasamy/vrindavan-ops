@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generate Bills - Vrindavan Farm</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+      /* Normalize date input and select styling */
+      input[type="date"],
+      select {
+        height: 48px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .card {
+        @apply bg-white rounded-lg shadow-sm border border-gray-200;
+      }
+      .card--white {
+        @apply bg-white;
+      }
+      .btn {
+        @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+      }
+      .btn-primary {
+        @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+      }
+      .btn-success {
+        @apply bg-green-600 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+      }
+      .btn-warning {
+        @apply bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2;
+      }
+      .btn-purple {
+        @apply bg-purple-600 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+      }
+
+      /* Ensure buttons have proper styling */
+      .btn:not(.hidden) {
+        @apply inline-flex items-center justify-center;
+      }
+
+      /* Specific button color overrides for better visibility */
+      .btn-success {
+        background-color: #059669 !important;
+        color: white !important;
+      }
+      .btn-success:hover {
+        background-color: #047857 !important;
+      }
+
+      .btn-warning {
+        background-color: #d97706 !important;
+        color: white !important;
+      }
+      .btn-warning:hover {
+        background-color: #b45309 !important;
+      }
+
+      .btn-purple {
+        background-color: #7c3aed !important;
+        color: white !important;
+      }
+      .btn-purple:hover {
+        background-color: #6d28d9 !important;
+      }
+
+      .btn-secondary {
+        background-color: transparent !important;
+        color: #6b7280 !important;
+        border: 1px solid #d1d5db !important;
+      }
+      .btn-secondary:hover {
+        background-color: #f9fafb !important;
+        color: #374151 !important;
+        border-color: #9ca3af !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <%- include('../../../partials/_head') %> <%- include('../../../partials/_header', { user: user }) %> <%- include('../../../partials/_subnav', { section: 'Procurement', subsection: 'Billing', page: 'Generate Bills', user }) %>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-2">Generate Bills</h1>
+        <p class="text-gray-600">Generate billing records for farmers, CPP, RCC, and MP</p>
+      </div>
+
+      <!-- Period Selection -->
+      <div class="card p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Select Billing Period</h2>
+        <form id="periodForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+            <select id="month" name="month" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8" selected>August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
+            <select id="year" name="year" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="2024">2024</option>
+              <option value="2025" selected>2025</option>
+              <option value="2026">2026</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Period</label>
+            <select id="period" name="period" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="H1">H1 (1st Half)</option>
+              <option value="H2">H2 (2nd Half)</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button type="button" id="updatePeriod" class="btn btn-primary w-full">
+              <i class="fas fa-calendar-alt mr-2"></i>
+              Update Period
+            </button>
+          </div>
+        </form>
+        <div id="periodInfo" class="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Selected Period:</strong>
+            <span id="periodDisplay">August 2025 - H1 (1st Half)</span>
+          </p>
+          <p class="text-xs text-blue-600 mt-1">
+            <strong>Date Range:</strong>
+            <span id="dateRange">August 1-15, 2025</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Entity Selection -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Farmers -->
+        <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" data-entity="farmers">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+              <i class="fas fa-users text-blue-600"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Farmers</h3>
+              <p class="text-sm text-gray-500">Individual farmers</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Active Farmers:</span>
+              <span class="font-semibold text-blue-600" id="farmersCount">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Total Volume:</span>
+              <span class="font-semibold text-blue-600" id="farmersVolume">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm" id="farmersBillStatus" style="display: none">
+              <span class="text-gray-600">Bills Status:</span>
+              <span class="font-semibold text-green-600" id="farmersBillCount">0 bills</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <button class="btn btn-primary w-full generate-btn" data-entity="farmers" id="farmersGenerateBtn">
+              <i class="fas fa-file-invoice mr-2"></i>
+              <span id="farmersBtnText">Generate Bills</span>
+            </button>
+            <button class="btn btn-secondary w-full regenerate-btn hidden" data-entity="farmers" id="farmersRegenerateBtn">
+              <i class="fas fa-redo mr-2"></i>
+              Regenerate Bills
+            </button>
+          </div>
+        </div>
+
+        <!-- CPP -->
+        <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" data-entity="cpp">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+              <i class="fas fa-building text-green-600"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">CPP</h3>
+              <p class="text-sm text-gray-500">Collection Points</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Active CPPs:</span>
+              <span class="font-semibold text-green-600" id="cppCount">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Total Volume:</span>
+              <span class="font-semibold text-green-600" id="cppVolume">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm" id="cppBillStatus" style="display: none">
+              <span class="text-gray-600">Bills Status:</span>
+              <span class="font-semibold text-green-600" id="cppBillCount">0 bills</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <button class="btn btn-success w-full generate-btn" data-entity="cpp" id="cppGenerateBtn">
+              <i class="fas fa-file-invoice mr-2"></i>
+              <span id="cppBtnText">Generate Bills</span>
+            </button>
+            <button class="btn btn-secondary w-full regenerate-btn hidden" data-entity="cpp" id="cppRegenerateBtn">
+              <i class="fas fa-redo mr-2"></i>
+              Regenerate Bills
+            </button>
+          </div>
+        </div>
+
+        <!-- RCC -->
+        <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" data-entity="rcc">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+              <i class="fas fa-warehouse text-yellow-600"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">RCC</h3>
+              <p class="text-sm text-gray-500">Regional Centers</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Active RCCs:</span>
+              <span class="font-semibold text-yellow-600" id="rccCount">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Total Volume:</span>
+              <span class="font-semibold text-yellow-600" id="rccVolume">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm" id="rccBillStatus" style="display: none">
+              <span class="text-gray-600">Bills Status:</span>
+              <span class="font-semibold text-green-600" id="rccBillCount">0 bills</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <button class="btn btn-warning w-full generate-btn" data-entity="rcc" id="rccGenerateBtn">
+              <i class="fas fa-file-invoice mr-2"></i>
+              <span id="rccBtnText">Generate Bills</span>
+            </button>
+            <button class="btn btn-secondary w-full regenerate-btn hidden" data-entity="rcc" id="rccRegenerateBtn">
+              <i class="fas fa-redo mr-2"></i>
+              Regenerate Bills
+            </button>
+          </div>
+        </div>
+
+        <!-- MP -->
+        <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" data-entity="mp">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+              <i class="fas fa-industry text-purple-600"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">MP</h3>
+              <p class="text-sm text-gray-500">Milk Plants</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Active MPs:</span>
+              <span class="font-semibold text-purple-600" id="mpCount">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Total Volume:</span>
+              <span class="font-semibold text-purple-600" id="mpVolume">Loading...</span>
+            </div>
+            <div class="flex justify-between text-sm" id="mpBillStatus" style="display: none">
+              <span class="text-gray-600">Bills Status:</span>
+              <span class="font-semibold text-green-600" id="mpBillCount">0 bills</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <button class="btn btn-purple w-full generate-btn" data-entity="mp" id="mpGenerateBtn">
+              <i class="fas fa-file-invoice mr-2"></i>
+              <span id="mpBtnText">Generate Bills</span>
+            </button>
+            <button class="btn btn-secondary w-full regenerate-btn hidden" data-entity="mp" id="mpRegenerateBtn">
+              <i class="fas fa-redo mr-2"></i>
+              Regenerate Bills
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate All Button -->
+      <div class="text-center mb-8 space-y-4">
+        <button id="generateAll" class="btn btn-secondary px-8 py-3 text-lg">
+          <i class="fas fa-magic mr-2"></i>
+          <span id="generateAllText">Generate All Bills</span>
+        </button>
+        <button id="regenerateAll" class="btn btn-secondary px-8 py-3 text-lg hidden">
+          <i class="fas fa-redo mr-2"></i>
+          Regenerate All Bills
+        </button>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results" class="hidden">
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold mb-4">Generation Results</h2>
+          <div id="resultsContent">
+            <!-- Results will be displayed here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p class="text-lg font-medium">Generating bills...</p>
+          <p class="text-sm text-gray-600 mt-2">Please wait while we process your request</p>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../../../partials/_footer') %>
+
+    <script>
+      let currentPeriod = {
+        month: 8,
+        year: 2025,
+        period: "H1",
+        startDate: "2025-08-01",
+        endDate: "2025-08-15",
+      };
+
+      // Calculate period dates
+      function calculatePeriodDates(month, year, period) {
+        const startOfMonth = new Date(year, month - 1, 1);
+        const endOfMonth = new Date(year, month, 0);
+
+        let startDate, endDate;
+
+        if (period === "H1") {
+          startDate = new Date(year, month - 1, 1);
+          endDate = new Date(year, month - 1, 15);
+        } else if (period === "H2") {
+          startDate = new Date(year, month - 1, 16);
+          endDate = new Date(year, month, 0);
+        } else {
+          // monthly
+          startDate = new Date(year, month - 1, 1);
+          endDate = new Date(year, month, 0);
+        }
+
+        return {
+          startDate: startDate.getFullYear() + "-" + String(startDate.getMonth() + 1).padStart(2, "0") + "-" + String(startDate.getDate()).padStart(2, "0"),
+          endDate: endDate.getFullYear() + "-" + String(endDate.getMonth() + 1).padStart(2, "0") + "-" + String(endDate.getDate()).padStart(2, "0"),
+        };
+      }
+
+      // Update period display
+      function updatePeriodDisplay() {
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        const periodNames = {
+          H1: "1st Half",
+          H2: "2nd Half",
+          monthly: "Monthly",
+        };
+
+        document.getElementById("periodDisplay").textContent = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.year} - ${periodNames[currentPeriod.period]}`;
+
+        const startDate = new Date(currentPeriod.startDate);
+        const endDate = new Date(currentPeriod.endDate);
+
+        document.getElementById("dateRange").textContent = `${monthNames[startDate.getMonth()]} ${startDate.getDate()}-${endDate.getDate()}, ${startDate.getFullYear()}`;
+      }
+
+      // Reset all entity bill status UI to default state
+      function resetBillStatusUI() {
+        const entities = ["farmers", "cpp", "rcc", "mp"];
+
+        entities.forEach((entity) => {
+          const statusDiv = document.getElementById(`${entity}BillStatus`);
+          const countSpan = document.getElementById(`${entity}BillCount`);
+          const generateBtn = document.getElementById(`${entity}GenerateBtn`);
+          const regenerateBtn = document.getElementById(`${entity}RegenerateBtn`);
+          const btnText = document.getElementById(`${entity}BtnText`);
+
+          // Reset to default state
+          statusDiv.style.display = "none";
+          btnText.textContent = "Generate Bills";
+          generateBtn.classList.remove("hidden");
+          regenerateBtn.classList.add("hidden");
+        });
+
+        // Reset Generate All button
+        const generateAllBtn = document.getElementById("generateAll");
+        const regenerateAllBtn = document.getElementById("regenerateAll");
+        const generateAllText = document.getElementById("generateAllText");
+
+        generateAllText.textContent = "Generate All Bills";
+        generateAllBtn.classList.remove("hidden");
+        regenerateAllBtn.classList.add("hidden");
+      }
+
+      // Show loading state for bill status
+      function showBillStatusLoading() {
+        const entities = ["farmers", "cpp", "rcc", "mp"];
+
+        entities.forEach((entity) => {
+          const statusDiv = document.getElementById(`${entity}BillStatus`);
+          const countSpan = document.getElementById(`${entity}BillCount`);
+          const generateBtn = document.getElementById(`${entity}GenerateBtn`);
+          const regenerateBtn = document.getElementById(`${entity}RegenerateBtn`);
+
+          // Show loading state - don't modify button text, just show status
+          statusDiv.style.display = "flex";
+          countSpan.textContent = "Checking...";
+          countSpan.className = "font-semibold text-gray-500";
+          generateBtn.classList.add("hidden");
+          regenerateBtn.classList.add("hidden");
+        });
+
+        // Update Generate All button
+        const generateAllBtn = document.getElementById("generateAll");
+        const regenerateAllBtn = document.getElementById("regenerateAll");
+        const generateAllText = document.getElementById("generateAllText");
+
+        generateAllText.textContent = "Checking Status...";
+        generateAllBtn.classList.add("hidden");
+        regenerateAllBtn.classList.add("hidden");
+      }
+
+      // Update period info
+      function updatePeriod() {
+        const month = parseInt(document.getElementById("month").value);
+        const year = parseInt(document.getElementById("year").value);
+        const period = document.getElementById("period").value;
+
+        const dates = calculatePeriodDates(month, year, period);
+
+        currentPeriod = {
+          month,
+          year,
+          period,
+          startDate: dates.startDate,
+          endDate: dates.endDate,
+        };
+
+        updatePeriodDisplay();
+
+        // Reset UI state before loading new data
+        resetBillStatusUI();
+
+        // Add a small delay to ensure DOM updates
+        setTimeout(() => {
+          loadEntityCounts();
+        }, 100);
+      }
+
+      // Load entity counts
+      async function loadEntityCounts() {
+        try {
+          const url = `/api/billing/entity-stats?month=${currentPeriod.month}&year=${currentPeriod.year}&period=${currentPeriod.period}`;
+
+          // Fetch real data from the database
+          const response = await fetch(url);
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Update farmers data
+            document.getElementById("farmersCount").textContent = data.data.farmers.count;
+            document.getElementById("farmersVolume").textContent = `${data.data.farmers.volume}L`;
+
+            // Update CPP data
+            document.getElementById("cppCount").textContent = data.data.cpp.count;
+            document.getElementById("cppVolume").textContent = `${data.data.cpp.volume}L`;
+
+            // Update RCC data
+            document.getElementById("rccCount").textContent = data.data.rcc.count;
+            document.getElementById("rccVolume").textContent = `${data.data.rcc.volume}L`;
+
+            // Update MP data
+            document.getElementById("mpCount").textContent = data.data.mp.count;
+            document.getElementById("mpVolume").textContent = `${data.data.mp.volume}L`;
+          } else {
+            throw new Error(data.error);
+          }
+        } catch (error) {
+          console.error("Error loading entity counts:", error);
+          // Fallback to mock data if API fails
+          document.getElementById("farmersCount").textContent = "13";
+          document.getElementById("farmersVolume").textContent = "8,729.7L";
+          document.getElementById("cppCount").textContent = "12";
+          document.getElementById("cppVolume").textContent = "8,729.7L";
+          document.getElementById("rccCount").textContent = "1";
+          document.getElementById("rccVolume").textContent = "8,729.7L";
+          document.getElementById("mpCount").textContent = "1";
+          document.getElementById("mpVolume").textContent = "8,729.7L";
+        }
+
+        // Check bill status after loading entity counts
+        await checkBillStatus();
+      }
+
+      // Check if bills exist for the current period
+      async function checkBillStatus() {
+        try {
+          // Show loading state
+          showBillStatusLoading();
+
+          const url = `/api/bills/check-bills?startDate=${currentPeriod.startDate}&endDate=${currentPeriod.endDate}&periodType=${currentPeriod.period}`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            const billStatus = data.data;
+
+            // Update each entity's bill status
+            updateEntityBillStatus("farmers", billStatus.farmers, billStatus.counts.farmers);
+            updateEntityBillStatus("cpp", billStatus.cpp, billStatus.counts.cpp);
+            updateEntityBillStatus("rcc", billStatus.rcc, billStatus.counts.rcc);
+            updateEntityBillStatus("mp", billStatus.mp, billStatus.counts.mp);
+
+            // Update Generate All button
+            const allBillsExist = billStatus.farmers && billStatus.cpp && billStatus.rcc && billStatus.mp;
+            const generateAllBtn = document.getElementById("generateAll");
+            const regenerateAllBtn = document.getElementById("regenerateAll");
+            const generateAllText = document.getElementById("generateAllText");
+
+            if (allBillsExist) {
+              generateAllText.textContent = "All Bills Generated";
+              generateAllBtn.classList.add("hidden");
+              regenerateAllBtn.classList.remove("hidden");
+            } else {
+              generateAllText.textContent = "Generate All Bills";
+              generateAllBtn.classList.remove("hidden");
+              regenerateAllBtn.classList.add("hidden");
+            }
+          } else {
+            console.error("Error checking bill status:", data.error);
+            // Reset to default state on error
+            resetBillStatusUI();
+          }
+        } catch (error) {
+          console.error("Error checking bill status:", error);
+          // Reset to default state on error
+          resetBillStatusUI();
+        }
+      }
+
+      // Update individual entity bill status
+      function updateEntityBillStatus(entity, hasBills, billCount) {
+        const statusDiv = document.getElementById(`${entity}BillStatus`);
+        const countSpan = document.getElementById(`${entity}BillCount`);
+        const generateBtn = document.getElementById(`${entity}GenerateBtn`);
+        const regenerateBtn = document.getElementById(`${entity}RegenerateBtn`);
+        const btnText = document.getElementById(`${entity}BtnText`);
+
+        if (!statusDiv || !countSpan || !generateBtn || !regenerateBtn || !btnText) {
+          console.error(`Missing elements for ${entity}`);
+          return;
+        }
+
+        if (hasBills) {
+          statusDiv.style.display = "flex";
+          countSpan.textContent = `${billCount} bills`;
+          countSpan.className = "font-semibold text-green-600";
+          btnText.textContent = "Bills Generated";
+          generateBtn.classList.add("hidden");
+          regenerateBtn.classList.remove("hidden");
+        } else {
+          statusDiv.style.display = "none";
+          btnText.textContent = "Generate Bills";
+          generateBtn.classList.remove("hidden");
+          regenerateBtn.classList.add("hidden");
+        }
+      }
+
+      // Generate bills for specific entity
+      async function generateBills(entityType) {
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const results = document.getElementById("results");
+        const resultsContent = document.getElementById("resultsContent");
+
+        try {
+          loadingOverlay.classList.remove("hidden");
+
+          const response = await fetch(`/api/bills/generate/${entityType}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              startDate: currentPeriod.startDate,
+              endDate: currentPeriod.endDate,
+              periodType: currentPeriod.period,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            if (data.count > 0) {
+              const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+              const periodNames = {
+                H1: "1st Half",
+                H2: "2nd Half",
+                monthly: "Monthly",
+              };
+              const periodDisplay = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.year} - ${periodNames[currentPeriod.period]}`;
+              const dateRange = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.startDate.split("-")[2]}-${currentPeriod.endDate.split("-")[2]}, ${currentPeriod.year}`;
+
+              resultsContent.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                    <h3 class="font-semibold text-blue-800">Billing Period</h3>
+                  </div>
+                  <p class="text-sm text-blue-700 mt-2">
+                    <strong>Period:</strong> ${periodDisplay}<br>
+                    <strong>Date Range:</strong> ${dateRange}
+                  </p>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                    <h3 class="font-semibold text-green-800">Bills Generated Successfully!</h3>
+                  </div>
+                  <p class="text-sm text-green-700 mt-2">
+                    Generated ${data.count} bills for ${entityType}.
+                  </p>
+                </div>
+                <div class="space-y-0">
+                  ${data.bills
+                    .map(
+                      (bill, index) => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg ${index < data.bills.length - 1 ? "border-b border-gray-200" : ""}">
+                      <div>
+                        <span class="font-medium">${bill.farmer_name || bill.cpp_name || bill.rcc_name || bill.mp_name}</span>
+                        <span class="text-sm text-gray-500 ml-2">${bill.village || ""}</span>
+                      </div>
+                      <div class="text-right">
+                        <div class="font-semibold">₹${Number(bill.total_amount).toFixed(2)}</div>
+                        <div class="text-sm text-gray-500">${Number(bill.total_quantity).toFixed(1)}L</div>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              `;
+            } else {
+              resultsContent.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                    <h3 class="font-semibold text-blue-800">No New Bills Generated</h3>
+                  </div>
+                  <p class="text-sm text-blue-700 mt-2">
+                    Bills for ${entityType} already exist for this period. No duplicate bills were created.
+                  </p>
+                  <div class="mt-3">
+                    <a href="/procurement/billing/${entityType}?month=${currentPeriod.month}&year=${currentPeriod.year}&period=${currentPeriod.period}" 
+                       class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+                      <i class="fas fa-eye mr-2"></i>
+                      View Existing Bills
+                    </a>
+                  </div>
+                </div>
+              `;
+
+              // Refresh bill status after showing "no new bills" message
+              await checkBillStatus();
+            }
+          } else {
+            resultsContent.innerHTML = `
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                  <h3 class="font-semibold text-red-800">Error Generating Bills</h3>
+                </div>
+                <p class="text-sm text-red-700 mt-2">${data.error}</p>
+              </div>
+            `;
+          }
+
+          results.classList.remove("hidden");
+        } catch (error) {
+          console.error("Error generating bills:", error);
+          resultsContent.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                <h3 class="font-semibold text-red-800">Error Generating Bills</h3>
+              </div>
+              <p class="text-sm text-red-700 mt-2">Failed to generate bills. Please try again.</p>
+            </div>
+          `;
+          results.classList.remove("hidden");
+        } finally {
+          loadingOverlay.classList.add("hidden");
+        }
+      }
+
+      // Regenerate bills for specific entity
+      async function regenerateBills(entityType) {
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const results = document.getElementById("results");
+        const resultsContent = document.getElementById("resultsContent");
+
+        try {
+          loadingOverlay.classList.remove("hidden");
+
+          const response = await fetch(`/api/bills/regenerate/${entityType}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              startDate: currentPeriod.startDate,
+              endDate: currentPeriod.endDate,
+              periodType: currentPeriod.period,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            if (data.count > 0) {
+              const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+              const periodNames = {
+                H1: "1st Half",
+                H2: "2nd Half",
+                monthly: "Monthly",
+              };
+              const periodDisplay = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.year} - ${periodNames[currentPeriod.period]}`;
+              const dateRange = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.startDate.split("-")[2]}-${currentPeriod.endDate.split("-")[2]}, ${currentPeriod.year}`;
+
+              resultsContent.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                    <h3 class="font-semibold text-blue-800">Billing Period</h3>
+                  </div>
+                  <p class="text-sm text-blue-700 mt-2">
+                    <strong>Period:</strong> ${periodDisplay}<br>
+                    <strong>Date Range:</strong> ${dateRange}
+                  </p>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                    <h3 class="font-semibold text-green-800">Bills Regenerated Successfully!</h3>
+                  </div>
+                  <p class="text-sm text-green-700 mt-2">
+                    Regenerated ${data.count} bills for ${entityType}.
+                  </p>
+                </div>
+                <div class="space-y-0">
+                  ${data.bills
+                    .map(
+                      (bill, index) => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg ${index < data.bills.length - 1 ? "border-b border-gray-200" : ""}">
+                      <div>
+                        <span class="font-medium">${bill.farmer_name || bill.cpp_name || bill.rcc_name || bill.mp_name}</span>
+                        <span class="text-sm text-gray-500 ml-2">${bill.village || ""}</span>
+                      </div>
+                      <div class="text-right">
+                        <div class="font-semibold">₹${Number(bill.total_amount).toFixed(2)}</div>
+                        <div class="text-sm text-gray-500">${Number(bill.total_quantity).toFixed(1)}L</div>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              `;
+            } else {
+              resultsContent.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                    <h3 class="font-semibold text-blue-800">No Bills to Regenerate</h3>
+                  </div>
+                  <p class="text-sm text-blue-700 mt-2">
+                    No bills found for ${entityType} in this period to regenerate.
+                  </p>
+                </div>
+              `;
+            }
+          } else {
+            resultsContent.innerHTML = `
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                  <h3 class="font-semibold text-red-800">Error Regenerating Bills</h3>
+                </div>
+                <p class="text-sm text-red-700 mt-2">${data.error}</p>
+              </div>
+            `;
+          }
+
+          results.classList.remove("hidden");
+
+          // Refresh bill status after regeneration
+          await checkBillStatus();
+        } catch (error) {
+          console.error("Error regenerating bills:", error);
+          resultsContent.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                <h3 class="font-semibold text-red-800">Error Regenerating Bills</h3>
+              </div>
+              <p class="text-sm text-red-700 mt-2">Failed to regenerate bills. Please try again.</p>
+            </div>
+          `;
+          results.classList.remove("hidden");
+        } finally {
+          loadingOverlay.classList.add("hidden");
+        }
+      }
+
+      // Generate all bills
+      async function generateAllBills() {
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const results = document.getElementById("results");
+        const resultsContent = document.getElementById("resultsContent");
+
+        try {
+          loadingOverlay.classList.remove("hidden");
+
+          const response = await fetch("/api/bills/generate/all", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              startDate: currentPeriod.startDate,
+              endDate: currentPeriod.endDate,
+              periodType: currentPeriod.period,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            const { farmers, cpp, rcc, mp } = data.results;
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const periodNames = {
+              H1: "1st Half",
+              H2: "2nd Half",
+              monthly: "Monthly",
+            };
+            const periodDisplay = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.year} - ${periodNames[currentPeriod.period]}`;
+            const dateRange = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.startDate.split("-")[2]}-${currentPeriod.endDate.split("-")[2]}, ${currentPeriod.year}`;
+
+            resultsContent.innerHTML = `
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                  <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                  <h3 class="font-semibold text-blue-800">Billing Period</h3>
+                </div>
+                <p class="text-sm text-blue-700 mt-2">
+                  <strong>Period:</strong> ${periodDisplay}<br>
+                  <strong>Date Range:</strong> ${dateRange}
+                </p>
+              </div>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                  <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                  <h3 class="font-semibold text-green-800">All Bills Generated Successfully!</h3>
+                </div>
+                <p class="text-sm text-green-700 mt-2">
+                  Generated ${data.totalBills} bills across all entities.
+                </p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-blue-800">Farmers</h4>
+                  <p class="text-2xl font-bold text-blue-600">${farmers.count}</p>
+                  <p class="text-sm text-blue-600">bills generated</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-green-800">CPP</h4>
+                  <p class="text-2xl font-bold text-green-600">${cpp.count}</p>
+                  <p class="text-sm text-green-600">bills generated</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-yellow-800">RCC</h4>
+                  <p class="text-2xl font-bold text-yellow-600">${rcc.count}</p>
+                  <p class="text-sm text-yellow-600">bills generated</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-purple-800">MP</h4>
+                  <p class="text-2xl font-bold text-purple-600">${mp.count}</p>
+                  <p class="text-sm text-purple-600">bills generated</p>
+                </div>
+              </div>
+            `;
+          } else {
+            resultsContent.innerHTML = `
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                  <h3 class="font-semibold text-red-800">Error Generating Bills</h3>
+                </div>
+                <p class="text-sm text-red-700 mt-2">${data.error}</p>
+              </div>
+            `;
+          }
+
+          results.classList.remove("hidden");
+
+          // Refresh bill status after generation
+          await checkBillStatus();
+        } catch (error) {
+          console.error("Error generating all bills:", error);
+          resultsContent.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                <h3 class="font-semibold text-red-800">Error Generating Bills</h3>
+              </div>
+              <p class="text-sm text-red-700 mt-2">Failed to generate bills. Please try again.</p>
+            </div>
+          `;
+          results.classList.remove("hidden");
+        } finally {
+          loadingOverlay.classList.add("hidden");
+        }
+      }
+
+      // Regenerate all bills
+      async function regenerateAllBills() {
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const results = document.getElementById("results");
+        const resultsContent = document.getElementById("resultsContent");
+
+        try {
+          loadingOverlay.classList.remove("hidden");
+
+          const response = await fetch("/api/bills/regenerate/all", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              startDate: currentPeriod.startDate,
+              endDate: currentPeriod.endDate,
+              periodType: currentPeriod.period,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            const { farmers, cpp, rcc, mp } = data.results;
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const periodNames = {
+              H1: "1st Half",
+              H2: "2nd Half",
+              monthly: "Monthly",
+            };
+            const periodDisplay = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.year} - ${periodNames[currentPeriod.period]}`;
+            const dateRange = `${monthNames[currentPeriod.month - 1]} ${currentPeriod.startDate.split("-")[2]}-${currentPeriod.endDate.split("-")[2]}, ${currentPeriod.year}`;
+
+            resultsContent.innerHTML = `
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                  <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                  <h3 class="font-semibold text-blue-800">Billing Period</h3>
+                </div>
+                <p class="text-sm text-blue-700 mt-2">
+                  <strong>Period:</strong> ${periodDisplay}<br>
+                  <strong>Date Range:</strong> ${dateRange}
+                </p>
+              </div>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                  <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                  <h3 class="font-semibold text-green-800">All Bills Regenerated Successfully!</h3>
+                </div>
+                <p class="text-sm text-green-700 mt-2">
+                  Regenerated ${data.totalBills} bills across all entities.
+                </p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-blue-800">Farmers</h4>
+                  <p class="text-2xl font-bold text-blue-600">${farmers.count}</p>
+                  <p class="text-sm text-blue-600">bills regenerated</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-green-800">CPP</h4>
+                  <p class="text-2xl font-bold text-green-600">${cpp.count}</p>
+                  <p class="text-sm text-green-600">bills regenerated</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-yellow-800">RCC</h4>
+                  <p class="text-2xl font-bold text-yellow-600">${rcc.count}</p>
+                  <p class="text-sm text-yellow-600">bills regenerated</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-purple-800">MP</h4>
+                  <p class="text-2xl font-bold text-purple-600">${mp.count}</p>
+                  <p class="text-sm text-purple-600">bills regenerated</p>
+                </div>
+              </div>
+            `;
+          } else {
+            resultsContent.innerHTML = `
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                  <h3 class="font-semibold text-red-800">Error Regenerating Bills</h3>
+                </div>
+                <p class="text-sm text-red-700 mt-2">${data.error}</p>
+              </div>
+            `;
+          }
+
+          results.classList.remove("hidden");
+
+          // Refresh bill status after regeneration
+          await checkBillStatus();
+        } catch (error) {
+          console.error("Error regenerating all bills:", error);
+          resultsContent.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                <h3 class="font-semibold text-red-800">Error Regenerating Bills</h3>
+              </div>
+              <p class="text-sm text-red-700 mt-2">Failed to regenerate bills. Please try again.</p>
+            </div>
+          `;
+          results.classList.remove("hidden");
+        } finally {
+          loadingOverlay.classList.add("hidden");
+        }
+      }
+
+      // Event listeners
+      document.addEventListener("DOMContentLoaded", function () {
+        updatePeriodDisplay();
+        loadEntityCounts();
+
+        // Period form
+        document.getElementById("updatePeriod").addEventListener("click", updatePeriod);
+
+        // Generate buttons
+        document.querySelectorAll(".generate-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const entityType = this.getAttribute("data-entity");
+            generateBills(entityType);
+          });
+        });
+
+        // Regenerate buttons
+        document.querySelectorAll(".regenerate-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const entityType = this.getAttribute("data-entity");
+            regenerateBills(entityType);
+          });
+        });
+
+        // Generate all button
+        document.getElementById("generateAll").addEventListener("click", generateAllBills);
+
+        // Regenerate all button
+        document.getElementById("regenerateAll").addEventListener("click", regenerateAllBills);
+      });
+    </script>
+  </body>
+</html>

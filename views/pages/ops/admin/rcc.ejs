@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-brand-bg dark:bg-gray-900 text-brand-ink dark:text-gray-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %>
+      <%- include('../../../partials/_subnav', { title: 'Admin · RCC', user }) %>
+      <main class="flex-1">
+        <section class="max-w-6xl mx-auto px-4 py-10">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Admin — RCC</h1>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <input id="rccSearch" placeholder="Search by name or location" class="flex-1 sm:w-80 border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-800" />
+              <button type="button" class="btn btn-primary" id="btnOpenAddRcc">Add RCC</button>
+            </div>
+          </div>
+          <div class="card card--white dark:bg-gray-800 dark:border-gray-700 p-4">
+            <h2 class="font-semibold mb-3 text-gray-900 dark:text-white">RCC List</h2>
+            <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <% (rows||[]).forEach(r => { %>
+                <div class="rcc-card border dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1.5 bg-white dark:bg-gray-800" data-name="<%- r.name %>" data-location="<%- r.location||'' %>" data-status="<%- r.status %>">
+                  <div class="text-lg font-semibold break-words text-gray-900 dark:text-white"><%= r.name %></div>
+                  <div class="text-sm text-slate-600 dark:text-gray-300 break-words">Location: <%= r.location||'—' %></div>
+                  <% if (r.manager_name) { %>
+                    <div class="text-sm text-slate-600 dark:text-gray-300 break-words">Manager: <%= r.manager_name %></div>
+                  <% } %>
+                  <% if (r.phone) { %>
+                    <div class="text-sm text-slate-600 dark:text-gray-300 break-words">Phone: <%= r.phone %></div>
+                  <% } %>
+                  <div class="text-sm text-slate-600 dark:text-gray-300">Rent: ₹<%= Number(r.rent||0).toFixed(2) %></div>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-xs px-2 py-1 rounded-full border <%= r.status==='active' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-600' %>"><%= r.status %></span>
+                    <button type="button" class="p-2 rounded hover:bg-slate-100 dark:hover:bg-gray-700 btn-edit-rcc" aria-label="Edit"
+                      data-id="<%= r.id %>"
+                      data-name="<%= r.name %>"
+                      data-location="<%= r.location || '' %>"
+                      data-manager="<%= r.manager_name || '' %>"
+                      data-phone="<%= r.phone || '' %>"
+                      data-rent="<%= r.rent || 0 %>"
+                      data-status="<%= r.status %>">
+                      <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- Edit RCC Modal -->
+          <div id="editRccModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay dark:bg-gray-900 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel dark:bg-gray-800 dark:border-gray-700">
+              <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit RCC</h3>
+              <form id="editRccForm" method="post">
+                <div class="grid md:grid-cols-2 gap-3">
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Name</label>
+                    <input name="name" id="r_name" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700" required />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Location</label>
+                    <input name="location" id="r_location" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Manager</label>
+                    <input name="manager_name" id="r_manager" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Phone</label>
+                    <input name="phone" id="r_phone" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Rent</label>
+                    <input type="number" step="0.01" name="rent" id="r_rent" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Status</label>
+                    <select name="status" id="r_status" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700">
+                      <option value="active">active</option>
+                      <option value="inactive">inactive</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-2">
+                  <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors" data-close="modal">Cancel</button>
+                  <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Add RCC Modal -->
+          <div id="addRccModal" class="fixed inset-0 hidden items-center justify-center z-50">
+            <div class="ops-overlay dark:bg-gray-900 dark:bg-opacity-75" data-close="modal"></div>
+            <div class="ops-panel dark:bg-gray-800 dark:border-gray-700">
+              <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add RCC</h3>
+              <form method="post" action="/admin/rcc" class="space-y-3">
+                <input name="name" placeholder="Name" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" required />
+                <input name="location" placeholder="Location" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                <div class="grid md:grid-cols-2 gap-3">
+                  <input name="manager_name" placeholder="Manager" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                  <input name="phone" placeholder="Phone" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                </div>
+                <input name="rent" type="number" step="0.01" placeholder="Rent" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-slate-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                <div class="flex justify-end gap-2 pt-2">
+                  <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors" data-close="modal">Cancel</button>
+                  <button class="btn btn-primary">Create</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          </div>
+        </section>
+  </main>
+  <%- include('../../../partials/_footer') %>
+</div>
+<script>
+  (function(){
+    const addModal = document.getElementById('addRccModal');
+    const openAdd = document.getElementById('btnOpenAddRcc');
+    function open(){ addModal.classList.remove('hidden'); addModal.classList.add('flex'); }
+    function close(){ addModal.classList.add('hidden'); addModal.classList.remove('flex'); }
+    openAdd?.addEventListener('click', open);
+    addModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', close));
+
+    // Edit modal
+    const editModal = document.getElementById('editRccModal');
+    const editForm = document.getElementById('editRccForm');
+    const r_name = document.getElementById('r_name');
+    const r_location = document.getElementById('r_location');
+    const r_rent = document.getElementById('r_rent');
+    const r_manager = document.getElementById('r_manager');
+    const r_phone = document.getElementById('r_phone');
+    const r_status = document.getElementById('r_status');
+    function openEdit(){ editModal.classList.remove('hidden'); editModal.classList.add('flex'); }
+    function closeEdit(){ editModal.classList.add('hidden'); editModal.classList.remove('flex'); }
+    editModal?.querySelectorAll('[data-close="modal"]').forEach(el=>el.addEventListener('click', closeEdit));
+    document.querySelectorAll('.btn-edit-rcc').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        r_name.value = btn.getAttribute('data-name') || '';
+        r_location.value = btn.getAttribute('data-location') || '';
+        r_rent.value = btn.getAttribute('data-rent') || '0';
+        r_manager.value = btn.getAttribute('data-manager') || '';
+        r_phone.value = btn.getAttribute('data-phone') || '';
+        r_status.value = btn.getAttribute('data-status') || 'active';
+        editForm.setAttribute('action', `/admin/rcc/${id}`);
+        openEdit();
+      });
+    });
+
+    // Search filter
+    const search = document.getElementById('rccSearch');
+    const cards = Array.from(document.querySelectorAll('.rcc-card'));
+    function norm(s){ return (s||'').toString().toLowerCase(); }
+    function matches(card, q){ const txt = [card.dataset.name, card.dataset.location, card.dataset.status].map(norm).join(' '); return txt.includes(q); }
+    search?.addEventListener('input', () => { const q = norm(search.value); cards.forEach(c => { c.style.display = q ? (matches(c,q)?'':'none') : ''; }); });
+  })();
+  </script>
+  <script src="/assets/js/main.js" defer></script>
+</body>
+</html>

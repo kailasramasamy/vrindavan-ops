@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../../partials/_head', { seo: seo }) %>
+  <link rel="stylesheet" href="/assets/css/accounting-dark-mode.css">
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <%- include('../../../partials/_subnav', { user, section: 'Accounting', subsection: 'Import Logs' }) %>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Import Logs</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">View and track all data import history</p>
+        </div>
+        <div class="flex items-center gap-3">
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <% if (statistics && statistics.length > 0) { %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <% statistics.forEach(stat => { %>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 capitalize"><%= stat.import_type.replace('_', ' ') %></p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= stat.total_imports %></p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  <span class="text-green-600 dark:text-green-400"><%= stat.total_successful %> success</span> • 
+                  <span class="text-red-600 dark:text-red-400"><%= stat.total_failed %> failed</span>
+                </p>
+              </div>
+              <div class="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
+      <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Import Type</label>
+          <select name="import_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg">
+            <option value="">All Types</option>
+            <option value="bank_statement" <%= filters.import_type === 'bank_statement' ? 'selected' : '' %>>Bank Statement</option>
+            <option value="beneficiary" <%= filters.import_type === 'beneficiary' ? 'selected' : '' %>>Beneficiary</option>
+            <option value="remitter" <%= filters.import_type === 'remitter' ? 'selected' : '' %>>Remitter</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank Account</label>
+          <select name="bank_account_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg">
+            <option value="">All Accounts</option>
+            <% bankAccounts.forEach(acc => { %>
+              <option value="<%= acc.id %>" <%= filters.bank_account_id == acc.id ? 'selected' : '' %>><%= acc.account_name %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+          <input type="date" name="start_date" value="<%= filters.start_date %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+          <input type="date" name="end_date" value="<%= filters.end_date %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg" />
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Filter</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Import Logs Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <!-- Table Header with Pagination Info -->
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Import History</h2>
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          <% if (pagination.totalRecords > 0) { %>
+            Showing <%= pagination.startRecord %>-<%= pagination.endRecord %> of <%= pagination.totalRecords %> logs
+          <% } else { %>
+            No logs found
+          <% } %>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date & Time</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Bank / File</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Success</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Failed</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Imported By</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% if (logs && logs.length > 0) { %>
+              <% logs.forEach(log => { %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    <div><%= new Date(log.imported_at).toLocaleDateString('en-GB') %></div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400"><%= new Date(log.imported_at).toLocaleTimeString('en-GB') %></div>
+                  </td>
+                  <td class="px-4 py-3 text-sm">
+                    <% if (log.import_type === 'bank_statement') { %>
+                      <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">Bank Statement</span>
+                    <% } else if (log.import_type === 'beneficiary') { %>
+                      <span class="px-2 py-1 text-xs font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400">Beneficiary</span>
+                    <% } else if (log.import_type === 'remitter') { %>
+                      <span class="px-2 py-1 text-xs font-medium rounded bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Remitter</span>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    <% if (log.bank_account_name) { %>
+                      <div class="font-medium"><%= log.bank_name || 'N/A' %></div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400"><%= log.bank_account_name %></div>
+                    <% } %>
+                    <% if (log.file_name) { %>
+                      <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate max-w-xs" title="<%= log.file_name %>">
+                        📄 <%= log.file_name %>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <%= log.total_rows %>
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm font-medium text-green-600 dark:text-green-400">
+                    <%= log.successful_rows %>
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm font-medium <%= log.failed_rows > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500' %>">
+                    <%= log.failed_rows %>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    <%= log.imported_by_username || 'N/A' %>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <button onclick="viewLogDetails('<%= log.id %>')" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="View Details">
+                      <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                  No import logs found
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <% if (pagination.totalPages > 1) { %>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div class="flex-1 flex justify-between sm:hidden">
+            <% if (pagination.currentPage > 1) { %>
+              <a href="?page=<%= pagination.currentPage - 1 %>&limit=<%= pagination.entriesPerPage %><%= filters.import_type ? '&import_type=' + filters.import_type : '' %><%= filters.bank_account_id ? '&bank_account_id=' + filters.bank_account_id : '' %><%= filters.start_date ? '&start_date=' + filters.start_date : '' %><%= filters.end_date ? '&end_date=' + filters.end_date : '' %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">Previous</a>
+            <% } %>
+            <% if (pagination.currentPage < pagination.totalPages) { %>
+              <a href="?page=<%= pagination.currentPage + 1 %>&limit=<%= pagination.entriesPerPage %><%= filters.import_type ? '&import_type=' + filters.import_type : '' %><%= filters.bank_account_id ? '&bank_account_id=' + filters.bank_account_id : '' %><%= filters.start_date ? '&start_date=' + filters.start_date : '' %><%= filters.end_date ? '&end_date=' + filters.end_date : '' %>" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">Next</a>
+            <% } %>
+          </div>
+          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                Page <span class="font-medium"><%= pagination.currentPage %></span> of <span class="font-medium"><%= pagination.totalPages %></span>
+              </p>
+            </div>
+            <div>
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <% if (pagination.currentPage > 1) { %>
+                  <a href="?page=<%= pagination.currentPage - 1 %>&limit=<%= pagination.entriesPerPage %><%= filters.import_type ? '&import_type=' + filters.import_type : '' %><%= filters.bank_account_id ? '&bank_account_id=' + filters.bank_account_id : '' %><%= filters.start_date ? '&start_date=' + filters.start_date : '' %><%= filters.end_date ? '&end_date=' + filters.end_date : '' %>" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <span class="sr-only">Previous</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                <% } %>
+                <% if (pagination.currentPage < pagination.totalPages) { %>
+                  <a href="?page=<%= pagination.currentPage + 1 %>&limit=<%= pagination.entriesPerPage %><%= filters.import_type ? '&import_type=' + filters.import_type : '' %><%= filters.bank_account_id ? '&bank_account_id=' + filters.bank_account_id : '' %><%= filters.start_date ? '&start_date=' + filters.start_date : '' %><%= filters.end_date ? '&end_date=' + filters.end_date : '' %>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <span class="sr-only">Next</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                <% } %>
+              </nav>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <!-- View Details Modal -->
+  <div id="detailsModal" class="hidden fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-70 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border border-gray-300 dark:border-gray-700 w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Import Log Details</h3>
+        <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="detailsContent" class="mt-4">
+        <!-- Content will be populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_toast') %>
+
+  <script>
+    // View log details
+    async function viewLogDetails(logId) {
+      try {
+        const response = await fetch(`/accounting/api/import-logs/${logId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          const log = result.log;
+          let errorLogHtml = '';
+          
+          if (log.error_log && Array.isArray(log.error_log) && log.error_log.length > 0) {
+            errorLogHtml = `
+              <div class="mt-4">
+                <h4 class="font-medium text-gray-900 dark:text-white mb-2">Error Log:</h4>
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 max-h-60 overflow-y-auto">
+                  <ul class="text-sm text-red-800 dark:text-red-300 space-y-1">
+                    ${log.error_log.map(err => `<li>• ${err}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+            `;
+          } else if (log.failed_rows === 0) {
+            errorLogHtml = `
+              <div class="mt-4">
+                <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                  <p class="text-sm text-green-800 dark:text-green-300">✓ No errors - all rows imported successfully!</p>
+                </div>
+              </div>
+            `;
+          }
+
+          document.getElementById('detailsContent').innerHTML = `
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Import Type</p>
+                  <p class="text-sm text-gray-900 dark:text-white capitalize">${log.import_type.replace('_', ' ')}</p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Batch ID</p>
+                  <p class="text-sm text-gray-900 dark:text-white font-mono text-xs">${log.import_batch_id || 'N/A'}</p>
+                </div>
+                ${log.bank_name ? `
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Bank</p>
+                  <p class="text-sm text-gray-900 dark:text-white">${log.bank_name}</p>
+                  ${log.bank_account_name ? `<p class="text-xs text-gray-500 dark:text-gray-400">${log.bank_account_name}</p>` : ''}
+                </div>
+                ` : ''}
+                ${log.file_name ? `
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">File Name</p>
+                  <p class="text-sm text-gray-900 dark:text-white">${log.file_name}</p>
+                </div>
+                ` : ''}
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Rows</p>
+                  <p class="text-sm text-gray-900 dark:text-white">${log.total_rows}</p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Successful</p>
+                  <p class="text-sm text-green-600 dark:text-green-400 font-medium">${log.successful_rows}</p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Failed</p>
+                  <p class="text-sm ${log.failed_rows > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'} font-medium">${log.failed_rows}</p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Imported By</p>
+                  <p class="text-sm text-gray-900 dark:text-white">${log.imported_by_username || 'N/A'}</p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Date & Time</p>
+                  <p class="text-sm text-gray-900 dark:text-white">${new Date(log.imported_at).toLocaleString('en-GB')}</p>
+                </div>
+              </div>
+              ${errorLogHtml}
+            </div>
+          `;
+
+          document.getElementById('detailsModal').classList.remove('hidden');
+        } else {
+          showErrorToast('Failed to load log details');
+        }
+      } catch (error) {
+        console.error('Error loading log details:', error);
+        showErrorToast('Error loading log details');
+      }
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('detailsModal').classList.add('hidden');
+    }
+
+    // Close modal on outside click
+    document.getElementById('detailsModal')?.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeDetailsModal();
+      }
+    });
+  </script>
+</body>
+
+</html>
+

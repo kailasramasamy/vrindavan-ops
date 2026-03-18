@@ -1,0 +1,809 @@
+<%- include('../../../partials/_head', { title: title, seo: seo }) %>
+<link rel="stylesheet" href="/assets/css/marketing-dark-mode.css">
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_subnav', { currentPage: currentPage, section: 'Marketing', subsection: 'Dashboard', user: user }) %>
+
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 shadow">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Marketing Campaign Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Track and analyze your marketing campaigns performance</p>
+          </div>
+          <div class="flex space-x-3 items-center flex-wrap gap-2">
+            <a href="/marketing/expenses" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Track Expenses
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Campaigns</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="totalCampaigns">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Campaigns</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="activeCampaigns">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='/marketing/sampling/dashboard'">
+          <div class="p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center flex-1">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 bg-emerald-500 rounded-md flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="ml-5 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sampling Campaigns</dt>
+                    <dd class="text-lg font-medium text-gray-900 dark:text-white" id="samplingCampaigns">-</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Spend</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="totalSpend">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg ROI</dt>
+                  <dd class="text-lg font-medium text-gray-900 dark:text-white" id="avgROI">-</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Access Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <a href="/marketing/campaigns" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-blue-500 rounded-md flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-4 flex-1">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Campaigns</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Manage campaigns</p>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <a href="/marketing/ads" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-indigo-500 rounded-md flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-4 flex-1">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Ad Content</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Manage ad creatives</p>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <a href="/marketing/assets" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-pink-500 rounded-md flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-4 flex-1">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Asset Library</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Browse images & videos</p>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <a href="/marketing/sampling" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-emerald-500 rounded-md flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-4 flex-1">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Product Sampling</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sampling campaigns</p>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Expense Breakdown Chart -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Expense Breakdown by Category</h3>
+          <div class="flex items-center justify-center">
+            <div class="w-2/3">
+              <canvas id="expenseChart"></canvas>
+            </div>
+            <div class="w-1/3 pl-4">
+              <div id="expenseChartLegend" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campaigns Chart -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Campaigns Started by Month</h3>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              Last 6 months
+            </div>
+          </div>
+          <div class="h-64">
+            <canvas id="campaignsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Campaign Expenses -->
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Monthly Campaign Expense Chart -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Monthly Campaign Expenses</h3>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              Last 12 months
+            </div>
+          </div>
+          <div class="relative h-96">
+            <canvas id="monthlyExpenseChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Campaigns -->
+      <div class="grid grid-cols-1 gap-6 mt-6">
+        <!-- Recent Campaigns Table -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Recent Campaigns</h3>
+            <a href="/marketing/campaigns" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+              View All →
+            </a>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="recentCampaigns" class="min-w-full">
+              <!-- Campaign table will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  
+  <script>
+  </script>
+  <script>
+    // Cache buster - v3.0 - Complete JavaScript rewrite to eliminate syntax errors
+    // Timestamp: 2024-01-20 15:30:00
+    // Global variables
+    let expenseChart, campaignsChart, monthlyExpenseChart;
+    let currentExpenseData, currentCampaignsData, currentMonthlyExpenseData;
+
+    // Register Chart.js plugins
+    Chart.register(ChartDataLabels);
+
+    // Function to get theme-appropriate text color
+    function getThemeTextColor() {
+      // Use bright white for maximum contrast in dark theme
+      return '#FFFFFF';
+    }
+
+    // Update expense chart theme
+    function updateExpenseChartTheme() {
+      if (currentExpenseData) {
+        updateExpenseChart(currentExpenseData);
+      }
+    }
+
+    // Update campaigns chart theme
+    function updateCampaignsChartTheme() {
+      if (currentCampaignsData) {
+        updateCampaignsChart(currentCampaignsData);
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        const response = await fetch('/marketing/api/dashboard');
+        const result = await response.json();
+
+        if (result.success) {
+          const data = result.data;
+          
+          // Update statistics
+          document.getElementById('totalCampaigns').textContent = data.statistics.total_campaigns;
+          document.getElementById('activeCampaigns').textContent = data.statistics.active_campaigns;
+          document.getElementById('totalSpend').textContent = `₹${data.statistics.total_spend.toLocaleString()}`;
+          
+          // Update sampling campaigns count
+          if (data.sampling_campaign_stats) {
+            document.getElementById('samplingCampaigns').textContent = data.sampling_campaign_stats.total_campaigns || 0;
+          }
+          
+          // Calculate average ROI
+          if (data.roi_data.length > 0) {
+            const avgROI = data.roi_data.reduce((sum, campaign) => sum + parseFloat(campaign.roi), 0) / data.roi_data.length;
+            document.getElementById('avgROI').textContent = `${avgROI.toFixed(1)}%`;
+          }
+
+          // Store data globally for theme updates
+          currentExpenseData = data.expense_analytics;
+          currentCampaignsData = data.recent_campaigns;
+          currentMonthlyExpenseData = data.monthly_expenses;
+          
+          // Update charts
+          updateExpenseChart(data.expense_analytics);
+          updateCampaignsChart(data.recent_campaigns);
+          updateMonthlyExpenseChart(data.monthly_expenses);
+          
+          // Update recent campaigns
+          updateRecentCampaigns(data.recent_campaigns);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+
+    // Update expense chart
+    function updateExpenseChart(data) {
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (window.expenseChart && typeof window.expenseChart.destroy === 'function') {
+        window.expenseChart.destroy();
+      }
+
+      // Handle empty data
+      if (!data || data.length === 0) {
+        window.expenseChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['No Data'],
+            datasets: [{
+              data: [1],
+              backgroundColor: ['#E5E7EB'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                enabled: false
+              },
+              datalabels: {
+                display: false
+              }
+            }
+          }
+        });
+        
+        // Create empty legend
+        createCustomLegend(['No Data'], [1], ['#E5E7EB']);
+        return;
+      }
+
+      const categories = [...new Set(data.map(item => item.category))];
+      const categoryTotals = categories.map(category => 
+        data.filter(item => item.category === category)
+            .reduce((sum, item) => sum + parseFloat(item.total_amount), 0)
+      );
+
+      window.expenseChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: categories,
+          datasets: [{
+            data: categoryTotals,
+            backgroundColor: [
+              '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#F97316', '#84CC16', '#EC4899', '#6366F1'
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ₹${value.toLocaleString()} (${percentage}%)`;
+                }
+              }
+            },
+            datalabels: {
+              display: true,
+              color: '#ffffff',
+              font: {
+                size: 12,
+                weight: 'bold'
+              },
+              formatter: function(value, context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return percentage > 5 ? percentage + '%' : '';
+              }
+            }
+          }
+        }
+      });
+
+      // Create custom legend
+      createCustomLegend(categories, categoryTotals, [
+        '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#F97316', '#84CC16', '#EC4899', '#6366F1'
+      ]);
+    }
+
+    // Create custom legend for expense chart
+    function createCustomLegend(labels, data, colors) {
+      const legendContainer = document.getElementById('expenseChartLegend');
+      if (!legendContainer) return;
+
+      legendContainer.innerHTML = '';
+
+      const total = data.reduce((sum, value) => sum + value, 0);
+
+      labels.forEach((label, index) => {
+        const value = data[index];
+        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+        
+        const legendItem = document.createElement('div');
+        legendItem.className = 'flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors';
+        
+        legendItem.innerHTML = `
+          <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" style="background-color: ${colors[index]}"></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-gray-900 dark:text-white truncate">${label}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">₹${value.toLocaleString()} (${percentage}%)</div>
+          </div>
+        `;
+        
+        legendContainer.appendChild(legendItem);
+      });
+    }
+
+    // Update campaigns chart
+    function updateCampaignsChart(data) {
+      const ctx = document.getElementById('campaignsChart').getContext('2d');
+      
+      if (window.campaignsChart && typeof window.campaignsChart.destroy === 'function') {
+        window.campaignsChart.destroy();
+      }
+
+      // Generate last 6 months data
+      const months = [];
+      const campaignCounts = [];
+      const currentDate = new Date();
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthLabel = date.toLocaleDateString('en-US', { month: 'short' });
+        months.push(monthLabel);
+        
+        // Count campaigns for this month
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const count = data ? data.filter(campaign => {
+          const campaignDate = new Date(campaign.start_date);
+          return campaignDate >= monthStart && campaignDate <= monthEnd;
+        }).length : 0;
+        
+        campaignCounts.push(count);
+      }
+
+      window.campaignsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Campaigns Started',
+            data: campaignCounts,
+            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+            borderColor: '#3B82F6',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            datalabels: {
+              anchor: 'center',
+              align: 'center',
+              color: '#FFFFFF',
+              font: {
+                weight: 'bold',
+                size: 14
+              },
+              formatter: function(value) {
+                return value > 0 ? value : '';
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                color: '#9CA3AF'
+              },
+              grid: {
+                color: '#374151'
+              }
+            },
+            x: {
+              ticks: {
+                color: '#9CA3AF'
+              },
+              grid: {
+                color: '#374151'
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    // Update monthly expense chart theme
+    function updateMonthlyExpenseChartTheme() {
+      if (currentMonthlyExpenseData) {
+        updateMonthlyExpenseChart(currentMonthlyExpenseData);
+      }
+    }
+
+    // Update monthly expense chart
+    function updateMonthlyExpenseChart(data) {
+      const ctx = document.getElementById('monthlyExpenseChart').getContext('2d');
+      
+      if (window.monthlyExpenseChart && typeof window.monthlyExpenseChart.destroy === 'function') {
+        window.monthlyExpenseChart.destroy();
+      }
+
+      // Use real data from API
+      const months = [];
+      const monthlyExpenses = [];
+      
+      if (data && data.length > 0) {
+        // Use real monthly expense data
+        data.forEach(monthData => {
+          months.push(monthData.month);
+          monthlyExpenses.push(monthData.total);
+        });
+      } else {
+        // Fallback to generating last 12 months if no data
+        const currentDate = new Date();
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+          months.push(monthName);
+          monthlyExpenses.push(0);
+        }
+      }
+
+      window.monthlyExpenseChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Monthly Expenses',
+            data: monthlyExpenses,
+            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+            borderColor: '#3B82F6',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 25,
+              bottom: 20,
+              left: 20,
+              right: 20
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              offset: 4,
+              color: '#1F2937',
+              font: {
+                weight: 'bold',
+                size: 11
+              },
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderColor: '#E5E7EB',
+              borderWidth: 1,
+              borderRadius: 4,
+              padding: {
+                top: 2,
+                bottom: 2,
+                left: 4,
+                right: 4
+              },
+              formatter: function(value) {
+                return '₹' + value.toLocaleString();
+              },
+              display: function(context) {
+                return context.parsed && context.parsed.y > 0; // Only show labels for non-zero values
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              position: 'left',
+              suggestedMax: function(context) {
+                const max = Math.max(...context.chart.data.datasets[0].data);
+                return max > 0 ? max * 1.2 : 1000; // Add 20% padding above max value
+              },
+              ticks: {
+                color: '#9CA3AF',
+                callback: function(value) {
+                  return '₹' + value.toLocaleString();
+                },
+                padding: 15
+              },
+              grid: {
+                color: '#374151',
+                drawBorder: false
+              }
+            },
+            x: {
+              ticks: {
+                color: '#9CA3AF',
+                padding: 10
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    // Update recent campaigns
+    function updateRecentCampaigns(campaigns) {
+      const container = document.getElementById('recentCampaigns');
+      container.innerHTML = '';
+
+      if (!campaigns || campaigns.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-8">No campaigns yet. <a href="/marketing/campaigns/new" class="text-blue-600 dark:text-blue-400 hover:underline">Create your first campaign</a></p>';
+        return;
+      }
+
+      // Create table
+      const table = document.createElement('table');
+      table.className = 'min-w-full divide-y divide-gray-200 dark:divide-gray-700';
+      
+      // Create table header
+      const thead = document.createElement('thead');
+      thead.className = 'bg-gray-50 dark:bg-gray-700';
+      thead.innerHTML = `
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Campaign</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Channel</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+        </tr>
+      `;
+      
+      // Create table body
+      const tbody = document.createElement('tbody');
+      tbody.className = 'bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700';
+      
+      campaigns.forEach(campaign => {
+        const statusColor = {
+          'active': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+          'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+          'completed': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+          'paused': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+          'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        }[campaign.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+
+        // Handle date formatting for both regular and sampling campaigns
+        let startDate = 'N/A';
+        let endDate = 'N/A';
+        if (campaign.start_date) {
+          startDate = new Date(campaign.start_date).toLocaleDateString();
+        }
+        if (campaign.end_date) {
+          endDate = new Date(campaign.end_date).toLocaleDateString();
+        }
+        
+        // Determine campaign type display
+        const campaignType = campaign.is_sampling ? 'Product Sampling' : (campaign.type || 'N/A');
+        
+        // Determine view URL based on campaign type
+        const viewUrl = campaign.is_sampling 
+          ? `/marketing/sampling/${campaign.id}` 
+          : `/marketing/campaigns/${campaign.id}`;
+        
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium text-gray-900 dark:text-white">${campaign.name}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 dark:text-white">${campaign.channel || 'N/A'}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 dark:text-white">${campaignType}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 dark:text-white">${startDate}${endDate !== 'N/A' ? ' - ' + endDate : ''}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColor}">
+              ${campaign.status}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="${viewUrl}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+              View
+            </a>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait a bit for theme to be properly applied
+      setTimeout(() => {
+        loadDashboardData();
+      }, 100);
+    });
+
+
+
+  </script>
+</body>
+</html>

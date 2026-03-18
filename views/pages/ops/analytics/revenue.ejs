@@ -1,0 +1,432 @@
+<%- include('../../../partials/_head') %> <%- include('../../../partials/_subnav', { section: 'Analytics', page: 'Revenue Analytics', user: user }) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Revenue Analytics</h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">Revenue insights, trends, and performance metrics</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Date Range Selector -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</label>
+          <select id="dateRange" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="this_month" selected>This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="this_quarter">This Quarter</option>
+            <option value="last_quarter">Last Quarter</option>
+            <option value="this_year">This Year</option>
+            <option value="last_year">Last Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+
+        <!-- Export Button -->
+        <button id="exportBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Net Revenue -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Net Revenue</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="netRevenue">₹<%= (metrics.net_revenue || 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gross Revenue -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Gross Revenue</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="grossRevenue">₹<%= (metrics.gross_revenue || 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Order Value -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Order Value</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="avgOrderValue">₹<%= (metrics.avg_order_value || 0).toFixed(2) %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Completed Orders -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Orders</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="completedOrders"><%= metrics.completed_orders || 0 %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Breakdown Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Tax Revenue -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Tax Revenue</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">₹<%= (metrics.total_tax || 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Fees -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Delivery Fees</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">₹<%= (metrics.total_delivery_fees || 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Discounts -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Discounts</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">₹<%= (metrics.total_discounts || 0).toLocaleString() %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Revenue Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue Trend</h3>
+        <div class="h-64">
+          <canvas id="revenueTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Revenue by Channel Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue by Channel</h3>
+        <div class="h-64">
+          <canvas id="revenueChannelChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Revenue by Product -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products by Revenue</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Orders</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% revenueByProduct.slice(0, 5).forEach(product => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white"><%= product.product_name %></div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400"><%= product.category_name %></div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= product.gross_revenue.toLocaleString() %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= product.order_count %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Revenue by Category -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue by Category</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Products</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% revenueByCategory.slice(0, 5).forEach(category => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"><%= category.category_name %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= category.gross_revenue.toLocaleString() %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= category.product_count %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Discount Analysis -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Discount Analysis</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Discounted Orders</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white"><%= discountAnalysis.discounted_orders || 0 %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Total Discounts</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">₹<%= (discountAnalysis.total_discounts || 0).toLocaleString() %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Avg Discount %</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white"><%= (discountAnalysis.avg_discount_percentage || 0).toFixed(1) %>%</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Discounted Products</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white"><%= discountAnalysis.discounted_products || 0 %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refund Analysis -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Refund Analysis</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Cancelled Orders</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white"><%= refundAnalysis.cancelled_orders || 0 %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Lost Revenue</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">₹<%= (refundAnalysis.lost_revenue || 0).toLocaleString() %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Avg Cancelled Order Value</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">₹<%= (refundAnalysis.avg_cancelled_order_value || 0).toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Affected Customers</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white"><%= refundAnalysis.affected_customers || 0 %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Revenue List -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Revenue Transactions</h3>
+        <a href="/analytics/revenue?view=all" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Order ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Channel</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Gross</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Net</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% revenueList.slice(0, 10).forEach(revenue => { %>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400">#<%= revenue.order_id %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= revenue.customer_name %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= revenue.channel %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">₹<%= (revenue.gross_revenue || 0).toLocaleString() %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400">₹<%= (revenue.net_revenue || 0).toLocaleString() %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><%= new Date(revenue.created_at).toLocaleDateString() %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- End Container -->
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Date range change handler
+  document.getElementById('dateRange').addEventListener('change', function() {
+    const range = this.value;
+    const url = new URL(window.location);
+    url.searchParams.set('range', range);
+    window.location.href = url.toString();
+  });
+
+  // Export functionality
+  document.getElementById('exportBtn').addEventListener('click', function() {
+    const range = document.getElementById('dateRange').value;
+    const url = new URL('/analytics/export/revenue', window.location.origin);
+    url.searchParams.set('range', range);
+    window.open(url.toString(), '_blank');
+  });
+
+  // Initialize charts
+  const trendData = <%- JSON.stringify(trendData) %>;
+  const channelData = <%- JSON.stringify(revenueByChannel) %>;
+
+  // Revenue Trend Chart
+  const revenueTrendCtx = document.getElementById('revenueTrendChart').getContext('2d');
+  new Chart(revenueTrendCtx, {
+    type: 'line',
+    data: {
+      labels: trendData.map(item => item.period),
+      datasets: [{
+        label: 'Gross Revenue',
+        data: trendData.map(item => item.gross_revenue),
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4
+      }, {
+        label: 'Net Revenue',
+        data: trendData.map(item => item.net_revenue),
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        tension: 0.4
+      }, {
+        label: 'Tax Revenue',
+        data: trendData.map(item => item.tax_revenue),
+        borderColor: 'rgb(245, 158, 11)',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        },
+        y: {
+          ticks: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          },
+          grid: {
+            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+          }
+        }
+      }
+    }
+  });
+
+  // Revenue by Channel Chart
+  const revenueChannelCtx = document.getElementById('revenueChannelChart').getContext('2d');
+  new Chart(revenueChannelCtx, {
+    type: 'doughnut',
+    data: {
+      labels: channelData.map(item => item.channel),
+      datasets: [{
+        data: channelData.map(item => item.net_revenue),
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(34, 197, 94, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(139, 92, 246, 0.8)'
+        ],
+        borderColor: [
+          'rgb(59, 130, 246)',
+          'rgb(34, 197, 94)',
+          'rgb(245, 158, 11)',
+          'rgb(139, 92, 246)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<%- include('../../../partials/_footer') %>

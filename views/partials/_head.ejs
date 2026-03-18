@@ -1,0 +1,397 @@
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= seo.title %></title>
+  <meta name="description" content="<%= seo.description %>" />
+  <% if (seo && seo.url) { %>
+  <link rel="canonical" href="<%= seo.url %>" />
+  <% } %>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="<%= seo.title %>" />
+  <meta property="og:description" content="<%= seo.description %>" />
+  <% if (seo && seo.url) { %>
+  <meta property="og:url" content="<%= seo.url %>" />
+  <% } %> <% if (seo && seo.image) { %>
+  <meta property="og:image" content="<%= seo.image %>" />
+  <% } %>
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="<%= seo.title %>" />
+  <meta name="twitter:description" content="<%= seo.description %>" />
+  <% if (seo && seo.image) { %>
+  <meta name="twitter:image" content="<%= seo.image %>" />
+  <% } %>
+
+  <!-- Tailwind (compiled) -->
+  <link rel="stylesheet" href="/assets/styles.css?v=<%= Date.now() %>" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png" />
+  <link rel="shortcut icon" type="image/png" href="/assets/img/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/img/favicon.png" />
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      } else {
+        // Retry if lucide hasn't loaded yet
+        setTimeout(() => {
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          }
+        }, 100);
+      }
+    });
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js Datalabels Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+  <!-- Font Awesome Free (jsDelivr CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css" />
+
+  <!-- Theme initialization script to prevent flash -->
+  <script>
+    // Prevent theme flash by applying theme immediately
+    (function () {
+      const theme = localStorage.getItem("theme") || "dark";
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    })();
+  </script>
+
+  <!-- Light theme tokens + minimal utilities -->
+  <style>
+    /* 🎨 Brand palette as RGB triplets (so Tailwind rgb(var(--...))/alpha works) */
+    :root {
+      --brand-primary: 22 163 74; /* #16a34a */
+      --brand-secondary: 14 165 233; /* #0ea5e9 */
+      --brand-accent: 245 158 11; /* #f59e0b */
+      --brand-ink: 15 23 42; /* #0f172a */
+      --brand-bg: 248 250 252; /* #f8fafc */
+      --brand-card: 255 255 255; /* #ffffff */
+    }
+
+    /* Base (fallback if utilities missing) */
+    body {
+      background: rgb(var(--brand-bg));
+      color: rgb(var(--brand-ink));
+    }
+
+    /* Components
+       NOTE: .card no longer forces a background color.
+       Use .card--white where you want a white surface.
+    */
+    .card {
+      border: 1px solid rgba(15, 23, 42, 0.08); /* subtle slate border */
+      border-radius: 1rem;
+      box-shadow: 0 2px 10px rgba(2, 6, 23, 0.06);
+    }
+    .card--white {
+      background: rgb(var(--brand-card));
+    }
+
+    .btn {
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    /* Only set display when not hidden; allows md:inline-flex to work */
+    .btn:not(.hidden) {
+      display: inline-flex;
+    }
+
+    /* Simple responsive helpers (avoid relying on Tailwind build for these two cases) */
+    @media (min-width: 768px) {
+      .show-desktop-inline {
+        display: inline-flex !important;
+      }
+      .hide-desktop {
+        display: none !important;
+      }
+    }
+    @media (max-width: 767.98px) {
+      .show-desktop-inline {
+        display: none !important;
+      }
+      .hide-desktop {
+        display: inline-flex !important;
+      }
+    }
+
+    .btn-primary {
+      background: rgb(var(--brand-primary));
+      color: #fff;
+    }
+    .btn-primary:hover {
+      filter: brightness(0.95);
+    }
+
+    /* Gold CTA for dark festive hero */
+    .btn-gold {
+      background: linear-gradient(180deg, #f5d483 0%, #d4af37 100%);
+      color: #0b1020;
+      border: 1px solid rgba(212, 175, 55, 0.85);
+      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.28);
+    }
+    .btn-gold:hover {
+      filter: brightness(1.02);
+      box-shadow: 0 8px 22px rgba(212, 175, 55, 0.35);
+    }
+
+    .btn-ghost {
+      background: #eef2f7;
+      color: rgb(var(--brand-ink));
+    }
+    .btn-ghost:hover {
+      background: #e7edf4;
+    }
+
+    .pill {
+      border-radius: 9999px;
+      padding: 0.125rem 0.5rem;
+      font-size: 0.75rem;
+      background: color-mix(in oklab, rgb(var(--brand-accent)) 15%, white);
+      color: #8a5a00; /* warm amber text */
+    }
+    .pill--price {
+      font-size: 0.875rem; /* 14px */
+      font-weight: 700;
+      background: color-mix(in oklab, rgb(var(--brand-accent)) 25%, white);
+      color: #6f4700;
+    }
+
+    /* Small, well-aligned icon for badge pills */
+    .pill-icon {
+      width: 14px;
+      height: 14px;
+      display: inline-block;
+      vertical-align: -2px; /* nudge to baseline align with 12px text */
+      color: currentColor;
+      opacity: 0.9;
+    }
+
+    /* 🎆 Diwali catalog hero background (bold, festive purple + gold) */
+    .diwali-hero-bg {
+      background:
+        radial-gradient(1200px 520px at 85% -10%, rgba(212, 175, 55, 0.38) 0%, rgba(212, 175, 55, 0) 55%),
+        /* gold glow top-right */ radial-gradient(900px 480px at -10% 100%, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 60%),
+        /* purple glow bottom-left */ linear-gradient(135deg, #130720 0%, #2b0a4a 60%, #130720 100%); /* deep plum base */
+      background-blend-mode: screen, screen, normal;
+    }
+
+    /* ✨ Subtle festive sparkles & bokeh */
+    .diwali-hero-overlay {
+      background: radial-gradient(120px 120px at 12% 25%, rgba(250, 204, 21, 0.14), rgba(250, 204, 21, 0) 60%), radial-gradient(110px 110px at 78% 40%, rgba(192, 132, 252, 0.12), rgba(192, 132, 252, 0) 60%), radial-gradient(140px 140px at 25% 85%, rgba(250, 204, 21, 0.1), rgba(250, 204, 21, 0) 60%), linear-gradient(115deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0) 25%, rgba(212, 175, 55, 0) 75%, rgba(212, 175, 55, 0.08) 100%);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    /* 🪔 Subtle festive artwork (tiled SVG pattern) */
+    .diwali-hero-art {
+      background-image: url("/assets/img/diwali/artwork.svg");
+      background-repeat: repeat;
+      background-size: 240px 240px;
+      opacity: 0.2; /* gentle */
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    /* 🌼 Marigold corner ornaments */
+    .diwali-corner {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      opacity: 0.8;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+    }
+    .diwali-corner.tl {
+      top: 8px;
+      left: 8px;
+      transform: rotate(0deg);
+    }
+    .diwali-corner.br {
+      bottom: 8px;
+      right: 8px;
+      transform: rotate(180deg);
+    }
+
+    /* 🪔 Diya glow on hover */
+    .diya-hover {
+      position: relative;
+    }
+    .diya-glow {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      opacity: 0.95;
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.35));
+      transition: filter 300ms ease;
+    }
+    .diya-hover:hover .diya-glow {
+      animation: pulseGlow 1800ms ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%,
+      100% {
+        filter: drop-shadow(0 0 0 rgba(245, 158, 11, 0));
+      }
+      50% {
+        filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.55));
+      }
+    }
+
+    /* 🟨 Gold stripe separator */
+    .gold-stripe-separator {
+      height: 10px;
+      background-image: repeating-linear-gradient(45deg, rgba(212, 175, 55, 0.9) 0px, rgba(212, 175, 55, 0.9) 12px, rgba(212, 175, 55, 0.25) 12px, rgba(212, 175, 55, 0.25) 24px);
+      border-radius: 9999px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) inset;
+    }
+
+    /* MTO inline counter: match input height to buttons */
+    .mto-qty-input {
+      height: 2.5rem; /* ~40px to match .btn padding */
+      padding: 0.5rem 0.75rem;
+      line-height: 1.25;
+    }
+
+    /* Ensure cart count in View Cart button is visible regardless of utility purge */
+    #mtoCartCount {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem; /* 24px */
+      height: 1.5rem;
+      border-radius: 9999px;
+      background: #fff;
+      color: #0f172a; /* slate-900 */
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Ensure sticky cart button is bottom-right even if utilities aren't rebuilt */
+    #stickyCart {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 60;
+    }
+
+    /* Category badges (pure CSS fallback so no Tailwind purge issues) */
+    .badge-milk {
+      background: #e0f2fe;
+      color: #075985;
+      border: 1px solid #bae6fd;
+    }
+    .badge-ghee {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    .badge-savories {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .badge-default {
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* (nav uses default background; no custom nav colors) */
+
+    /* (no nav-specific dark mode overrides) */
+
+    /* Ops modal: compact, responsive panel (avoid relying on Tailwind build) */
+    .ops-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+    }
+    .ops-panel {
+      position: relative;
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 700px; /* wider for 2-column layout */
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(2, 6, 23, 0.25);
+      margin: 0 16px; /* breathing room on mobile */
+      padding: 24px;
+    }
+
+    .ops-center {
+      display: grid;
+      place-items: center;
+      min-height: 60vh;
+    }
+
+    /* Ensure grid layout works in edit modals */
+    .ops-panel .grid {
+      display: grid !important;
+    }
+    .ops-panel .grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .ops-panel .gap-4 {
+      gap: 1rem !important;
+    }
+
+    /* Simple responsive helpers (block-level) not relying on Tailwind build */
+    .mobile-only {
+      display: block;
+    }
+    .desktop-only {
+      display: none;
+    }
+    @media (min-width: 768px) {
+      .mobile-only {
+        display: none !important;
+      }
+      .desktop-only {
+        display: block !important;
+      }
+    }
+
+    /* Tiny toast for confirmations */
+    .ops-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      z-index: 70;
+    }
+    .ops-toast__inner {
+      background: #10b981;
+      color: #0b2e23;
+      border: 1px solid rgba(16, 185, 129, 0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+      font-weight: 700;
+    }
+    .ops-toast--error .ops-toast__inner {
+      background: #ef4444;
+      color: #3b0a0a;
+      border-color: rgba(239, 68, 68, 0.6);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+    }
+  </style>
+</head>

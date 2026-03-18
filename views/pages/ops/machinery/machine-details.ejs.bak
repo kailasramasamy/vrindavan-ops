@@ -1,0 +1,1768 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Tailwind Typography for styled HTML content -->
+<link href="https://unpkg.com/@tailwindcss/typography@0.5.x/dist/typography.min.css" rel="stylesheet">
+
+<!-- Quill.js WYSIWYG Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<style>
+  /* Table styling for Quill editor */
+  .ql-editor table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .ql-editor table td,
+  .ql-editor table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 100px;
+    vertical-align: top;
+  }
+  
+  .ql-editor table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
+  .ql-editor table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .ql-editor table tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Table button styling */
+  .ql-toolbar button[title="Insert Table"] {
+    font-size: 16px;
+    padding: 5px 8px;
+  }
+
+  /* Make Quill toolbar buttons in the Edit Machine modal clearly visible
+     Use a light gray color for icons and labels to ensure contrast against dark backgrounds */
+  #edit-description-editor .ql-toolbar .ql-formats button,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label {
+    color: #d1d5db !important; /* light gray */
+    background-color: transparent !important;
+    border: none !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button svg,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label svg {
+    color: #d1d5db !important;
+    fill: currentColor !important;
+  }
+
+  /* Slight hover feedback without changing icon color */
+  #edit-description-editor .ql-toolbar .ql-formats button:hover {
+    background-color: rgba(209,213,219,0.08) !important;
+  }
+
+  /* Dark mode: make toolbar background dark and buttons white/light-gray for better contrast */
+  .dark #edit-description-editor .ql-toolbar {
+    background-color: #111827 !important; /* very dark */
+    border-color: #374151 !important;
+  }
+
+  .dark #edit-description-editor .ql-toolbar .ql-formats button,
+  .dark #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label {
+    color: #f8fafc !important; /* almost white */
+  }
+
+  .dark #edit-description-editor .ql-toolbar .ql-formats button svg,
+  .dark #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label svg {
+    color: #f8fafc !important;
+    fill: currentColor !important;
+  }
+
+  /* Active/selected state - keep icons visible */
+  .dark #edit-description-editor .ql-toolbar .ql-active,
+  .dark #edit-description-editor .ql-toolbar .ql-formats button.ql-active {
+    color: #ffffff !important;
+    background-color: rgba(255,255,255,0.06) !important;
+  }
+</style>
+
+<style>
+  /* FORCE rules to ensure Quill toolbar icons are visible in dark mode */
+  .dark #edit-description-editor .ql-toolbar,
+  #edit-description-editor .ql-toolbar {
+    background-color: #0b1220 !important;
+    border-color: #374151 !important;
+    box-shadow: none !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label,
+  #edit-description-editor .ql-toolbar .ql-formats button *,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label *,
+  #edit-description-editor .ql-toolbar .ql-formats svg,
+  #edit-description-editor .ql-toolbar .ql-formats svg * {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats svg path,
+  #edit-description-editor .ql-toolbar .ql-formats svg circle,
+  #edit-description-editor .ql-toolbar .ql-formats svg rect {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button:hover,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label:hover {
+    background-color: rgba(255,255,255,0.06) !important;
+  }
+
+  #edit-description-editor .ql-toolbar .ql-formats button.ql-active,
+  #edit-description-editor .ql-toolbar .ql-formats .ql-picker-label.ql-active {
+    background-color: rgba(255,255,255,0.12) !important;
+    color: #ffffff !important;
+  }
+</style>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <%- include('../../../partials/ops/_subnav', { user, section: 'Machinery', subsection: 'Machines' }) %>
+
+  <div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-2">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          <li><a href="/ops" class="hover:text-gray-900 dark:text-white dark:hover:text-gray-700 dark:text-gray-300">Ops</a></li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/ops/machinery" class="hover:text-gray-900 dark:text-white dark:hover:text-gray-700 dark:text-gray-300">Machinery</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/ops/machinery/machines" class="hover:text-gray-900 dark:text-white dark:hover:text-gray-700 dark:text-gray-300">Machines</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-900 dark:text-white font-medium"><%= machine.name %></span>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="mb-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2"><%= machine.name %></h1>
+            <p class="text-gray-600 dark:text-gray-400">Machine Details & Management</p>
+          </div>
+          <div class="mt-4 sm:mt-0 flex flex-wrap gap-2">
+            <button onclick="openEditMachineModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Machine
+            </button>
+            <button onclick="showDeleteMachineDialog()" class="inline-flex items-center px-4 py-2 bg-red-500 dark:bg-red-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete Machine
+            </button>
+            <a href="/ops/machinery/machines" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Machines
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Machine Overview Section -->
+      <div class="mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Machine Image - Left Side -->
+            <div class="lg:w-1/3 relative p-4 lg:p-6">
+              <div class="h-48 lg:h-64 bg-gradient-to-br from-gray-50 dark:from-gray-700 to-gray-100 dark:to-gray-600 relative rounded-lg overflow-hidden">
+                <% if (machine.images) { %>
+                  <% try { %>
+                  <% try { %>
+                    <% const images = JSON.parse(machine.images); %>
+                    <% if (images && images.length > 0 && images[0].path) { %>
+                      <img src="<%= images[0].path %>" alt="<%= machine.name %>" class="w-full h-full object-contain bg-white dark:bg-gray-800 p-2 rounded-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                      <div class="h-full flex items-center justify-center p-4 rounded-lg" style="display: none;">
+                        <div class="text-center">
+                          <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                          </div>
+                          <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Image Not Found</p>
+                        </div>
+                      </div>                    <% } else { %>
+                      <div class="h-full flex items-center justify-center p-4 rounded-lg">
+                        <div class="text-center">
+                          <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                          </div>
+                          <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No Image</p>
+                        </div>
+                      </div>
+                    
+                  <% } %>
+                <% } catch (e) { %>
+                    <div class="h-full flex items-center justify-center p-4 rounded-lg">
+                      <div class="text-center">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No Image</p>
+                      </div>
+                    </div>
+                  
+                <% } else { %>
+                  <div class="h-full flex items-center justify-center p-4 rounded-lg">
+                    <div class="text-center">
+                      <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                      </div>
+                      <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No Image</p>
+                    </div>
+                  </div>
+                
+                
+              </div>
+            </div>
+            
+            <!-- Machine Details - Right Side -->
+            <div class="lg:w-2/3 p-4 lg:p-6 pr-4 lg:pr-6">
+              <!-- Machine Header -->
+              <div class="mb-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h2 class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white"><%= machine.name %></h2>
+                  
+                  <!-- Status and Issues Pills - Right Top -->
+                  <div class="flex flex-row space-x-2">
+                    <!-- Status Pill -->
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg
+                      <%= machine.status === 'active' ? 'bg-green-500 text-gray-700 dark:text-gray-300' : 
+                          machine.status === 'maintenance' ? 'bg-yellow-500 text-gray-700 dark:text-gray-300' : 
+                          'bg-red-500 text-gray-700 dark:text-gray-300' %>">
+                      <div class="w-2 h-2 rounded-full mr-2 bg-white/80"></div>
+                      <%= machine.status ? machine.status.charAt(0).toUpperCase() + machine.status.slice(1) : 'Unknown' %>
+                    </span>
+                    
+                    <!-- Issues Pill -->
+                    <% if (issues && issues.length > 0) { %>
+                      <% const openIssues = issues.filter(issue => issue.status === 'open' || issue.status === 'in_progress'); %>
+                      <% const criticalIssues = issues.filter(issue => issue.priority === 'critical' && (issue.status === 'open' || issue.status === 'in_progress')); %>
+                      <% if (openIssues.length > 0) { %>
+                        <a href="#issue-management" class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200
+                          <%= criticalIssues.length > 0 ? 'bg-red-500 text-gray-700 dark:text-gray-300 hover:bg-red-600' : 'bg-orange-500 text-gray-700 dark:text-gray-300 hover:bg-orange-600' %>">
+                          <svg class="w-3 h-3 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.667-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                          <%= criticalIssues.length > 0 ? criticalIssues.length + ' Critical' : openIssues.length + ' Issue' + (openIssues.length !== 1 ? 's' : '') %>
+                        </a>
+                      
+                    
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-2" style="background-color: <%= machine.category_color || '#6B7280' %>"></div>
+                    <span class="font-medium"><%= machine.category_name || 'Uncategorized' %></span>
+                  </div>
+                  <% if (machine.model) { %>
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-1.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      <span><%= machine.model %></span>
+                    </div>
+                  
+                  <% if (machine.serial_number) { %>
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-1.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                      </svg>
+                      <span>SN: <%= machine.serial_number %></span>
+                    </div>
+                  
+                </div>
+                
+                <!-- Location Information - Separate Line -->
+                <% if (machine.location) { %>
+                  <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <svg class="w-4 h-4 mr-1.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span><%= machine.location %></span>
+                  </div>
+                
+                
+                <!-- Machine Details - 5 Column Grid -->
+                <div class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                  <% if (machine.capacity) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Capacity</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= machine.capacity %>L</div>
+                    </div>
+                  
+                  
+                  <% if (machine.power_kw) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Power</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= machine.power_kw %> kW</div>
+                    </div>
+                  
+                  
+                  <% if (machine.year_of_manufacturing) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Year</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= machine.year_of_manufacturing %></div>
+                    </div>
+                  
+                  
+                  <% if (machine.voltage_v) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Voltage</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= machine.voltage_v %>V<%= machine.phase ? ' (' + machine.phase + ')' : '' %></div>
+                    </div>
+                  
+                  
+                  <% if (machine.manufacturer) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Manufacturer</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= machine.manufacturer %></div>
+                    </div>
+                  
+                  
+                  <% if (machine.purchase_date) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Purchase Date</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= new Date(machine.purchase_date).toLocaleDateString() %></div>
+                    </div>
+                  
+                  
+                  <% if (machine.purchase_cost) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Purchase Cost</span>
+                      <div class="font-medium text-gray-900 dark:text-white">₹<%= machine.purchase_cost.toLocaleString() %></div>
+                    </div>
+                  
+                  
+                  <% if (machine.current_value) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Current Value</span>
+                      <div class="font-medium text-gray-900 dark:text-white">₹<%= machine.current_value.toLocaleString() %></div>
+                    </div>
+                  
+                  
+                  <% if (machine.service_status) { %>
+                    <div>
+                      <span class="text-gray-500 dark:text-gray-400">Service Status</span>
+                      <div class="font-medium text-gray-900 dark:text-white"><%= machine.service_status %></div>
+                    </div>
+                  
+                  
+                  <!-- Issues -->
+                  <div>
+                    <span class="text-gray-500 dark:text-gray-400">Issues</span>
+                    <div class="font-medium text-gray-900 dark:text-white">
+                      <% if (issues && issues.length > 0) { %>
+                        <% const openIssues = issues.filter(issue => issue.status === 'open' || issue.status === 'in_progress'); %>
+                        <% if (openIssues.length > 0) { %>
+                          <span class="<%= issues.filter(issue => issue.priority === 'critical' && (issue.status === 'open' || issue.status === 'in_progress')).length > 0 ? 'text-red-600 dark:text-red-400' : 'text-orange-600 dark:text-orange-400' %>">
+                            <%= openIssues.length %>
+                          </span>
+                        <% } else { %>
+                          <span class="text-green-600 dark:text-green-400">0</span>
+                        
+                      <% } else { %>
+                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Financial Details - 5 Column Grid -->
+                <div class="mt-3 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                  <!-- Manufacturer -->
+                  <div>
+                    <span class="text-gray-500 dark:text-gray-400">Manufacturer</span>
+                    <div class="font-medium text-gray-900 dark:text-white"><%= machine.manufacturer || 'Not specified' %></div>
+                  </div>
+                  
+                  <!-- Purchase Date -->
+                  <div>
+                    <span class="text-gray-500 dark:text-gray-400">Purchase Date</span>
+                    <div class="font-medium text-gray-900 dark:text-white">
+                      <% if (machine.purchase_date) { %>
+                        <%= new Date(machine.purchase_date).toLocaleDateString() %>
+                      <% } else { %>
+                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                      
+                    </div>
+                  </div>
+                  
+                  <!-- Purchase Cost -->
+                  <div>
+                    <span class="text-gray-500 dark:text-gray-400">Purchase Cost</span>
+                    <div class="font-medium text-gray-900 dark:text-white">
+                      <% if (machine.purchase_cost) { %>
+                        ₹<%= machine.purchase_cost.toLocaleString() %>
+                      <% } else { %>
+                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                      
+                    </div>
+                  </div>
+                  
+                  <!-- Current Value -->
+                  <div>
+                    <span class="text-gray-500 dark:text-gray-400">Current Value</span>
+                    <div class="font-medium text-gray-900 dark:text-white">
+                      <% if (machine.current_value) { %>
+                        ₹<%= machine.current_value.toLocaleString() %>
+                      <% } else { %>
+                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                      
+                    </div>
+                  </div>
+                  
+                  <!-- Service -->
+                  <div>
+                    <span class="text-gray-500 dark:text-gray-400">Service</span>
+                    <div class="font-medium text-gray-900 dark:text-white">
+                      <% if (upcomingServices && upcomingServices.length > 0) { %>
+                        <% const overdueServices = upcomingServices.filter(service => service.days_until_due !== undefined && service.days_until_due <= 0); %>
+                        <% const upcomingServicesCount = upcomingServices.filter(service => service.days_until_due !== undefined && service.days_until_due > 0 && service.days_until_due <= 30).length; %>
+                        <% if (overdueServices.length > 0) { %>
+                          <span class="text-red-600 dark:text-red-400"><%= overdueServices.length %> overdue</span>
+                        <% } else if (upcomingServicesCount > 0) { %>
+                          <span class="text-orange-600 dark:text-orange-400"><%= upcomingServicesCount %> due soon</span>
+                        <% } else { %>
+                          <span class="text-green-600 dark:text-green-400">Up to date</span>
+                        
+                      <% } else { %>
+                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+                
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="space-y-4">
+        <!-- Manufacturer and Service Technician Information Container -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Manufacturer Information -->
+          <% if (machine.manufacturer_address || machine.manufacturer_phone || machine.manufacturer_email || machine.manufacturer_website || machine.manufacturer_contact_person) { %>
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-50 dark:from-indigo-900/20 to-blue-50 dark:to-blue-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Manufacturer Information</h3>
+              </div>
+            </div>
+            <div class="p-6">
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                <% if (machine.manufacturer_contact_person) { %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Contact Person</label>
+                  <p class="text-gray-900 dark:text-white"><%= machine.manufacturer_contact_person %></p>
+                </div>
+                
+                <% if (machine.manufacturer_phone) { %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phone</label>
+                  <p class="text-gray-900 dark:text-white">
+                    <a href="tel:<%= machine.manufacturer_phone %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                      <%= machine.manufacturer_phone %>
+                    </a>
+                  </p>
+                </div>
+                
+                <% if (machine.manufacturer_email) { %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email</label>
+                  <p class="text-gray-900 dark:text-white">
+                    <a href="mailto:<%= machine.manufacturer_email %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                      <%= machine.manufacturer_email %>
+                    </a>
+                  </p>
+                </div>
+                
+                <% if (machine.manufacturer_website) { %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Website</label>
+                  <p class="text-gray-900 dark:text-white">
+                    <a href="<%= machine.manufacturer_website %>" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                      <%= machine.manufacturer_website %>
+                    </a>
+                  </p>
+                </div>
+                
+                <% if (machine.manufacturer_address) { %>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Address</label>
+                  <p class="text-gray-900 dark:text-white"><%= machine.manufacturer_address %></p>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+          
+
+          <!-- Service Technician Information -->
+          <% if (machine.service_technician_name || machine.service_technician_phone || machine.service_technician_email || machine.service_technician_company || machine.backup_technician_name || machine.backup_technician_phone) { %>
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-orange-50 dark:from-orange-900/20 to-red-50 dark:to-red-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Service Technician Information</h3>
+              </div>
+            </div>
+            <div class="p-6">
+              <!-- Primary Technician -->
+              <% if (machine.service_technician_name || machine.service_technician_phone || machine.service_technician_email || machine.service_technician_company) { %>
+              <div class="mb-4">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Primary Technician</h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <% if (machine.service_technician_name) { %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                    <p class="text-gray-900 dark:text-white"><%= machine.service_technician_name %></p>
+                  </div>
+                  
+                  <% if (machine.service_technician_company) { %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Company</label>
+                    <p class="text-gray-900 dark:text-white"><%= machine.service_technician_company %></p>
+                  </div>
+                  
+                  <% if (machine.service_technician_phone) { %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phone</label>
+                    <p class="text-gray-900 dark:text-white">
+                      <a href="tel:<%= machine.service_technician_phone %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        <%= machine.service_technician_phone %>
+                      </a>
+                    </p>
+                  </div>
+                  
+                  <% if (machine.service_technician_email) { %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email</label>
+                    <p class="text-gray-900 dark:text-white">
+                      <a href="mailto:<%= machine.service_technician_email %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        <%= machine.service_technician_email %>
+                      </a>
+                    </p>
+                  </div>
+                  
+                </div>
+              </div>
+              
+
+              <!-- Backup Technician -->
+              <% if (machine.backup_technician_name || machine.backup_technician_phone) { %>
+              <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Backup Technician</h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <% if (machine.backup_technician_name) { %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                    <p class="text-gray-900 dark:text-white"><%= machine.backup_technician_name %></p>
+                  </div>
+                  
+                  <% if (machine.backup_technician_phone) { %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phone</label>
+                    <p class="text-gray-900 dark:text-white">
+                      <a href="tel:<%= machine.backup_technician_phone %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        <%= machine.backup_technician_phone %>
+                      </a>
+                    </p>
+                  </div>
+                  
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+          </div>
+        </div>
+
+        <!-- Machine Information and BMC Details Container -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Machine Information -->
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-50 dark:from-blue-900/20 to-indigo-50 dark:to-indigo-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+              <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Machine Information</h2>
+            </div>
+          </div>
+          <div class="p-4 lg:p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
+              
+              <!-- Description -->
+              <% if (machine.description) { %>
+              <div class="lg:col-span-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-3 lg:p-4">
+                <label class="block text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 lg:mb-2">Description</label>
+                <div class="text-sm lg:text-base text-gray-900 dark:text-white leading-relaxed"><%- machine.description %></div>
+              </div>
+              
+              
+              
+              
+              <!-- Insurance Information -->
+              <% if (machine.insurance_provider || machine.insurance_policy_number || machine.insurance_expiry) { %>
+              <div class="lg:col-span-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 lg:p-4">
+                <label class="block text-xs lg:text-sm font-medium text-yellow-600 dark:text-yellow-400 mb-1 lg:mb-2">Insurance Information</label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <% if (machine.insurance_provider) { %>
+                  <div>
+                    <label class="block text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1">Provider</label>
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200 font-medium"><%= machine.insurance_provider %></p>
+                  </div>
+                  
+                  <% if (machine.insurance_policy_number) { %>
+                  <div>
+                    <label class="block text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1">Policy Number</label>
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200 font-medium"><%= machine.insurance_policy_number %></p>
+                  </div>
+                  
+                  <% if (machine.insurance_expiry) { %>
+                  <div>
+                    <label class="block text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1">Expiry Date</label>
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200 font-medium"><%= new Date(machine.insurance_expiry).toLocaleDateString() %></p>
+                  </div>
+                  
+                </div>
+              </div>
+              
+              
+              <!-- Warranty Information -->
+              <% if (machine.warranty_period || machine.warranty_expiry) { %>
+              <div class="lg:col-span-2 bg-green-50 dark:bg-green-900/20 rounded-lg p-3 lg:p-4">
+                <label class="block text-xs lg:text-sm font-medium text-green-600 dark:text-green-400 mb-1 lg:mb-2">Warranty Information</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <% if (machine.warranty_period) { %>
+                  <div>
+                    <label class="block text-xs font-medium text-green-600 dark:text-green-400 mb-1">Warranty Period</label>
+                    <p class="text-sm text-green-800 dark:text-green-200 font-medium"><%= machine.warranty_period %></p>
+                  </div>
+                  
+                  <% if (machine.warranty_expiry) { %>
+                  <div>
+                    <label class="block text-xs font-medium text-green-600 dark:text-green-400 mb-1">Expiry Date</label>
+                    <p class="text-sm text-green-800 dark:text-green-200 font-medium"><%= new Date(machine.warranty_expiry).toLocaleDateString() %></p>
+                  </div>
+                  
+                </div>
+              </div>
+              
+              
+              <!-- Maintenance Schedule -->
+              <% if (machine.maintenance_schedule) { %>
+              <div class="lg:col-span-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 lg:p-4">
+                <label class="block text-xs lg:text-sm font-medium text-purple-600 dark:text-purple-400 mb-1 lg:mb-2">Maintenance Schedule</label>
+                <p class="text-sm text-purple-800 dark:text-purple-200"><%= machine.maintenance_schedule %></p>
+              </div>
+              
+              
+              <!-- Special Instructions -->
+              <% if (machine.special_instructions) { %>
+              <div class="lg:col-span-2 bg-red-50 dark:bg-red-900/20 rounded-lg p-3 lg:p-4">
+                <label class="block text-xs lg:text-sm font-medium text-red-600 dark:text-red-400 mb-1 lg:mb-2">Special Instructions</label>
+                <p class="text-sm text-red-800 dark:text-red-200"><%= machine.special_instructions %></p>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        <!-- Issues and Service Schedules Container -->
+        <div class="max-w-7xl mx-auto mt-8">
+          <!-- Issues and Service Schedules - Two Column Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Issues Section -->
+            <% if (issues && issues.length > 0) { %>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="bg-gradient-to-r from-red-50 dark:from-red-900/20 to-orange-50 dark:to-orange-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                  <div class="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Issues</h3>
+                  </div>
+                  <button onclick="openReportIssueModal()" class="inline-flex items-center px-4 py-2 bg-red-600 dark:bg-red-700 text-white text-sm font-medium rounded-lg hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add New Issue
+                  </button>
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Date</th>
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Type</th>
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% issues.slice(0, 5).forEach(function(issue) { %>
+                      <tr class="border-b border-gray-100 dark:border-gray-700">
+                        <td class="py-3 px-3">
+                          <div class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-32">
+                            <%= issue.title || 'Untitled Issue' %>
+                          </div>
+                        </td>
+                        <td class="py-3 px-3">
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            <%= issue.created_at ? new Date(issue.created_at).toLocaleDateString() : '-' %>
+                          </div>
+                        </td>
+                        <td class="py-3 px-3">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            <%= issue.priority === 'critical' ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200' :
+                                issue.priority === 'high' ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200' :
+                                issue.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200' :
+                                'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' %>">
+                            <%= issue.priority ? issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1) : 'Normal' %>
+                          </span>
+                        </td>
+                        <td class="py-3 px-3">
+                          <a href="/ops/machinery/issues/<%= issue.id %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                            View
+                          </a>
+                        </td>
+                      </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div class="mt-4 text-center">
+                  <a href="/ops/machinery/machines/<%= machine.id %>/issues" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                    View All Issues (<%= issues.length %>)
+                  </a>
+                </div>
+                
+              </div>
+            </div>
+            <% } else { %>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="bg-gradient-to-r from-red-50 dark:from-red-900/20 to-orange-50 dark:to-orange-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Issues</h3>
+                </div>
+              </div>
+              <div class="p-6 text-center">
+                <div class="text-gray-500 dark:text-gray-400">
+                  <svg class="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p class="text-sm mb-4">No issues reported</p>
+                  <button onclick="openReportIssueModal()" class="inline-flex items-center px-4 py-2 bg-red-600 dark:bg-red-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Report Issue
+                  </button>
+                  <a href="/ops/machinery/machines/<%= machine.id %>/issues" class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors ml-3">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    View All Issues
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+
+            <!-- Service Schedules Section -->
+            <% if (upcomingServices && upcomingServices.length > 0) { %>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="bg-gradient-to-r from-blue-50 dark:from-blue-900/20 to-indigo-50 dark:to-indigo-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Service Schedules</h3>
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Service</th>
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Due Date</th>
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
+                        <th class="text-left py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% upcomingServices.slice(0, 5).forEach(function(service) { %>
+                      <tr class="border-b border-gray-100 dark:border-gray-700">
+                        <td class="py-3 px-3">
+                          <div class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-32">
+                            <%= service.service_type || 'Maintenance' %>
+                          </div>
+                        </td>
+                        <td class="py-3 px-3">
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            <%= service.due_date ? new Date(service.due_date).toLocaleDateString() : '-' %>
+                          </div>
+                        </td>
+                        <td class="py-3 px-3">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            <%= service.days_until_due !== undefined && service.days_until_due <= 0 ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200' :
+                                service.days_until_due !== undefined && service.days_until_due <= 7 ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200' :
+                                'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' %>">
+                            <%= service.days_until_due !== undefined && service.days_until_due <= 0 ? 'Overdue' :
+                                service.days_until_due !== undefined && service.days_until_due <= 7 ? 'Due Soon' :
+                                'Scheduled' %>
+                          </span>
+                        </td>
+                        <td class="py-3 px-3">
+                          <a href="/ops/machinery/service-schedules/<%= service.id %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                            View
+                          </a>
+                        </td>
+                      </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+                <% if (upcomingServices.length > 5) { %>
+                <div class="mt-4 text-center">
+                  <a href="/ops/machinery/service-schedules" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                    View All Schedules (<%= upcomingServices.length %>)
+                  </a>
+                </div>
+                
+              </div>
+            </div>
+            <% } else { %>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="bg-gradient-to-r from-blue-50 dark:from-blue-900/20 to-indigo-50 dark:to-indigo-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Service Schedules</h3>
+                </div>
+              </div>
+              <div class="p-6 text-center">
+                <div class="text-gray-500 dark:text-gray-400">
+                  <svg class="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  <p class="text-sm mb-4">No service schedules</p>
+                  <button onclick="openServiceScheduleModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Service Schedule
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+        <!-- BMC Details -->
+        <% if (bmcDetails && bmcDetails.length > 0) { %>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="bg-gradient-to-r from-green-50 dark:from-green-900/20 to-emerald-50 dark:to-emerald-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center">
+              <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">BMC Details</h3>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <% bmcDetails.forEach(function(detail) { %>
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-3"><%= detail.name %></h4>
+                <% if (detail.capacity) { %>
+                <div class="mb-2">
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Capacity</label>
+                  <p class="text-gray-900 dark:text-white"><%= detail.capacity %></p>
+                </div>
+                
+                <% if (detail.power_rating) { %>
+                <div class="mb-2">
+                  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Power Rating</label>
+                  <p class="text-gray-900 dark:text-white"><%= detail.power_rating %></p>
+                </div>
+                
+                <% if (detail.voltage) { %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">BMC Voltage</label>
+                <p class="text-gray-900 dark:text-white"><%= detail.voltage %></p>
+              </div>
+              
+            <% }); %>
+          </div>
+          </div>
+        </div>
+        
+
+          <!-- Machine Documents -->
+          <div class="max-w-7xl mx-auto mt-8">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="bg-gradient-to-r from-purple-50 dark:from-purple-900/20 to-indigo-50 dark:to-indigo-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mr-3">
+                      <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Machine Documents</h3>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">Upload and manage machine-related documents</p>
+                    </div>
+                  </div>
+                  <button onclick="openDocumentUploadModal()" class="inline-flex items-center px-4 py-2 bg-purple-600 dark:bg-purple-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Upload Document
+                  </button>
+                </div>
+              </div>
+            
+              <div class="p-6">
+                <div id="documents-container">
+                  <div class="text-center py-12">
+                    <div class="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                      <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No documents uploaded yet</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">Upload purchase invoices, operating manuals, warranties, and other important machine documents for easy access and management.</p>
+                    <button onclick="openDocumentUploadModal()" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800 transition-colors">
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                      </svg>
+                      Upload Your First Document
+                    </button>
+                  </div>
+                </div>
+              </div>
+          </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Additional Information -->
+        <div class="space-y-6">
+          <!-- Warranty & Insurance -->
+          <% if (machine.warranty_expiry || machine.insurance_expiry) { %>
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-amber-50 dark:from-amber-900/20 to-orange-50 dark:to-orange-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Warranty & Insurance</h3>
+              </div>
+            </div>
+            <div class="p-6 space-y-4">
+              <% if (machine.warranty_expiry) { %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Warranty Expiry</label>
+                <p class="text-gray-900 dark:text-white"><%= new Date(machine.warranty_expiry).toLocaleDateString() %></p>
+              </div>
+              
+              <% if (machine.insurance_expiry) { %>
+              <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Insurance Expiry</label>
+                <p class="text-gray-900 dark:text-white"><%= new Date(machine.insurance_expiry).toLocaleDateString() %></p>
+              </div>
+              
+            </div>
+          </div>
+          
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom spacing -->
+  <div class="mb-8"></div>
+
+  <!-- Edit Machine Modal -->
+  <div id="editMachineModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <!-- Fixed Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Machine</h3>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto">
+          <form id="editMachineForm" method="POST" action="/ops/machinery/machines/update" enctype="multipart/form-data" class="p-6">
+            <input type="hidden" name="machine_id" value="<%= machine.id %>">
+            <div class="space-y-6">
+              <!-- Basic Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Basic Information
+                </h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <div>
+                    <label for="edit_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Machine Name</label>
+                    <input type="text" id="edit_name" name="name" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_model" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Model</label>
+                    <input type="text" id="edit_model" name="model" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_serial_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Serial Number</label>
+                    <input type="text" id="edit_serial_number" name="serial_number" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                    <select id="edit_category_id" name="category_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">Select Category</option>
+                      <% categories.forEach(category => { %>
+                      <option value="<%= category.id %>"><%= category.name %></option>
+                      <% }); %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="edit_location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                    <input type="text" id="edit_location" name="location" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                    <select id="edit_status" name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="retired">Retired</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Technical Specifications Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                  </svg>
+                  Technical Specifications
+                </h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <div>
+                    <label for="edit_capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Capacity (L)</label>
+                    <input type="number" id="edit_capacity" name="capacity" step="0.01" placeholder="e.g., 1000" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_power_kw" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Power (kW)</label>
+                    <input type="number" id="edit_power_kw" name="power_kw" step="0.01" placeholder="e.g., 5.5" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_voltage_v" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Voltage (V)</label>
+                    <input type="number" id="edit_voltage_v" name="voltage_v" placeholder="e.g., 415" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_phase" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phase</label>
+                    <select id="edit_phase" name="phase" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">Select Phase</option>
+                      <option value="single">Single Phase</option>
+                      <option value="3phase">3 Phase</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="edit_year_of_manufacturing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Year of Manufacturing</label>
+                    <input type="number" id="edit_year_of_manufacturing" name="year_of_manufacturing" min="1900" max="2030" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Financial Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                  Financial Information
+                </h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <div>
+                    <label for="edit_purchase_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Purchase Date</label>
+                    <input type="date" id="edit_purchase_date" name="purchase_date" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_purchase_cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Purchase Cost (₹)</label>
+                    <input type="number" id="edit_purchase_cost" name="purchase_cost" step="0.01" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_current_value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Value (₹)</label>
+                    <input type="number" id="edit_current_value" name="current_value" step="0.01" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_warranty_expiry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Warranty Expiry</label>
+                    <input type="date" id="edit_warranty_expiry" name="warranty_expiry" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_insurance_expiry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Insurance Expiry</label>
+                    <input type="date" id="edit_insurance_expiry" name="insurance_expiry" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manufacturer Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                  Manufacturer Information
+                </h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <div>
+                    <label for="edit_manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Manufacturer</label>
+                    <input type="text" id="edit_manufacturer" name="manufacturer" placeholder="Manufacturer name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label for="edit_manufacturer_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Manufacturer Address</label>
+                    <textarea id="edit_manufacturer_address" name="manufacturer_address" rows="3" placeholder="Enter complete manufacturer address..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                  </div>
+                  <div>
+                    <label for="edit_manufacturer_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                    <input type="tel" id="edit_manufacturer_phone" name="manufacturer_phone" placeholder="+91-XXXXXXXXXX" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_manufacturer_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                    <input type="email" id="edit_manufacturer_email" name="manufacturer_email" placeholder="contact@manufacturer.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_manufacturer_website" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website</label>
+                    <input type="url" id="edit_manufacturer_website" name="manufacturer_website" placeholder="https://www.manufacturer.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_manufacturer_contact_person" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contact Person</label>
+                    <input type="text" id="edit_manufacturer_contact_person" name="manufacturer_contact_person" placeholder="Primary contact person name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Service Technician Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  Service Technician Information
+                </h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <div>
+                    <label for="edit_service_technician_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Technician Name</label>
+                    <input type="text" id="edit_service_technician_name" name="service_technician_name" placeholder="Primary service technician name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_service_technician_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Technician Phone</label>
+                    <input type="tel" id="edit_service_technician_phone" name="service_technician_phone" placeholder="+91-XXXXXXXXXX" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_service_technician_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Technician Email</label>
+                    <input type="email" id="edit_service_technician_email" name="service_technician_email" placeholder="technician@company.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_service_technician_company" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Service Company</label>
+                    <input type="text" id="edit_service_technician_company" name="service_technician_company" placeholder="Service company/agency name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_backup_technician_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Backup Technician Name</label>
+                    <input type="text" id="edit_backup_technician_name" name="backup_technician_name" placeholder="Backup service technician name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="edit_backup_technician_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Backup Technician Phone</label>
+                    <input type="tel" id="edit_backup_technician_phone" name="backup_technician_phone" placeholder="+91-XXXXXXXXXX" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  Additional Information
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                    <div id="edit-description-editor" class="border border-gray-300 dark:border-gray-600 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500" style="height: 120px;"></div>
+                    <textarea id="edit_description" name="description" style="display: none;"></textarea>
+                  </div>
+
+                  <div>
+                    <label for="edit_machine_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Machine Image</label>
+                    <input type="file" id="edit_machine_image" name="machine_image" accept="image/*" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Upload a new image to replace the current one (JPG, PNG, GIF - Max 5MB)</p>
+                    <div id="current-image-preview" class="mt-2 hidden">
+                      <p class="text-sm text-gray-600 mb-1">Current image:</p>
+                      <img id="current-image" src="" alt="Current machine image" class="w-32 h-32 object-cover rounded-lg border border-gray-300">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer flex justify-end space-x-4 mt-6">
+              <button type="button" onclick="closeEditMachineModal()" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200">Cancel</button>
+              <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Machine Confirmation Modal -->
+  <div id="deleteMachineModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Delete Machine</h3>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Are you sure?</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400">This action cannot be undone.</p>
+            </div>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-6">
+            You are about to delete <strong><%= machine.name %></strong>. This will permanently remove the machine and all associated data including issues, service records, and documents.
+          </p>
+          <div class="flex justify-end space-x-3">
+            <button type="button" onclick="closeDeleteMachineModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+              Cancel
+            </button>
+            <button type="button" onclick="confirmDeleteMachine()" class="px-4 py-2 bg-red-600 dark:bg-red-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors">
+              Delete Machine
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report New Issue Modal -->
+  <div id="reportIssueModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <!-- Fixed Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Report New Issue</h3>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto">
+          <form id="reportIssueForm" method="POST" action="/ops/machinery/machines/<%= machine.id %>/issues" class="p-6">
+            <div class="space-y-6">
+              <!-- Basic Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  </svg>
+                  Issue Details
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <label for="issue_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Title</label>
+                    <input type="text" id="issue_title" name="title" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Brief description of the issue">
+                  </div>
+                  <div>
+                    <label for="issue_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                    <textarea id="issue_description" name="description" rows="4" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Detailed description of the issue"></textarea>
+                  </div>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                    <div>
+                      <label for="issue_priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+                      <select id="issue_priority" name="priority" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="issue_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                      <select id="issue_status" name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        <option value="open" selected>Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer flex justify-end space-x-4 mt-6">
+              <button type="button" onclick="closeReportIssueModal()" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200">Cancel</button>
+              <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200">Report Issue
+                  </button>
+                  <a href="/ops/machinery/machines/<%= machine.id %>/issues" class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors ml-3">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    View All Issues</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Schedule Modal -->
+  <div id="serviceScheduleModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <!-- Fixed Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Service Schedule</h3>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto">
+          <form id="serviceScheduleForm" method="POST" action="/ops/machinery/service-schedules" class="p-6">
+            <input type="hidden" name="machine_id" value="<%= machine.id %>">
+            <div class="space-y-6">
+              <!-- Service Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                  </svg>
+                  Service Details
+                </h4>
+                  <div>
+                    <label for="issue_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Type</label>
+                    <select id="issue_type" name="issue_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                      <option value="">Select issue type</option>
+                      <option value="mechanical">Mechanical</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="performance">Performance</option>
+                      <option value="safety">Safety</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="reported_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reported By</label>
+                      <input type="text" id="reported_by" name="reported_by" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Your name or ID">
+                    </div>                  <div>
+                    <label for="service_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Service Type</label>
+                    <select id="service_type" name="service_type" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">Select service type</option>
+                      <option value="preventive">Preventive Maintenance</option>
+                      <option value="corrective">Corrective Maintenance</option>
+                      <option value="emergency">Emergency Repair</option>
+                      <option value="inspection">Inspection</option>
+                      <option value="calibration">Calibration</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="service_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
+                    <input type="date" id="service_date" name="service_date" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="service_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Time</label>
+                    <input type="time" id="service_time" name="service_time" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+                    <select id="priority" name="priority" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="low">Low</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Describe the service to be performed..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                  </div>
+                  <div>
+                    <label for="assigned_technician" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Technician</label>
+                    <input type="text" id="assigned_technician" name="assigned_technician" placeholder="Technician name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="estimated_duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estimated Duration (hours)</label>
+                    <input type="number" id="estimated_duration" name="estimated_duration" min="0.5" max="24" step="0.5" placeholder="2.0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+              <button type="button" onclick="closeServiceScheduleModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+                Cancel
+              </button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                Schedule Service
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Upload Modal -->
+  <div id="documentUploadModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upload Document</h3>
+        </div>
+        <form id="documentUploadForm" method="POST" action="/ops/machinery/machines/documents/upload" enctype="multipart/form-data" class="p-6">
+          <input type="hidden" name="machine_id" value="<%= machine.id %>">
+          <div class="space-y-4">
+            <div>
+              <label for="document_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Document Title</label>
+              <input type="text" id="document_title" name="title" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Enter document title">
+            </div>
+            <div>
+              <label for="document_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Document Type</label>
+              <select id="document_type" name="document_type" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="manual">Manual</option>
+                <option value="warranty">Warranty</option>
+                <option value="invoice">Invoice</option>
+                <option value="certificate">Certificate</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label for="document_file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select File</label>
+              <input type="file" id="document_file" name="document" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</p>
+            </div>
+            <div>
+              <label for="document_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description (Optional)</label>
+              <textarea id="document_description" name="description" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Enter document description"></textarea>
+            </div>
+          </div>
+          <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+            <button type="button" onclick="closeDocumentUploadModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 bg-purple-600 dark:bg-purple-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors">
+              Upload Document
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const MACHINE = <%- JSON.stringify(machine || {}) %>;
+      // Initialize Quill editor for edit description
+      let editDescriptionQuill = null;
+      document.addEventListener('DOMContentLoaded', function(){
+        const editor = document.getElementById('edit-description-editor');
+        if (editor && window.Quill) {
+          try {
+            editDescriptionQuill = new Quill('#edit-description-editor', {
+              theme: 'snow',
+              modules: { toolbar: [[{ header: [1,2,3,false] }], ['bold','italic','underline','strike'], [{ list: 'ordered'}, { list: 'bullet' }], ['link'], ['clean']] },
+              placeholder: 'Enter machine description...'
+            });
+            editDescriptionQuill.on('text-change', function(){ const el=document.getElementById('edit_description'); if(el) el.value = editDescriptionQuill.root.innerHTML; });
+          } catch(e) { console.warn('Quill init failed', e); }
+        }
+      });
+
+      // Modal helpers
+      window.openEditMachineModal = function(){
+        document.getElementById('editMachineModal').classList.remove('hidden');
+        const set=(id,val)=>{const el=document.getElementById(id); if(el) el.value=val==null?'':val};
+        set('edit_name', MACHINE.name);
+        set('edit_model', MACHINE.model);
+        set('edit_serial_number', MACHINE.serial_number);
+        set('edit_category_id', MACHINE.category_id);
+        set('edit_location', MACHINE.location);
+        set('edit_status', MACHINE.status||'active');
+        set('edit_capacity', MACHINE.capacity);
+        set('edit_power_kw', MACHINE.power_kw);
+        set('edit_voltage_v', MACHINE.voltage_v);
+        set('edit_phase', MACHINE.phase);
+        set('edit_year_of_manufacturing', MACHINE.year_of_manufacturing);
+        set('edit_purchase_date', MACHINE.purchase_date);
+        set('edit_purchase_cost', MACHINE.purchase_cost);
+        set('edit_current_value', MACHINE.current_value);
+        set('edit_warranty_expiry', MACHINE.warranty_expiry);
+        set('edit_insurance_expiry', MACHINE.insurance_expiry);
+        set('edit_manufacturer', MACHINE.manufacturer);
+        set('edit_manufacturer_address', MACHINE.manufacturer_address);
+        set('edit_manufacturer_phone', MACHINE.manufacturer_phone);
+        set('edit_manufacturer_email', MACHINE.manufacturer_email);
+        set('edit_manufacturer_website', MACHINE.manufacturer_website);
+        set('edit_manufacturer_contact_person', MACHINE.manufacturer_contact_person);
+        set('edit_service_technician_name', MACHINE.service_technician_name);
+        set('edit_service_technician_phone', MACHINE.service_technician_phone);
+        set('edit_service_technician_email', MACHINE.service_technician_email);
+        set('edit_service_technician_company', MACHINE.service_technician_company);
+        set('edit_backup_technician_name', MACHINE.backup_technician_name);
+        set('edit_backup_technician_phone', MACHINE.backup_technician_phone);
+        if (editDescriptionQuill) { editDescriptionQuill.root.innerHTML = MACHINE.description || ''; const ed=document.getElementById('edit_description'); if(ed) ed.value=editDescriptionQuill.root.innerHTML; }
+        const currentImagePreview=document.getElementById('current-image-preview'); const currentImage=document.getElementById('current-image');
+        if (MACHINE.image_url) { if(currentImagePreview) currentImagePreview.classList.remove('hidden'); if(currentImage) currentImage.src = MACHINE.image_url; } else { if(currentImagePreview) currentImagePreview.classList.add('hidden'); }
+      };
+
+      window.closeEditMachineModal = function(){ document.getElementById('editMachineModal').classList.add('hidden'); };
+      window.openReportIssueModal = function(){ document.getElementById('reportIssueModal').classList.remove('hidden'); };
+      window.closeReportIssueModal = function(){ document.getElementById('reportIssueModal').classList.add('hidden'); };
+      window.openDocumentUploadModal = function(){ document.getElementById('documentUploadModal').classList.remove('hidden'); };
+      window.closeDocumentUploadModal = function(){ document.getElementById('documentUploadModal').classList.add('hidden'); };
+      window.openServiceScheduleModal = function(){ document.getElementById('serviceScheduleModal').classList.remove('hidden'); };
+      window.closeServiceScheduleModal = function(){ document.getElementById('serviceScheduleModal').classList.add('hidden'); };
+      window.showDeleteMachineDialog = function(){ document.getElementById('deleteMachineModal').classList.remove('hidden'); };
+      window.closeDeleteMachineModal = function(){ document.getElementById('deleteMachineModal').classList.add('hidden'); };
+      window.confirmDeleteMachine = function(){ const deleteBtn = document.querySelector('#deleteMachineModal button[onclick="confirmDeleteMachine()"]'); const originalText = deleteBtn ? deleteBtn.textContent : ''; if(deleteBtn){deleteBtn.textContent='Deleting...'; deleteBtn.disabled=true;} fetch('/ops/machinery/machines/' + encodeURIComponent(MACHINE.id), { method: 'DELETE', headers: {'Content-Type':'application/json'} }).then(response => { if(response.ok){ toastManager.show('Machine deleted successfully','success'); setTimeout(()=>{ window.location.href='/ops/machinery'; },1500); } else { return response.json().then(data => { throw new Error(data.message || 'Failed to delete machine'); }); } }).catch(error => { console.error('Delete error:', error); toastManager.show(error.message || 'Failed to delete machine','error'); if(deleteBtn){ deleteBtn.textContent = originalText; deleteBtn.disabled = false; } }); };
+
+      const toastManager = { show: function(message, type='info', duration=5000){ const toast = document.createElement('div'); toast.className = 'fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out translate-x-full ' + (type==='success' ? 'bg-green-500 text-gray-700 dark:text-gray-300' : type==='error' ? 'bg-red-500 text-gray-700 dark:text-gray-300' : type==='warning' ? 'bg-yellow-500 text-gray-700 dark:text-gray-300' : 'bg-blue-500 text-gray-700 dark:text-gray-300'); toast.innerHTML = '<div class="flex items-center"><span class="flex-1">'+String(message)+'</span><button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-700 dark:text-gray-300 hover:text-gray-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>';
+          document.body.appendChild(toast);
+          setTimeout(()=>{ toast.classList.remove('translate-x-full'); },100);
+          setTimeout(()=>{ toast.classList.add('translate-x-full'); setTimeout(()=>{ if(toast.parentElement) toast.remove(); },300); }, duration);
+        } }
+      window.Toast = { show: (m,t) => toastManager.show(m,t) };
+      <% if (typeof toast !== 'undefined' && toast) { %>
+        toastManager.show(<%- JSON.stringify(toast.message) %>, <%- JSON.stringify(toast.type) %>, 6000);
+      
+    })();
+  </script>
+
+  <%- include('../../../partials/ops/_footer') %>
+</body>
+</html>

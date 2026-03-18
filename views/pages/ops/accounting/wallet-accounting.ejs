@@ -1,0 +1,641 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+<link rel="stylesheet" href="/assets/css/accounting-dark-mode.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<!-- Indian Number Formatting -->
+<script src="/assets/js/indian-number-format.js"></script>
+
+<!-- Initialize theme immediately to prevent flash -->
+<script>
+  (function() {
+    const theme = localStorage.getItem("accounting_theme") || "dark";
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+</script>
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <%- include('../../../partials/_subnav', { user, section: 'Accounting', subsection: 'Wallet Accounting' }) %>
+
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Wallet Accounting</h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Customer wallet liability and revenue reconciliation</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button id="openOpeningBalanceModal" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
+              <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2h-7a2 2 0 00-2 2v10a2 2 0 002 2h7a2 2 0 002-2v-2m0-4h3m-3 0h3a2 2 0 010 4h-3a2 2 0 010-4z"></path>
+              </svg>
+              Set Opening Balance
+            </button>
+            <button onclick="walletAccounting.showSyncModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+              <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              Sync Data
+            </button>
+            <button id="downloadCsvButton" onclick="walletAccounting.downloadCSV()" class="relative px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+              <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Download CSV
+              <span id="downloadCsvSpinner" class="hidden absolute inset-0 bg-green-700/80 rounded-lg flex items-center justify-center">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="mt-4 flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+            <input type="date" id="startDate" value="<%= startDate %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+            <input type="date" id="endDate" value="<%= endDate %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          </div>
+          <div class="flex items-end">
+            <button onclick="walletAccounting.applyFilter()" class="w-full sm:w-auto px-6 py-2 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors">
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Wallet Recharges -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Recharges</p>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                ₹<span id="totalRecharges"><%= formatCurrency(summary.recharges?.total_recharges || 0) %></span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span id="totalTransactions"><%= summary.recharges?.total_transactions || 0 %></span> transactions
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sales Revenue -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                ₹<span id="totalRevenue"><%= formatCurrency(summary.sales?.total_revenue || 0) %></span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span id="totalOrders"><%= summary.sales?.total_orders || 0 %></span> orders
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Liability -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Wallet Liability</p>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                ₹<span id="walletLiability"><%= formatCurrency(summary.latest_reconciliation?.closing_balance || 0) %></span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                as of <%= summary.latest_reconciliation?.reconciliation_date ? formatDate(summary.latest_reconciliation.reconciliation_date) : 'N/A' %>
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unreconciled Days -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Unreconciled Days</p>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                <span id="unreconciledDays"><%= summary.unreconciled_days || 0 %></span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">in selected range</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Trend Chart -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Trend</h2>
+        <div class="h-80">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Reconciliation Table -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daily Reconciliation</h2>
+              <p id="reconciliationRangeSummary" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Showing all available days</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div>
+                <label for="reconciliationFilterStart" class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">Start Date</label>
+                <input type="date" id="reconciliationFilterStart" value="<%= startDate %>" class="w-full sm:w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              </div>
+              <div>
+                <label for="reconciliationFilterEnd" class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">End Date</label>
+                <input type="date" id="reconciliationFilterEnd" value="<%= endDate %>" class="w-full sm:w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              </div>
+              <div class="flex items-end gap-2">
+                <button type="button" id="reconciliationApplyBtn" class="px-4 py-2 bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors">Apply</button>
+                <button type="button" id="reconciliationResetBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Reset</button>
+                <button type="button" onclick="walletAccounting.openAdjustmentModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors">Record Adjustment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Opening</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recharges</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sales</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Closing</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">App Balance</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Variance</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody id="reconciliationTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (reconciliation.length === 0) { %>
+                <tr>
+                  <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    No reconciliation data available. Click "Sync Data" to fetch from app database.
+                  </td>
+                </tr>
+              <% } else { %>
+                <% reconciliation.forEach(row => { %>
+                  <% const adjustmentIncrease = parseFloat(row.adjustment_increase || 0); %>
+                  <% const adjustmentDecrease = parseFloat(row.adjustment_decrease || 0); %>
+                  <% const netAdjustment = adjustmentIncrease - adjustmentDecrease; %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= formatDate(row.reconciliation_date) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">₹<%= formatCurrency(row.opening_balance) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 dark:text-green-400">+₹<%= formatCurrency(row.total_recharges) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 dark:text-red-400">-₹<%= formatCurrency(row.total_sales) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      <% if (adjustmentIncrease > 0) { %>
+                        <div class="text-emerald-600 dark:text-emerald-400">+₹<%= formatCurrency(adjustmentIncrease) %></div>
+                      <% } %>
+                      <% if (adjustmentDecrease > 0) { %>
+                        <div class="text-red-600 dark:text-red-400">-₹<%= formatCurrency(adjustmentDecrease) %></div>
+                      <% } %>
+                      <% if (adjustmentIncrease === 0 && adjustmentDecrease === 0) { %>
+                        <span class="text-gray-400 dark:text-gray-500">—</span>
+                      <% } %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900 dark:text-white">₹<%= formatCurrency(row.closing_balance) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600 dark:text-gray-400"><%= row.app_wallet_balance ? '₹' + formatCurrency(row.app_wallet_balance) : 'N/A' %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right <%= Math.abs(row.variance) < 1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' %>">
+                      <%= row.variance >= 0 ? '+' : '' %>₹<%= formatCurrency(Math.abs(row.variance)) %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                      <% if (row.is_reconciled) { %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                          </svg>
+                          Reconciled
+                        </span>
+                      <% } else { %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                          </svg>
+                          Mismatch
+                        </span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" id="reconciliationPaginationRow">
+          <p id="reconciliationCount" class="text-sm text-gray-600 dark:text-gray-400">Showing 0-0 of 0 days</p>
+          <div class="flex items-center gap-3">
+            <button type="button" id="reconciliationPrevBtn" class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>Previous</button>
+            <span id="reconciliationPageInfo" class="text-sm text-gray-600 dark:text-gray-400">Page 1 of 1</span>
+            <button type="button" id="reconciliationNextBtn" class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Adjustments -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-8">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Manual Adjustments</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Credits/debits not captured as recharges or sales</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reason</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Notes</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="walletAdjustmentsTable" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (!adjustments || adjustments.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400">No manual adjustments recorded in this range.</td>
+                </tr>
+              <% } else { %>
+                <% adjustments.forEach(item => { %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><%= formatDate(item.adjustment_date) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right <%= item.amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' %>">
+                      <%= item.amount >= 0 ? '+' : '-' %>₹<%= formatCurrency(Math.abs(item.amount)) %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white"><%= item.reason %></td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300"><%= item.notes || '—' %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                      <button type="button" class="px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" onclick="walletAccounting.deleteAdjustment(<%= item.id %>)">Delete</button>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sync Log -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-8">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Sync Activity</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Latest <%= syncLog.length %> day(s)</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recharge</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sales</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reconciliation</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (syncLog.length === 0) { %>
+                <tr>
+                  <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No sync activity yet</td>
+                </tr>
+              <% } else { %>
+                <% syncLog.forEach(row => { %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 align-top">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"><%= formatDate(row.date) %></td>
+                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                      <%- renderSyncCell(row.recharge) %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                      <%- renderSyncCell(row.sales) %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                      <%- renderSyncCell(row.reconciliation) %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Sync Modal -->
+  <div id="syncModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sync Wallet Data</h3>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          This will fetch wallet recharges and sales data from the app database and perform reconciliation.
+        </p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+            <input type="date" id="syncStartDate" value="<%= startDate %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+            <input type="date" id="syncEndDate" value="<%= endDate %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+        <button onclick="walletAccounting.closeSyncModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button id="syncConfirmBtn" onclick="walletAccounting.executeSync(event)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+          Sync Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Opening Balance Modal -->
+  <div id="openingBalanceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-xl w-full">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Set Opening Balance</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Save the wallet liability before your first sync date.</p>
+        </div>
+        <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" aria-label="Close opening balance modal" onclick="walletAccounting.closeOpeningBalanceModal()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="openingBalanceForm" class="px-6 py-5 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="openingStartDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First sync date</label>
+            <input type="date" id="openingStartDate" name="openingStartDate" value="<%= startDate %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+          </div>
+          <div>
+            <label for="openingAmount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opening balance (₹)</label>
+            <input type="number" id="openingAmount" name="openingAmount" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+          </div>
+          <div>
+            <label for="openingNote" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note (optional)</label>
+            <input type="text" id="openingNote" name="openingNote" maxlength="190" placeholder="Reason or reference" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          We will save this amount as the closing balance for the previous day (first sync date minus one). Future reconciliation will treat it as the opening balance for the first sync date.
+        </p>
+        <div id="openingBalanceMessage" class="text-sm"></div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button type="button" id="openingBalanceCloseBtn" onclick="walletAccounting.closeOpeningBalanceModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="openingBalanceSubmit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors">
+            Save Opening Balance
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Adjustment Modal -->
+  <div id="adjustmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Record Manual Adjustment</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Use this for wallet credits/debits not captured as recharges or sales.</p>
+        </div>
+        <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" aria-label="Close adjustment modal" onclick="walletAccounting.closeAdjustmentModal()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="walletAdjustmentForm" class="px-6 py-5 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="adjustmentDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+            <input type="date" id="adjustmentDate" name="adjustmentDate" value="<%= endDate %>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+          </div>
+          <div>
+            <label for="adjustmentAmount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (₹)</label>
+            <input type="number" step="0.01" id="adjustmentAmount" name="adjustmentAmount" placeholder="e.g. 5000 or -2500" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Use positive values for credits (increase liability) and negative for debits.</p>
+          </div>
+        </div>
+        <div>
+          <label for="adjustmentReason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+          <input type="text" id="adjustmentReason" name="adjustmentReason" maxlength="190" placeholder="e.g. Promotional credit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+        </div>
+        <div>
+          <label for="adjustmentNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (optional)</label>
+          <textarea id="adjustmentNotes" name="adjustmentNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Additional context or reference"></textarea>
+        </div>
+        <div id="adjustmentFormMessage" class="text-sm"></div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button type="button" onclick="walletAccounting.closeAdjustmentModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="adjustmentSubmitBtn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors">
+            Save Adjustment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sync Summary Modal -->
+  <div id="syncSummaryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sync Summary</h3>
+          <p id="syncSummaryRange" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Range: --</p>
+        </div>
+        <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" aria-label="Close summary" onclick="walletAccounting.closeSummaryModal()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Success Banner -->
+      <div class="px-6 pt-4">
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+          <div class="flex items-center gap-3">
+            <div class="flex-shrink-0">
+              <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-green-800 dark:text-green-200">Data synced successfully</p>
+              <p class="text-xs text-green-700 dark:text-green-300 mt-1">All wallet transactions and sales data have been synced and reconciled.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Processed Days</p>
+            <p id="syncSummaryDays" class="text-2xl font-semibold text-gray-900 dark:text-white mt-2">0</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Reconciled</p>
+            <p id="syncSummaryReconciled" class="text-2xl font-semibold mt-2 text-gray-900 dark:text-white">0 / 0 days</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Recharge Amount</p>
+            <p id="syncSummaryRecharges" class="text-2xl font-semibold text-gray-900 dark:text-white mt-2">₹0.00</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Transactions: <span id="syncSummaryTransactions">0</span></p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Sales Revenue</p>
+            <p id="syncSummarySales" class="text-2xl font-semibold text-gray-900 dark:text-white mt-2">₹0.00</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Orders: <span id="syncSummaryOrders">0</span></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Variance Review</h4>
+            <span id="syncSummaryMismatchCount" class="text-xs font-medium text-gray-500 dark:text-gray-400">--</span>
+          </div>
+          <ul id="syncSummaryMismatches" class="space-y-3 mt-3">
+            <li class="px-4 py-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg text-sm text-gray-600 dark:text-gray-300">
+              Sync has not been run yet for this session.
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:justify-end gap-3">
+        <button type="button" onclick="walletAccounting.refreshAfterSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+          Refresh Dashboard
+        </button>
+        <button type="button" onclick="walletAccounting.closeSummaryModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Pass server data to JS
+    window.walletAccountingData = {
+      startDate: '<%= startDate %>',
+      endDate: '<%= endDate %>',
+      trend: <%- JSON.stringify(trend) %>,
+      reconciliation: <%- JSON.stringify(reconciliation) %>,
+      adjustments: <%- JSON.stringify(adjustments || []) %>
+    };
+  </script>
+  <script src="/assets/js/wallet-accounting.js?v=<%= Date.now() %>"></script>
+
+  <%- include('../../../partials/_toast') %>
+  <%- include('../../../partials/_footer') %>
+</body>
+
+<%
+// Helper function to format currency
+function formatCurrency(value) {
+  if (!value) return '0.00';
+  return Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Helper function to format date as DD-MM-YYYY
+function formatDate(dateValue) {
+  if (!dateValue) return '';
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function formatDateTime(dateValue) {
+  if (!dateValue) return '';
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
+}
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderSyncCell(entry) {
+  if (!entry) {
+    return '<span class="text-gray-400 dark:text-gray-500">—</span>';
+  }
+
+  const isSuccess = entry.status === 'success';
+  const badgeClass = isSuccess
+    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+    : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+  const badgeText = isSuccess ? 'Success' : 'Failed';
+  const records = entry.records_processed !== null && entry.records_processed !== undefined ? entry.records_processed : '—';
+  const syncedAt = entry.created_at ? formatDateTime(entry.created_at) : '—';
+  const errorMessage = entry.error_message ? `<div class="text-xs text-red-500 dark:text-red-400 mt-1">Error: ${escapeHtml(entry.error_message)}</div>` : '';
+
+  return `
+    <div class="space-y-1">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClass}">${badgeText}</span>
+      <div class="text-xs text-gray-600 dark:text-gray-400">Records: ${records}</div>
+      <div class="text-xs text-gray-500 dark:text-gray-400">Synced: ${escapeHtml(syncedAt)}</div>
+      ${errorMessage}
+    </div>
+  `;
+}
+%>
+

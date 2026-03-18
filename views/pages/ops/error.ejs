@@ -1,0 +1,24 @@
+<%- include('../../partials/_head', { title: title || 'Error', seo: seo || {} }) %>
+
+<body class="bg-gray-50">
+  <%- include('../../partials/_header', { user: (typeof user !== 'undefined' ? user : null) }) %>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+      <h1 class="text-3xl font-bold text-gray-900 mb-4"><%= title || 'Error' %></h1>
+      <p class="text-gray-600 mb-6"><%= message || 'An unexpected error occurred.' %></p>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="text-sm text-gray-500 mb-6">Status: <%= error.status || 'N/A' %></div>
+      <% } %>
+
+      <div class="flex justify-center gap-3">
+        <a href="/" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Go to Dashboard</a>
+        <a href="javascript:history.back()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Go Back</a>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../partials/_footer') %>
+</body>
+

@@ -1,0 +1,1200 @@
+/* Marketing Module - Dark Mode Styles */
+
+/* Enable smooth transitions */
+* {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Force dark mode by default for marketing pages */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #111827 !important;
+  color: #f3f4f6;
+}
+
+/* Dark mode base styles */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #111827 !important;
+  color: #f3f4f6;
+}
+
+/* Cards and containers */
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #374151 !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: #4b5563 !important;
+}
+
+/* Force dark mode for cards and containers without .dark class */
+.bg-white {
+  background-color: #1f2937 !important;
+}
+
+.bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.bg-gray-100 {
+  background-color: #374151 !important;
+}
+
+.bg-gray-200 {
+  background-color: #4b5563 !important;
+}
+
+/* Text colors */
+.dark .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+.dark .text-gray-800 {
+  color: #e5e7eb !important;
+}
+
+.dark .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+.dark .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+.dark .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.dark .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.dark .text-gray-300 {
+  color: #d1d5db !important;
+}
+
+/* Force text colors without .dark class */
+.text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+.text-gray-800 {
+  color: #e5e7eb !important;
+}
+
+.text-gray-700 {
+  color: #d1d5db !important;
+}
+
+.text-gray-600 {
+  color: #9ca3af !important;
+}
+
+.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.text-gray-300 {
+  color: #d1d5db !important;
+}
+
+/* Border colors */
+.dark .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #4b5563 !important;
+}
+
+.dark .border-gray-400 {
+  border-color: #6b7280 !important;
+}
+
+/* Form elements */
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="number"],
+.dark input[type="date"],
+.dark input[type="file"],
+.dark textarea,
+.dark select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Override Tailwind classes specifically for marketing forms */
+.dark .marketing-form-section input[type="text"],
+.dark .marketing-form-section input[type="email"],
+.dark .marketing-form-section input[type="password"],
+.dark .marketing-form-section input[type="number"],
+.dark .marketing-form-section input[type="date"],
+.dark .marketing-form-section input[type="file"],
+.dark .marketing-form-section textarea,
+.dark .marketing-form-section select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark input[type="text"]:focus,
+.dark input[type="email"]:focus,
+.dark input[type="password"]:focus,
+.dark input[type="number"]:focus,
+.dark input[type="date"]:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Checkboxes and radio buttons */
+.dark input[type="checkbox"],
+.dark input[type="radio"] {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark input[type="checkbox"]:checked,
+.dark input[type="radio"]:checked {
+  background-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+/* File upload styling */
+.dark input[type="file"] {
+  color: #9ca3af !important;
+}
+
+.dark input[type="file"]::file-selector-button {
+  background-color: #1e40af !important;
+  color: #dbeafe !important;
+  border: none !important;
+}
+
+.dark input[type="file"]::file-selector-button:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Tables */
+.dark table {
+  background-color: #1f2937 !important;
+}
+
+.dark th {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark td {
+  background-color: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+.dark tr:hover td {
+  background-color: #374151 !important;
+}
+
+/* Buttons */
+.dark .bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+.dark .bg-blue-600:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.dark .bg-gray-600 {
+  background-color: #4b5563 !important;
+}
+
+.dark .bg-gray-600:hover {
+  background-color: #374151 !important;
+}
+
+/* Status badges */
+.dark .bg-green-100 {
+  background-color: #064e3b !important;
+  color: #6ee7b7 !important;
+}
+
+.dark .bg-yellow-100 {
+  background-color: #78350f !important;
+  color: #fbbf24 !important;
+}
+
+.dark .bg-red-100 {
+  background-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: #1e3a8a !important;
+  color: #93c5fd !important;
+}
+
+/* Charts and visualizations */
+.dark .chart-container {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+/* Modals */
+.dark .modal {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .modal-header {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .modal-body {
+  background-color: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+/* Dropdowns */
+.dark .dropdown-menu {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .dropdown-item {
+  color: #d1d5db !important;
+}
+
+.dark .dropdown-item:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Navigation */
+.dark .nav-link {
+  color: #d1d5db !important;
+}
+
+.dark .nav-link:hover {
+  color: #f3f4f6 !important;
+  background-color: #374151 !important;
+}
+
+.dark .nav-link.active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Breadcrumbs */
+.dark .breadcrumb {
+  background-color: #1f2937 !important;
+}
+
+.dark .breadcrumb-item {
+  color: #9ca3af !important;
+}
+
+.dark .breadcrumb-item.active {
+  color: #f3f4f6 !important;
+}
+
+/* Alerts */
+.dark .alert-success {
+  background-color: #064e3b !important;
+  color: #6ee7b7 !important;
+  border-color: #065f46 !important;
+}
+
+.dark .alert-warning {
+  background-color: #78350f !important;
+  color: #fbbf24 !important;
+  border-color: #92400e !important;
+}
+
+.dark .alert-danger {
+  background-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+  border-color: #991b1b !important;
+}
+
+.dark .alert-info {
+  background-color: #1e3a8a !important;
+  color: #93c5fd !important;
+  border-color: #1e40af !important;
+}
+
+/* Shadows */
+.dark .shadow {
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .shadow-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Marketing specific elements */
+.dark .marketing-card {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .marketing-stat {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .marketing-chart {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+/* Theme toggle specific styling */
+.dark .theme-toggle {
+  background-color: #374151 !important;
+}
+
+.dark .theme-toggle-slider {
+  background-color: #6b7280 !important;
+}
+
+.dark .theme-toggle-slider.active {
+  background-color: #3b82f6 !important;
+}
+
+/* Marketing form specific */
+.dark .marketing-form-section {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .marketing-form-label {
+  color: #d1d5db !important;
+}
+
+.dark .marketing-form-input {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .marketing-form-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Force dark mode styling for all form elements in marketing forms */
+.dark .marketing-form-section input,
+.dark .marketing-form-section textarea,
+.dark .marketing-form-section select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Force dark mode styling without requiring .dark class */
+.marketing-form-section input,
+.marketing-form-section textarea,
+.marketing-form-section select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+  width: 100% !important;
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  border-width: 1px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+/* Specific sizing for marketing form elements */
+.marketing-form-section input[type="text"],
+.marketing-form-section input[type="email"],
+.marketing-form-section input[type="password"],
+.marketing-form-section input[type="number"],
+.marketing-form-section input[type="date"] {
+  height: 38px !important;
+  min-height: 38px !important;
+}
+
+.marketing-form-section textarea {
+  min-height: 80px !important;
+  resize: vertical !important;
+}
+
+.marketing-form-section select {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-right: 32px !important;
+}
+
+.marketing-form-section input[type="file"] {
+  height: auto !important;
+  min-height: 38px !important;
+  padding: 6px 12px !important;
+}
+
+/* Force all form elements in marketing pages to be dark */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="file"],
+textarea,
+select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+  width: 100% !important;
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  border-width: 1px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+/* Specific sizing for different form elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"] {
+  height: 38px !important;
+  min-height: 38px !important;
+}
+
+textarea {
+  min-height: 80px !important;
+  resize: vertical !important;
+}
+
+select {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-right: 32px !important;
+}
+
+input[type="file"] {
+  height: auto !important;
+  min-height: 38px !important;
+  padding: 6px 12px !important;
+}
+
+/* Even more specific targeting for form elements */
+.dark form input[type="text"],
+.dark form input[type="email"],
+.dark form input[type="password"],
+.dark form input[type="number"],
+.dark form input[type="date"],
+.dark form input[type="file"],
+.dark form textarea,
+.dark form select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Target specific form elements by ID and name */
+.dark #name,
+.dark #type,
+.dark #channel,
+.dark #objective,
+.dark #start_date,
+.dark #end_date,
+.dark #target_audience,
+.dark #target_location,
+.dark #expected_reach,
+.dark #expected_conversions,
+.dark #expected_revenue,
+.dark #budget,
+.dark #creative_assets {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .marketing-form-section input:focus,
+.dark .marketing-form-section textarea:focus,
+.dark .marketing-form-section select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Focus states for specific form elements */
+.dark #name:focus,
+.dark #type:focus,
+.dark #channel:focus,
+.dark #objective:focus,
+.dark #start_date:focus,
+.dark #end_date:focus,
+.dark #target_audience:focus,
+.dark #target_location:focus,
+.dark #expected_reach:focus,
+.dark #expected_conversions:focus,
+.dark #expected_revenue:focus,
+.dark #budget:focus,
+.dark #creative_assets:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Force focus states without requiring .dark class */
+#name:focus,
+#type:focus,
+#channel:focus,
+#objective:focus,
+#start_date:focus,
+#end_date:focus,
+#target_audience:focus,
+#target_location:focus,
+#expected_reach:focus,
+#expected_conversions:focus,
+#expected_revenue:focus,
+#budget:focus,
+#creative_assets:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Force focus states for all form elements */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Ensure form elements have proper spacing and alignment */
+.marketing-form-section {
+  margin-bottom: 1.5rem !important;
+}
+
+.marketing-form-section .grid {
+  gap: 1.5rem !important;
+}
+
+.marketing-form-section .space-y-6 > * + * {
+  margin-top: 1.5rem !important;
+}
+
+.marketing-form-section .space-y-3 > * + * {
+  margin-top: 0.75rem !important;
+}
+
+/* Ensure form labels have proper spacing */
+.marketing-form-section label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+/* Ensure form inputs have proper spacing from labels */
+.marketing-form-section input,
+.marketing-form-section textarea,
+.marketing-form-section select {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Additional form element consistency */
+.marketing-form-section input[type="checkbox"],
+.marketing-form-section input[type="radio"] {
+  width: auto !important;
+  height: auto !important;
+  min-height: auto !important;
+  margin-right: 0.5rem !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Ensure checkboxes and radio buttons are properly aligned */
+.marketing-form-section .inline-flex.items-center {
+  align-items: center !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.marketing-form-section .inline-flex.items-center label {
+  margin-bottom: 0 !important;
+  margin-left: 0.5rem !important;
+  font-weight: normal !important;
+}
+
+/* Ensure form sections have consistent padding */
+.marketing-form-section {
+  padding: 1.5rem !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Ensure form headings have proper spacing */
+.marketing-form-section h3 {
+  margin-bottom: 1rem !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+}
+
+/* Dropdown spacing fixes for campaigns page */
+select {
+  padding: 8px 32px 8px 12px !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 8px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 16px 16px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+/* Dark mode dropdown arrow */
+.dark select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23d1d5db' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+}
+
+/* Ensure dropdown containers have proper spacing */
+.grid > div {
+  margin-bottom: 0 !important;
+}
+
+.grid > div label {
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.grid > div select {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Filter section specific styling */
+.bg-white.shadow.rounded-lg.p-6.mb-6 {
+  padding: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.bg-white.shadow.rounded-lg.p-6.mb-6 .grid {
+  gap: 1rem !important;
+}
+
+/* Specific targeting for campaigns page filters */
+.max-w-7xl .grid.grid-cols-1 > div {
+  margin-bottom: 0 !important;
+}
+
+.max-w-7xl .grid.grid-cols-1 > div label {
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.max-w-7xl .grid.grid-cols-1 > div select {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Marketing filter section specific styling */
+.marketing-filter-section .grid > div {
+  margin-bottom: 0 !important;
+}
+
+.marketing-filter-section .grid > div label {
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  color: #d1d5db !important;
+}
+
+.marketing-filter-section .grid > div select {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 8px 32px 8px 12px !important;
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+  border-radius: 6px !important;
+  border-width: 1px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+.marketing-filter-section .grid {
+  gap: 1rem !important;
+}
+
+/* Focus states for marketing filter dropdowns */
+.marketing-filter-section .grid > div select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Ensure proper spacing between filter elements */
+.marketing-filter-section .grid {
+  gap: 1rem !important;
+}
+
+/* Mobile responsive spacing */
+@media (max-width: 768px) {
+  .marketing-filter-section .grid > div {
+    margin-bottom: 1rem !important;
+  }
+
+  .marketing-filter-section .grid > div:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Override any Tailwind classes that might interfere */
+.dark .marketing-form-section .border-gray-300 {
+  border-color: #4b5563 !important;
+}
+
+.dark .marketing-form-section .bg-white {
+  background-color: #374151 !important;
+}
+
+.dark .marketing-form-section .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+.dark .marketing-form-section .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+/* Marketing table specific */
+.dark .marketing-table {
+  background-color: #1f2937 !important;
+}
+
+.dark .marketing-table th {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .marketing-table td {
+  background-color: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+.dark .marketing-table tr:hover td {
+  background-color: #374151 !important;
+}
+
+/* Marketing filter specific */
+.dark .marketing-filter {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .marketing-filter-label {
+  color: #d1d5db !important;
+}
+
+.dark .marketing-filter-select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Marketing button specific */
+.dark .marketing-btn-primary {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.dark .marketing-btn-primary:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.dark .marketing-btn-secondary {
+  background-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .marketing-btn-secondary:hover {
+  background-color: #374151 !important;
+}
+
+/* Quill Rich Text Editor Dark Mode Styles */
+.dark .ql-toolbar {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+  border-bottom-color: #374151 !important;
+}
+
+.dark .ql-container {
+  border-color: #374151 !important;
+}
+
+.dark .ql-editor {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+}
+
+/* Force all toolbar buttons to be visible */
+.dark .ql-toolbar button {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+  border: 1px solid #6b7280 !important;
+  border-radius: 3px !important;
+  margin: 1px !important;
+  padding: 5px !important;
+  opacity: 1 !important;
+}
+
+.dark .ql-toolbar button:hover {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+  border-color: #9ca3af !important;
+}
+
+.dark .ql-toolbar button:focus {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
+.dark .ql-toolbar button.ql-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+}
+
+/* Specific button styling */
+.dark .ql-toolbar .ql-bold,
+.dark .ql-toolbar .ql-italic,
+.dark .ql-toolbar .ql-underline,
+.dark .ql-toolbar .ql-strike {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+}
+
+.dark .ql-toolbar .ql-bold:hover,
+.dark .ql-toolbar .ql-italic:hover,
+.dark .ql-toolbar .ql-underline:hover,
+.dark .ql-toolbar .ql-strike:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar .ql-bold.ql-active,
+.dark .ql-toolbar .ql-italic.ql-active,
+.dark .ql-toolbar .ql-underline.ql-active,
+.dark .ql-toolbar .ql-strike.ql-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Header buttons */
+.dark .ql-toolbar .ql-header {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+}
+
+.dark .ql-toolbar .ql-header:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar .ql-header.ql-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* List buttons */
+.dark .ql-toolbar .ql-list {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+}
+
+.dark .ql-toolbar .ql-list:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar .ql-list.ql-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Alignment buttons */
+.dark .ql-toolbar .ql-align {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+}
+
+.dark .ql-toolbar .ql-align:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar .ql-align.ql-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Link and image buttons */
+.dark .ql-toolbar .ql-link,
+.dark .ql-toolbar .ql-image {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+}
+
+.dark .ql-toolbar .ql-link:hover,
+.dark .ql-toolbar .ql-image:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar .ql-link.ql-active,
+.dark .ql-toolbar .ql-image.ql-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Clean button */
+.dark .ql-toolbar .ql-clean {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+}
+
+.dark .ql-toolbar .ql-clean:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+/* Select elements */
+.dark .ql-toolbar select {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+}
+
+/* Picker elements */
+.dark .ql-picker {
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+}
+
+.dark .ql-picker-options {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-picker-item {
+  color: #ffffff !important;
+}
+
+.dark .ql-picker-item:hover {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-picker-label {
+  color: #ffffff !important;
+}
+
+.dark .ql-picker-label:hover {
+  color: #ffffff !important;
+}
+
+/* Dropdown menu styling */
+.dark .ql-picker.ql-expanded .ql-picker-options {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {
+  color: #ffffff !important;
+  background-color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark .ql-picker.ql-expanded .ql-picker-options .ql-picker-item:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-picker.ql-expanded .ql-picker-options .ql-picker-item.ql-selected {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Header dropdown specific styling */
+.dark .ql-header .ql-picker-options {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .ql-header .ql-picker-item {
+  color: #ffffff !important;
+  background-color: #1f2937 !important;
+}
+
+.dark .ql-header .ql-picker-item:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+/* Make dropdown labels visible */
+.dark .ql-picker-label {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+  border: 1px solid #6b7280 !important;
+  padding: 4px 8px !important;
+}
+
+.dark .ql-picker-label:hover {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+}
+
+/* Color picker styling */
+.dark .ql-color-picker .ql-picker-options {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+}
+
+.dark .ql-background-picker .ql-picker-options {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+}
+
+/* Force visibility of all SVG icons */
+.dark .ql-toolbar button svg {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar button:hover svg {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark .ql-toolbar button.ql-active svg {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Force all icon elements to be white */
+.dark .ql-toolbar button .ql-stroke {
+  stroke: #ffffff !important;
+}
+
+.dark .ql-toolbar button .ql-fill {
+  fill: #ffffff !important;
+}
+
+.dark .ql-toolbar button .ql-even {
+  fill: #ffffff !important;
+}
+
+.dark .ql-toolbar button .ql-thin {
+  stroke: #ffffff !important;
+}
+
+/* Force all path elements to be white */
+.dark .ql-toolbar button path {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.dark .ql-toolbar button polygon {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.dark .ql-toolbar button line {
+  stroke: #ffffff !important;
+}
+
+.dark .ql-toolbar button rect {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.dark .ql-toolbar button circle {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Force text elements to be white */
+.dark .ql-toolbar button text {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Force all icon classes to be white */
+.dark .ql-toolbar .ql-bold svg,
+.dark .ql-toolbar .ql-italic svg,
+.dark .ql-toolbar .ql-underline svg,
+.dark .ql-toolbar .ql-strike svg,
+.dark .ql-toolbar .ql-header svg,
+.dark .ql-toolbar .ql-list svg,
+.dark .ql-toolbar .ql-align svg,
+.dark .ql-toolbar .ql-link svg,
+.dark .ql-toolbar .ql-image svg,
+.dark .ql-toolbar .ql-clean svg {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Force all elements inside buttons to be white */
+.dark .ql-toolbar button * {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}

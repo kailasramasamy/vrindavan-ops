@@ -1,0 +1,932 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<!-- Quill.js WYSIWYG Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<style>
+  /* Table styling for Quill editor */
+  .ql-editor table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .ql-editor table td,
+  .ql-editor table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 100px;
+    vertical-align: top;
+  }
+  
+  .ql-editor table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
+  .ql-editor table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .ql-editor table tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Table button styling */
+  .ql-toolbar button[title="Insert Table"] {
+    font-size: 16px;
+    padding: 5px 8px;
+  }
+
+  /* Category tabs styling - no horizontal scrolling */
+  .category-tabs-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    overflow-x: visible;
+  }
+  
+  .category-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .category-tab:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+    ring-offset: 2px;
+  }
+</style>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Machines' }) %>
+  
+  <div class="min-h-screen pt-16">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <% 
+        // Group ALL machines by category for tabs (unfiltered)
+        let machinesByCategory = {};
+        if (allMachines && allMachines.length > 0) {
+          allMachines.forEach(machine => {
+            const categoryName = machine.category_name || 'Uncategorized';
+            if (!machinesByCategory[categoryName]) {
+              machinesByCategory[categoryName] = {
+                category: {
+                  name: categoryName,
+                  color: machine.category_color || '#6B7280',
+                  id: machine.category_id
+                },
+                machines: []
+              };
+            }
+            machinesByCategory[categoryName].machines.push(machine);
+          });
+        }
+        
+        // Group filtered machines by category for display
+        let filteredMachinesByCategory = {};
+        if (machines && machines.length > 0) {
+          machines.forEach(machine => {
+            const categoryName = machine.category_name || 'Uncategorized';
+            if (!filteredMachinesByCategory[categoryName]) {
+              filteredMachinesByCategory[categoryName] = {
+                category: {
+                  name: categoryName,
+                  color: machine.category_color || '#6B7280',
+                  id: machine.category_id
+                },
+                machines: []
+              };
+            }
+            filteredMachinesByCategory[categoryName].machines.push(machine);
+          });
+        }
+      %>
+
+      <!-- Page Header -->
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Machines</h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Manage and monitor all your machinery</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openAddMachineModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Machine
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Tabs Navigation -->
+      <% if (machines && machines.length > 0) { %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+          <div class="px-6 py-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Categories</h3>
+              <span class="text-sm text-gray-500 dark:text-gray-400">
+                <%= Object.values(machinesByCategory).reduce((total, group) => total + group.machines.length, 0) %> total machines
+              </span>
+            </div>
+          
+          <!-- Tabs -->
+          <div class="category-tabs-container">
+            <!-- All Categories Tab -->
+            <button onclick="filterByCategory('all')" 
+                    class="category-tab inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors <%= !filters.category_id ? 'bg-blue-600 dark:bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              </svg>
+              All Categories
+              <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <%= !filters.category_id ? 'bg-blue-500 dark:bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300' %>">
+                <%= Object.values(machinesByCategory).reduce((total, group) => total + group.machines.length, 0) %>
+              </span>
+            </button>
+            
+            <!-- Individual Category Tabs -->
+            <% Object.values(machinesByCategory).forEach(categoryGroup => { %>
+              <button onclick="filterByCategory('<%= categoryGroup.category.id %>')" 
+                      class="category-tab inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors <%= filters.category_id == categoryGroup.category.id ? 'bg-blue-600 dark:bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>">
+                <div class="w-3 h-3 rounded-full mr-2" style="background-color: <%= categoryGroup.category.color %>"></div>
+                <%= categoryGroup.category.name %>
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <%= filters.category_id == categoryGroup.category.id ? 'bg-blue-500 dark:bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300' %>">
+                  <%= categoryGroup.machines.length %>
+                </span>
+              </button>
+            <% }) %>
+          </div>
+        </div>
+        </div>
+      <% } %>
+
+
+      <!-- Machines Table -->
+      <% if (machines && machines.length > 0) { %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <!-- Table Header -->
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Machines</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= machines.length %> machine<%= machines.length !== 1 ? 's' : '' %> total</p>
+              </div>
+              <% 
+                // Calculate total issues across all machines
+                let totalOpenIssues = 0;
+                let totalCriticalIssues = 0;
+                let machinesWithIssues = 0;
+                
+                if (issuesByMachine && Object.keys(issuesByMachine).length > 0) {
+                  Object.keys(issuesByMachine).forEach(machineId => {
+                    const machineIssues = issuesByMachine[machineId];
+                    if (Array.isArray(machineIssues)) {
+                      const openIssues = machineIssues.filter(issue => issue.status === 'open' || issue.status === 'in_progress');
+                      const criticalIssues = machineIssues.filter(issue => issue.priority === 'critical' && (issue.status === 'open' || issue.status === 'in_progress'));
+                      
+                      if (openIssues.length > 0) {
+                        totalOpenIssues += openIssues.length;
+                        totalCriticalIssues += criticalIssues.length;
+                        machinesWithIssues++;
+                      }
+                    }
+                  });
+                }
+              %>
+              <% if (totalOpenIssues > 0) { %>
+                <div class="flex items-center space-x-4">
+                  <div class="text-right">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      <% if (totalCriticalIssues > 0) { %>
+                        <span class="text-red-600 dark:text-red-400"><%= totalCriticalIssues %> Critical</span>
+                        <% if (totalOpenIssues - totalCriticalIssues > 0) { %>
+                          <span class="text-gray-500 dark:text-gray-400">•</span>
+                          <span class="text-orange-600 dark:text-orange-400"><%= totalOpenIssues - totalCriticalIssues %> Open</span>
+                        <% } %>
+                      <% } else { %>
+                        <span class="text-orange-600 dark:text-orange-400"><%= totalOpenIssues %> Open Issues</span>
+                      <% } %>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      across <%= machinesWithIssues %> machine<%= machinesWithIssues !== 1 ? 's' : '' %>
+                    </div>
+                  </div>
+                  <a href="/machinery/issues" class="inline-flex items-center px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white text-xs font-medium rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors">
+                    <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    View Issues
+                  </a>
+                </div>
+              <% } else { %>
+                <div class="flex items-center">
+                  <div class="text-right">
+                    <div class="text-sm font-medium text-green-600 dark:text-green-400">No Issues</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">All machines healthy</div>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          
+          <!-- Desktop Table View -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Machine</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Model</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Issues</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <% machines.forEach(machine => { %>
+                  <% 
+                    const machineIssues = issuesByMachine[machine.id] || [];
+                    const openIssues = machineIssues.filter(issue => issue.status === 'open' || issue.status === 'in_progress');
+                    const criticalIssues = machineIssues.filter(issue => issue.priority === 'critical' && (issue.status === 'open' || issue.status === 'in_progress'));
+                    const hasIssues = openIssues.length > 0;
+                    const hasCriticalIssues = criticalIssues.length > 0;
+                  %>
+                  <tr class="<%= hasCriticalIssues ? 'bg-red-50 dark:bg-red-900/20' : hasIssues ? 'bg-orange-50 dark:bg-orange-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700' %>">
+                    <!-- Machine Name with Thumbnail -->
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <!-- Machine Thumbnail -->
+                        <a href="/machinery/machines/<%= machine.id %>" class="w-12 h-12 rounded-lg overflow-hidden mr-4 flex-shrink-0 bg-gray-100 dark:bg-gray-700 hover:opacity-80 transition-opacity">
+                          <% if (machine.images) { %>
+                            <% try { %>
+                              <% const images = JSON.parse(machine.images); %>
+                              <% if (images && images.length > 0 && images[0].path) { %>
+                                <img src="<%= images[0].path %>" alt="<%= machine.name %>" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center" style="display: none;">
+                                  <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                  </svg>
+                                </div>
+                              <% } else { %>
+                                <div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                  <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                  </svg>
+                                </div>
+                              <% } %>
+                            <% } catch (e) { %>
+                              <div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                              </div>
+                            <% } %>
+                          <% } else { %>
+                            <div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                              <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                              </svg>
+                            </div>
+                          <% } %>
+                        </a>
+                        
+                        <!-- Machine Info -->
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full mr-3 flex-shrink-0" style="background-color: <%= machine.category_color %>"></div>
+                            <div class="flex-1 min-w-0">
+                              <div class="text-sm font-medium text-gray-900 dark:text-white truncate"><%= machine.name %></div>
+                              <% if (machine.serial_number) { %>
+                                <div class="text-sm text-gray-500 dark:text-gray-400 truncate">Serial: <%= machine.serial_number %></div>
+                              <% } %>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <!-- Category -->
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900 dark:text-white"><%= machine.category_name %></div>
+                    </td>
+                    
+                    <!-- Status -->
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        <%= machine.status === 'active' ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' : '' %>
+                        <%= machine.status === 'maintenance' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' : '' %>
+                        <%= machine.status === 'inactive' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' : '' %>
+                        <%= machine.status === 'retired' ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300' : '' %>
+                        <%= !machine.status ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' : '' %>">
+                        <%= machine.status ? machine.status.charAt(0).toUpperCase() + machine.status.slice(1) : 'Unknown' %>
+                      </span>
+                    </td>
+                    
+                    <!-- Model -->
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900 dark:text-white"><%= machine.model || 'N/A' %></div>
+                      <% if (machine.year_of_manufacturing) { %>
+                        <div class="text-sm text-gray-500 dark:text-gray-400"><%= machine.year_of_manufacturing %></div>
+                      <% } %>
+                    </td>
+                    
+                    <!-- Issues -->
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <% if (hasCriticalIssues) { %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                          <%= criticalIssues.length %> Critical
+                        </span>
+                      <% } else if (hasIssues) { %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                          <%= openIssues.length %> Issue<%= openIssues.length !== 1 ? 's' : '' %>
+                        </span>
+                      <% } else { %>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">No issues</span>
+                      <% } %>
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <a href="/machinery/machines/<%= machine.id %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        View Details
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Mobile Card View -->
+          <div class="md:hidden">
+            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% machines.forEach(machine => { %>
+                <% 
+                  const machineIssues = issuesByMachine[machine.id] || [];
+                  const openIssues = machineIssues.filter(issue => issue.status === 'open' || issue.status === 'in_progress');
+                  const criticalIssues = machineIssues.filter(issue => issue.priority === 'critical' && (issue.status === 'open' || issue.status === 'in_progress'));
+                  const hasIssues = openIssues.length > 0;
+                  const hasCriticalIssues = criticalIssues.length > 0;
+                %>
+                <div class="p-4 <%= hasCriticalIssues ? 'bg-red-50 dark:bg-red-900/20' : hasIssues ? 'bg-orange-50 dark:bg-orange-900/20' : '' %>">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center">
+                      <div class="w-3 h-3 rounded-full mr-3" style="background-color: <%= machine.category_color %>"></div>
+                      <div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white"><%= machine.name %></h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400"><%= machine.category_name %></p>
+                      </div>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                      <%= machine.status === 'active' ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' : '' %>
+                      <%= machine.status === 'maintenance' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' : '' %>
+                      <%= machine.status === 'inactive' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' : '' %>
+                      <%= machine.status === 'retired' ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300' : '' %>
+                      <%= !machine.status ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' : '' %>">
+                      <%= machine.status ? machine.status.charAt(0).toUpperCase() + machine.status.slice(1) : 'Unknown' %>
+                    </span>
+                  </div>
+                  
+                  <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400 mb-3">
+                    <div>Model: <%= machine.model || 'N/A' %></div>
+                    <% if (machine.serial_number) { %>
+                      <div>Serial: <%= machine.serial_number %></div>
+                    <% } %>
+                    <% if (machine.year_of_manufacturing) { %>
+                      <div>Year: <%= machine.year_of_manufacturing %></div>
+                    <% } %>
+                  </div>
+                  
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <% if (hasCriticalIssues) { %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                          <%= criticalIssues.length %> Critical
+                        </span>
+                      <% } else if (hasIssues) { %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                          <%= openIssues.length %> Issue<%= openIssues.length !== 1 ? 's' : '' %>
+                        </span>
+                      <% } else { %>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">No issues</span>
+                      <% } %>
+                    </div>
+                    <a href="/machinery/machines/<%= machine.id %>" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-xs font-medium">
+                      View Details →
+                    </a>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="text-center py-12">
+          <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Machines Found</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">Get started by adding your first machine.</p>
+          <button onclick="openAddMachineModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add Machine
+          </button>
+        </div>
+      <% } %>
+    </main>
+  </div>
+
+  <!-- Add Machine Modal -->
+  <div id="addMachineModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <!-- Fixed Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Machine</h3>
+        </div>
+        
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto">
+          <form id="addMachineForm" method="POST" action="/machinery/machines" enctype="multipart/form-data" class="p-6">
+            <div class="space-y-6">
+              <!-- Basic Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Basic Information
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Machine Name *</label>
+                    <input type="text" id="name" name="name" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+
+                  <!-- Machine Image -->
+                  <div>
+                    <label for="machine_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Machine Image</label>
+                    <input type="file" id="machine_image" name="machine_image" accept="image/*" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Upload an image of the machine (JPG, PNG, GIF - Max 5MB)</p>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
+                      <select id="category_id" name="category_id" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select Category</option>
+                        <% categories.forEach(category => { %>
+                          <option value="<%= category.id %>"><%= category.name %></option>
+                        <% }) %>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="model" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Model</label>
+                      <input type="text" id="model" name="model" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                      <label for="serial_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Serial Number</label>
+                      <input type="text" id="serial_number" name="serial_number" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                      <label for="manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Manufacturer</label>
+                      <input type="text" id="manufacturer" name="manufacturer" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                      <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                      <input type="text" id="location" name="location" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                      <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                      <select id="status" name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="active">Active</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="retired">Retired</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="year_of_manufacturing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Year of Manufacturing</label>
+                      <input type="number" id="year_of_manufacturing" name="year_of_manufacturing" min="1900" max="2030" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Technical Specifications Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                  </svg>
+                  Technical Specifications
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Capacity (L)</label>
+                    <input type="number" id="capacity" name="capacity" step="0.01" placeholder="e.g., 1000" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="power_kw" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Power (kW)</label>
+                    <input type="number" id="power_kw" name="power_kw" step="0.01" placeholder="e.g., 5.5" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="voltage_v" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Voltage (V)</label>
+                    <input type="number" id="voltage_v" name="voltage_v" placeholder="e.g., 415" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="phase" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phase</label>
+                    <select id="phase" name="phase" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">Select Phase</option>
+                      <option value="single">Single Phase</option>
+                      <option value="3phase">3 Phase</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Financial Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                  Financial Information
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="purchase_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Purchase Date</label>
+                    <input type="date" id="purchase_date" name="purchase_date" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="purchase_cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Purchase Cost (₹)</label>
+                    <input type="number" id="purchase_cost" name="purchase_cost" step="0.01" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="current_value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Value (₹)</label>
+                    <input type="number" id="current_value" name="current_value" step="0.01" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="warranty_expiry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Warranty Expiry</label>
+                    <input type="date" id="warranty_expiry" name="warranty_expiry" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="insurance_expiry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Insurance Expiry</label>
+                    <input type="date" id="insurance_expiry" name="insurance_expiry" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manufacturer Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                  Manufacturer Information
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="md:col-span-2">
+                    <label for="manufacturer_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Manufacturer Address</label>
+                    <textarea id="manufacturer_address" name="manufacturer_address" rows="3" placeholder="Enter complete manufacturer address..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                  </div>
+                  <div>
+                    <label for="manufacturer_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                    <input type="tel" id="manufacturer_phone" name="manufacturer_phone" placeholder="+91-XXXXXXXXXX" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="manufacturer_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                    <input type="email" id="manufacturer_email" name="manufacturer_email" placeholder="contact@manufacturer.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="manufacturer_website" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website</label>
+                    <input type="url" id="manufacturer_website" name="manufacturer_website" placeholder="https://www.manufacturer.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="manufacturer_contact_person" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contact Person</label>
+                    <input type="text" id="manufacturer_contact_person" name="manufacturer_contact_person" placeholder="Primary contact person name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Service Technician Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  Service Technician Information
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="service_technician_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Technician Name</label>
+                    <input type="text" id="service_technician_name" name="service_technician_name" placeholder="Primary service technician name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="service_technician_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Technician Phone</label>
+                    <input type="tel" id="service_technician_phone" name="service_technician_phone" placeholder="+91-XXXXXXXXXX" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="service_technician_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Technician Email</label>
+                    <input type="email" id="service_technician_email" name="service_technician_email" placeholder="technician@company.com" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="service_technician_company" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Service Company</label>
+                    <input type="text" id="service_technician_company" name="service_technician_company" placeholder="Service company/agency name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="backup_technician_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Backup Technician Name</label>
+                    <input type="text" id="backup_technician_name" name="backup_technician_name" placeholder="Backup service technician name" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="backup_technician_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Backup Technician Phone</label>
+                    <input type="tel" id="backup_technician_phone" name="backup_technician_phone" placeholder="+91-XXXXXXXXXX" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Information Section -->
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  Additional Information
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                    <div id="description-editor" class="border border-gray-300 dark:border-gray-600 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500" style="height: 120px;"></div>
+                    <textarea id="description" name="description" style="display: none;"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BMC-specific fields -->
+              <div id="bmcFields" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 hidden">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                  </svg>
+                  BMC Additional Specifications
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="cooling_temperature" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cooling Temperature (°C)</label>
+                    <input type="number" id="cooling_temperature" name="cooling_temperature" step="0.01" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="compressor_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Compressor Type</label>
+                    <input type="text" id="compressor_type" name="compressor_type" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="refrigerant_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Refrigerant Type</label>
+                    <input type="text" id="refrigerant_type" name="refrigerant_type" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label for="insulation_thickness" class="block text-sm font-medium text-gray-700 mb-2">Insulation Thickness (mm)</label>
+                    <input type="number" id="insulation_thickness" name="insulation_thickness" step="0.01" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Fixed Footer with Buttons -->
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <div class="flex justify-end space-x-3">
+            <button type="button" onclick="closeAddMachineModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" form="addMachineForm" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              Add Machine
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Quill editors
+    let addDescriptionQuill = null;
+    let editDescriptionQuill = null;
+
+    // Initialize Quill editors when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Add Machine Description Editor (only if container exists)
+      if (document.querySelector('#description-editor')) {
+        addDescriptionQuill = new Quill('#description-editor', {
+          theme: 'snow',
+          modules: {
+            toolbar: [
+              [{ 'header': [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'indent': '-1'}, { 'indent': '+1' }],
+              ['link'],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'align': [] }],
+              ['clean']
+            ],
+          keyboard: {
+            bindings: {
+              tab: {
+                key: 9,
+                handler: function(range, context) {
+                  // Allow tab to work normally in tables
+                  return true;
+                }
+              }
+            }
+          }
+        },
+        placeholder: 'Enter machine description...'
+      });
+      }
+
+      // Initialize Edit Machine Description Editor (only if container exists)
+      if (document.querySelector('#edit-description-editor')) {
+        editDescriptionQuill = new Quill('#edit-description-editor', {
+          theme: 'snow',
+          modules: {
+            toolbar: [
+              [{ 'header': [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'indent': '-1'}, { 'indent': '+1' }],
+              ['link'],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'align': [] }],
+              ['clean']
+            ],
+          keyboard: {
+            bindings: {
+              tab: {
+                key: 9,
+                handler: function(range, context) {
+                  // Allow tab to work normally in tables
+                  return true;
+                }
+              }
+            }
+          }
+        },
+        placeholder: 'Enter machine description...'
+      });
+      }
+
+      // Apply dark mode styles to Add Machine Quill editor
+      function applyAddMachineQuillDarkMode() {
+        const quillEditor = document.querySelector('#description-editor .ql-editor');
+        const quillToolbar = document.querySelector('#description-editor .ql-toolbar');
+        
+        if (document.documentElement.classList.contains('dark')) {
+          if (quillEditor) {
+            quillEditor.style.backgroundColor = '#374151';
+            quillEditor.style.color = '#f9fafb';
+          }
+          if (quillToolbar) {
+            quillToolbar.style.backgroundColor = '#4b5563';
+            quillToolbar.style.borderColor = '#6b7280';
+          }
+        } else {
+          if (quillEditor) {
+            quillEditor.style.backgroundColor = '#ffffff';
+            quillEditor.style.color = '#111827';
+          }
+          if (quillToolbar) {
+            quillToolbar.style.backgroundColor = '#ffffff';
+            quillToolbar.style.borderColor = '#d1d5db';
+          }
+        }
+      }
+
+      // Apply dark mode on initialization
+      setTimeout(applyAddMachineQuillDarkMode, 100);
+
+      // Listen for dark mode changes
+      const addMachineObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            setTimeout(applyAddMachineQuillDarkMode, 100);
+          }
+        });
+      });
+      addMachineObserver.observe(document.documentElement, { attributes: true });
+
+      // Sync Quill content with hidden textarea for form submission
+      if (addDescriptionQuill) {
+        addDescriptionQuill.on('text-change', function() {
+          const descEl = document.getElementById('description');
+          if (descEl) descEl.value = addDescriptionQuill.root.innerHTML;
+        });
+      }
+
+      if (editDescriptionQuill) {
+        editDescriptionQuill.on('text-change', function() {
+          const editDescEl = document.getElementById('edit_description');
+          if (editDescEl) editDescEl.value = editDescriptionQuill.root.innerHTML;
+        });
+      }
+
+      // Add custom table functionality (appends a custom button)
+      function addTableButton(quill) {
+        try {
+          const toolbarContainer = quill.container.previousElementSibling;
+          if (!toolbarContainer) return;
+          const tableButton = document.createElement('button');
+          tableButton.type = 'button';
+          tableButton.innerHTML = '📊';
+          tableButton.title = 'Insert Table';
+          tableButton.className = 'ql-table-custom';
+          tableButton.onclick = function() {
+            const rows = prompt('Number of rows:', '3');
+            const cols = prompt('Number of columns:', '3');
+            if (rows && cols) {
+              insertTable(quill, parseInt(rows), parseInt(cols));
+            }
+          };
+
+          const formats = toolbarContainer.querySelectorAll('.ql-formats');
+          if (formats && formats.length) {
+            formats[formats.length - 1].appendChild(tableButton);
+          } else {
+            toolbarContainer.appendChild(tableButton);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      function insertTable(quill, rows, cols) {
+        let tableHTML = '<table style="border-collapse: collapse; width: 100%; margin: 10px 0;">';
+        for (let i = 0; i < rows; i++) {
+          tableHTML += '<tr>';
+          for (let j = 0; j < cols; j++) {
+            tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; min-width: 100px;">&nbsp;</td>';
+          }
+          tableHTML += '</tr>';
+        }
+        tableHTML += '</table>';
+        
+        const range = quill.getSelection();
+        quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
+      }
+
+      // Attach custom table buttons to editors
+      if (addDescriptionQuill) addTableButton(addDescriptionQuill);
+      if (editDescriptionQuill) addTableButton(editDescriptionQuill);
+    // Show/hide BMC fields based on category selection
+    document.getElementById('category_id').addEventListener('change', function(e) {
+      const bmcFields = document.getElementById('bmcFields');
+      const bmcCategoryId = '<%= categories.find(c => c.name === "BMC")?.id || "" %>';
+      
+      if (e.target.value === bmcCategoryId) {
+        bmcFields.classList.remove('hidden');
+      } else {
+        bmcFields.classList.add('hidden');
+      }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('addMachineModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeAddMachineModal();
+      }
+    });
+
+    // End DOMContentLoaded listener
+  });
+
+  </script>
+
+
+  <%- include('../../../partials/_footer') %>
+</body>
+</html>

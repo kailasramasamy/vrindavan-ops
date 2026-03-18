@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-brand-bg text-brand-ink antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_header', { user: user }) %> 
+      <%- include('../../../partials/_subnav', { section: 'Procurement', subsection: 'Billing', page: 'MP', user }) %>
+      
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+
+          <div class="flex items-center justify-between mb-8">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Milk Plants Billing</h1>
+              <p class="text-gray-600 mt-2">Manage MP level billing and final aggregations</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <span class="text-sm text-gray-600">Active Level</span>
+            </div>
+          </div>
+          
+          <!-- Filters -->
+          <div class="card card--white p-6 mb-8">
+            <h2 class="text-lg font-semibold mb-4">Filters</h2>
+            <form method="get" action="/procurement/billing/mp" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-semibold mb-2">Month</label>
+                <select name="month" class="w-full border rounded p-2 text-slate-900">
+                  <% for(let i = 1; i <= 12; i++) { %>
+                    <option value="<%= i %>" <%= month == i ? 'selected' : '' %>>
+                      <%= new Date(2024, i-1).toLocaleString('default', { month: 'long' }) %>
+                    </option>
+                  <% } %>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-2">Year</label>
+                <input name="year" type="number" value="<%= year %>" min="2020" max="2030" class="w-full border rounded p-2 text-slate-900" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-2">Period</label>
+                <select name="period" class="w-full border rounded p-2 text-slate-900">
+                  <option value="H1" <%= period === 'H1' ? 'selected' : '' %>>H1 (1-15)</option>
+                  <option value="H2" <%= period === 'H2' ? 'selected' : '' %>>H2 (16-31)</option>
+                </select>
+              </div>
+              <div class="md:col-span-3">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+              </div>
+            </form>
+            
+            <div class="mt-4 p-4 bg-purple-50 rounded-lg">
+              <p class="text-sm text-purple-800">
+                <strong>Period:</strong> <%= startDate %> to <%= endDate %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <% if (typeof error !== 'undefined' && error) { %>
+            <div class="card card--red p-4 mb-6">
+              <p class="text-red-800"><%= error %></p>
+            </div>
+          <% } %>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Total MPs</p>
+                  <p class="text-2xl font-bold text-gray-900"><%= mpData.summary.count %></p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Total Volume</p>
+                  <p class="text-2xl font-bold text-gray-900"><%= mpData.summary.totalQty.toFixed(1) %>L</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Total Amount</p>
+                  <p class="text-2xl font-bold text-gray-900">₹<%= mpData.summary.totalAmount.toFixed(2) %></p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card card--white p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Avg per MP</p>
+                  <p class="text-2xl font-bold text-gray-900">₹<%= mpData.summary.count > 0 ? (mpData.summary.totalAmount / mpData.summary.count).toFixed(2) : '0.00' %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MP Data Table -->
+          <div class="card card--white p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold">Milk Plant Details</h2>
+              <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                <%= mpData.summary.count %> MPs
+              </span>
+            </div>
+
+            <% if (mpData.data.length > 0) { %>
+              <!-- Desktop Table View -->
+              <div class="overflow-x-auto" style="display: none;" id="desktop-table">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left font-semibold">MP Name</th>
+                      <th class="px-4 py-3 text-right font-semibold">Qty (L)</th>
+                      <th class="px-4 py-3 text-right font-semibold">Avg Fat</th>
+                      <th class="px-4 py-3 text-right font-semibold">Avg SNF</th>
+                      <th class="px-4 py-3 text-right font-semibold">Rate</th>
+                      <th class="px-4 py-3 text-right font-semibold">Amount</th>
+                      <th class="px-4 py-3 text-center font-semibold">Billing Status</th>
+                      <th class="px-4 py-3 text-center font-semibold">Payment Status</th>
+                      <th class="px-4 py-3 text-center font-semibold">Payment Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% mpData.data.forEach(mp => { %>
+                      <tr class="border-t hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                          <div class="font-medium"><%= mp.name %></div>
+                          <div class="text-xs text-gray-500"><%= mp.milk_type %></div>
+                        </td>
+                        <td class="px-4 py-3 text-right"><%= mp.total_qty ? Number(mp.total_qty).toFixed(1) : '0.0' %></td>
+                        <td class="px-4 py-3 text-right"><%= mp.avg_fat ? Number(mp.avg_fat).toFixed(1) : '-' %></td>
+                        <td class="px-4 py-3 text-right"><%= mp.avg_snf ? Number(mp.avg_snf).toFixed(1) : '-' %></td>
+                        <td class="px-4 py-3 text-right">₹<%= mp.rate ? Number(mp.rate).toFixed(2) : '0.00' %></td>
+                        <td class="px-4 py-3 text-right font-semibold">₹<%= mp.amount ? Number(mp.amount).toFixed(2) : '0.00' %></td>
+                        <td class="px-4 py-3 text-center">
+                          <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                            <%= mp.billing_status || 'Pending' %>
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            <%= mp.payment_status || 'Pending' %>
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm text-gray-600">
+                          <%= mp.payment_date ? new Date(mp.payment_date).toISOString().split('T')[0] : '-' %>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Card View -->
+              <div class="space-y-4" style="display: block;" id="mobile-cards">
+                <% mpData.data.forEach(mp => { %>
+                  <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <!-- MP Header -->
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                          <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 class="font-semibold text-gray-900"><%= mp.name %></h3>
+                          <p class="text-sm text-gray-500"><%= mp.milk_type %></p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-lg font-bold text-purple-600">₹<%= mp.amount ? Number(mp.amount).toFixed(2) : '0.00' %></div>
+                        <div class="text-xs text-gray-500">Total Amount</div>
+                      </div>
+                    </div>
+
+                    <!-- MP Details Grid -->
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Quantity</div>
+                        <div class="font-medium text-gray-900"><%= mp.total_qty ? Number(mp.total_qty).toFixed(1) : '0.0' %>L</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Rate</div>
+                        <div class="font-medium text-gray-900">₹<%= mp.rate ? Number(mp.rate).toFixed(2) : '0.00' %></div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Avg Fat</div>
+                        <div class="font-medium text-gray-900"><%= mp.avg_fat ? Number(mp.avg_fat).toFixed(1) : '-' %>%</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Avg SNF</div>
+                        <div class="font-medium text-gray-900"><%= mp.avg_snf ? Number(mp.avg_snf).toFixed(1) : '-' %>%</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Avg CLR</div>
+                        <div class="font-medium text-gray-900"><%= mp.avg_clr ? Number(mp.avg_clr).toFixed(1) : '-' %></div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Avg Water</div>
+                        <div class="font-medium text-gray-900"><%= mp.avg_water ? Number(mp.avg_water).toFixed(1) : '-' %>%</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Billing Status</div>
+                        <div class="font-medium text-gray-900">
+                          <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                            <%= mp.billing_status || 'Pending' %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Payment Status</div>
+                        <div class="font-medium text-gray-900">
+                          <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            <%= mp.payment_status || 'Pending' %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-gray-600 text-xs uppercase tracking-wide">Payment Date</div>
+                        <div class="font-medium text-gray-900">
+                          <%= mp.payment_date ? new Date(mp.payment_date).toISOString().split('T')[0] : '-' %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8 text-gray-500">
+                <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                <p class="text-lg font-medium">No MP data available</p>
+                <p class="text-sm">Try adjusting your filters or check back later</p>
+              </div>
+            <% } %>
+          </div>
+        </section>
+      </main>
+      <%- include('../../../partials/_footer') %>
+    </div>
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+      // Responsive view handling
+      function toggleViews() {
+        const desktopTable = document.getElementById('desktop-table');
+        const mobileCards = document.getElementById('mobile-cards');
+        
+        if (window.innerWidth >= 1024) {
+          // Large screens - show table, hide cards
+          if (desktopTable) desktopTable.style.display = 'block';
+          if (mobileCards) mobileCards.style.display = 'none';
+        } else {
+          // Small/medium screens - show cards, hide table
+          if (desktopTable) desktopTable.style.display = 'none';
+          if (mobileCards) mobileCards.style.display = 'block';
+        }
+      }
+      
+      // Run on load and resize
+      window.addEventListener('load', toggleViews);
+      window.addEventListener('resize', toggleViews);
+    </script>
+  </body>
+</html>

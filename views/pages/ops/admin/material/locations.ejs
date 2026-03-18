@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../../../../partials/_head', { seo }) %>
+  <body class="bg-slate-50 dark:bg-gray-900">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../../partials/_subnav', { section: section, subsection: subsection, page: 'Material Locations', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <!-- Header -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="py-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Material Locations</h1>
+                      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage storage locations and bins for materials</p>
+                    </div>
+                    <button onclick="openAddLocationModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                      <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                      Add Location
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <!-- Locations Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="locationsGrid">
+                <% if (locations && locations.length > 0) { %> <% locations.forEach(location => { %>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= location.name %></h3>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium <%= location.location_type === 'main_store' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' : location.location_type === 'line_store' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' : location.location_type === 'maintenance_store' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' %>"><%= location.location_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+                      </div>
+                      <% if (location.description) { %>
+                      <p class="text-sm text-gray-600 dark:text-gray-300 mb-3"><%= location.description %></p>
+                      <% } %>
+                      <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                        <span class="flex items-center">
+                          <i data-lucide="package" class="w-4 h-4 mr-1"></i>
+                          <%= location.stock_items_count || 0 %> items
+                        </span>
+                        <% if (location.total_quantity) { %>
+                        <span class="flex items-center">
+                          <i data-lucide="layers" class="w-4 h-4 mr-1"></i>
+                          <%= location.total_quantity %> total qty
+                        </span>
+                        <% } %>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <button onclick="openEditLocationModal(<%= location.id %>)" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                      </button>
+                      <button onclick="deleteLocation(<%= location.id %>)" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                        <% if (location.low_stock_count > 0) { %>
+                        <span class="flex items-center text-red-600 dark:text-red-400">
+                          <i data-lucide="alert-triangle" class="w-4 h-4 mr-1"></i>
+                          <%= location.low_stock_count %> low stock
+                        </span>
+                        <% } else { %>
+                        <span class="flex items-center text-green-600 dark:text-green-400">
+                          <i data-lucide="check-circle" class="w-4 h-4 mr-1"></i>
+                          Stock OK
+                        </span>
+                        <% } %>
+                      </div>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Active</span>
+                    </div>
+                  </div>
+                </div>
+                <% }) %> <% } else { %>
+                <div class="col-span-full text-center py-12">
+                  <i data-lucide="map-pin" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"></i>
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No locations yet</h3>
+                  <p class="text-gray-600 dark:text-gray-400 mb-6">Get started by creating your first storage location.</p>
+                  <button onclick="openAddLocationModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                    Add Location
+                  </button>
+                </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Location Modal -->
+          <div id="locationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 id="locationModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Add Location</h3>
+                  <button onclick="closeLocationModal()" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <form id="locationForm">
+                  <input type="hidden" id="locationId" name="id" />
+
+                  <div class="space-y-4">
+                    <div>
+                      <label for="locationName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location Name</label>
+                      <input type="text" id="locationName" name="name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter location name" />
+                    </div>
+
+                    <div>
+                      <label for="locationType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location Type</label>
+                      <select id="locationType" name="location_type" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select type</option>
+                        <option value="main_store">Main Store</option>
+                        <option value="line_store">Production Line Store</option>
+                        <option value="maintenance_store">Maintenance Store</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label for="locationDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                      <textarea id="locationDescription" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter location description"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeLocationModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                      <span id="locationSubmitText">Add Location</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+            }
+
+            let locations = <%- JSON.stringify(locations || []) %>;
+
+            // Modal Functions
+            function openAddLocationModal() {
+              document.getElementById('locationModalTitle').textContent = 'Add Location';
+              document.getElementById('locationSubmitText').textContent = 'Add Location';
+              document.getElementById('locationForm').reset();
+              document.getElementById('locationId').value = '';
+              document.getElementById('locationModal').classList.remove('hidden');
+            }
+
+            function openEditLocationModal(locationId) {
+              const location = locations.find(l => l.id === locationId);
+              if (!location) return;
+
+              document.getElementById('locationModalTitle').textContent = 'Edit Location';
+              document.getElementById('locationSubmitText').textContent = 'Update Location';
+              document.getElementById('locationId').value = location.id;
+              document.getElementById('locationName').value = location.name;
+              document.getElementById('locationType').value = location.location_type;
+              document.getElementById('locationDescription').value = location.description || '';
+              document.getElementById('locationModal').classList.remove('hidden');
+            }
+
+            function closeLocationModal() {
+              document.getElementById('locationModal').classList.add('hidden');
+            }
+
+            // Form submission
+            document.getElementById('locationForm').addEventListener('submit', async function(e) {
+              e.preventDefault();
+
+              const formData = new FormData(this);
+              const data = Object.fromEntries(formData);
+              const isEdit = data.id !== '';
+
+              try {
+                const url = isEdit ? `/api/v1/material/locations/${data.id}` : '/api/v1/material/locations';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  closeLocationModal();
+                  location.reload();
+                } else {
+                  alert('Error: ' + result.error);
+                }
+              } catch (error) {
+                console.error('Error saving location:', error);
+                alert('Failed to save location');
+              }
+            });
+
+            // Delete location
+            async function deleteLocation(locationId) {
+              if (!confirm('Are you sure you want to delete this location? This action cannot be undone.')) return;
+
+              try {
+                const response = await fetch(`/api/v1/material/locations/${locationId}`, {
+                  method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  location.reload();
+                } else {
+                  alert('Error: ' + result.error);
+                }
+              } catch (error) {
+                console.error('Error deleting location:', error);
+                alert('Failed to delete location');
+              }
+            }
+          </script>
+        </section>
+      </main>
+
+      <%- include('../../../../partials/_footer') %>
+    </div>
+  </body>
+</html>

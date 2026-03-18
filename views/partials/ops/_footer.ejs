@@ -1,0 +1,32 @@
+<!-- /views/partials/_footer.ejs -->
+<% 
+  // Format date as DD/MM/YYYY
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+  const lastUpdateDate = formatDate(new Date());
+%>
+<footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <!-- System Status -->
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+        <span class="text-sm text-gray-600 dark:text-gray-300">System Active</span>
+      </div>
+
+      <!-- Copyright, Version, and Last Update -->
+      <div class="flex flex-col sm:flex-row items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+        <span>© <%= new Date().getFullYear() %> Vrindavan Farm Operations. All rights reserved.</span>
+        <span class="hidden sm:inline">•</span>
+        <span>Version 1.0.0</span>
+        <span class="hidden sm:inline">•</span>
+        <span>Last updated: <%= lastUpdateDate %></span>
+      </div>
+    </div>
+  </div>
+</footer>

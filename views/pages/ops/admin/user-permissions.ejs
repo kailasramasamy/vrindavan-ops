@@ -1,0 +1,597 @@
+<%- include('../../../partials/_head', { 
+  title: 'User Permissions - Admin Panel',
+  seo: seo 
+}) %>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  <%- include('../../../partials/_header', { 
+    user: user,
+    pageKey: 'admin',
+    title: 'User Permissions Management'
+  }) %>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="/admin" class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+            Admin Panel
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="/admin/users" class="ml-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 md:ml-2">User Management</a>
+          </div>
+        </li>
+        <li aria-current="page">
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-sm font-medium text-gray-500 dark:text-gray-400 md:ml-2">User Permissions</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">User Permissions</h1>
+          <p class="mt-2 text-gray-600 dark:text-gray-300">Manage module and sub-module permissions for users</p>
+        </div>
+        <div class="flex space-x-3">
+          <button onclick="goBack()" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Users
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Selection -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:border dark:border-gray-700 mb-8">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Select User</h3>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Choose a user to manage their permissions</p>
+        <div class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-blue-700 dark:text-blue-300">
+                <strong>Note:</strong> Admin users are excluded from permissions management as they have full access to all modules by default.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="userSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">User</label>
+            <select id="userSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select a user...</option>
+              <% if (users && users.length > 0) { %>
+                <% users.forEach(user => { %>
+                  <option value="<%= user.id %>" data-role="<%= user.role %>" data-name="<%= user.name %>" data-email="<%= user.email %>">
+                    <%= user.name %> (<%= user.email %>) - <%= user.role.replace('_', ' ').toUpperCase() %>
+                  </option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button onclick="loadUserPermissions()" class="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              Load Permissions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Info -->
+    <div id="userInfo" class="bg-white dark:bg-gray-800 rounded-lg shadow dark:border dark:border-gray-700 mb-8 hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">User Information</h3>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+            <p id="selectedUserName" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+            <p id="selectedUserEmail" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Role</label>
+            <p id="selectedUserRole" class="mt-1 text-sm text-gray-900 dark:text-white"></p>
+          </div>
+        </div>
+        
+        <!-- Role and RCC Assignment -->
+        <div class="border-t dark:border-gray-700 pt-6">
+          <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">Role & Assignment</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="userRole" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
+              <select id="userRole" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Role</option>
+                <option value="plant_manager">Plant Manager</option>
+                <option value="rcc_manager">RCC Manager</option>
+              </select>
+            </div>
+            <div>
+              <label for="userRcc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RCC Assignment</label>
+              <select id="userRcc" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="">No RCC Assignment</option>
+                <% if (rccs && rccs.length > 0) { %>
+                  <% rccs.forEach(rcc => { %>
+                    <option value="<%= rcc.id %>"><%= rcc.name %></option>
+                  <% }) %>
+                <% } %>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Permissions Management -->
+    <div id="permissionsSection" class="bg-white dark:bg-gray-800 rounded-lg shadow dark:border dark:border-gray-700 hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Module Permissions</h3>
+          <div class="flex space-x-2">
+            <button onclick="selectAllPermissions()" class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+              Select All
+            </button>
+            <button onclick="clearAllPermissions()" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+              Clear All
+            </button>
+            <button onclick="savePermissions()" class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors">
+              Save Permissions
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="p-6">
+        <div id="permissionsContainer" class="space-y-6">
+          <!-- Permissions will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="bg-white dark:bg-gray-800 rounded-lg shadow dark:border dark:border-gray-700 hidden">
+      <div class="p-8 text-center">
+        <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading permissions...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-white dark:bg-gray-800 border-l-4 p-4 shadow-lg rounded-lg">
+      <div class="flex items-center">
+        <div id="toastIcon" class="flex-shrink-0">
+          <!-- Icon will be set by JavaScript -->
+        </div>
+        <div class="ml-3">
+          <p id="toastMessage" class="text-sm font-medium text-gray-900 dark:text-white"></p>
+        </div>
+        <div class="ml-4 flex-shrink-0">
+          <button onclick="hideToast()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentUserPermissions = {};
+    let availableModules = {};
+    let selectedUserId = null;
+
+    // Available modules
+    availableModules = {
+      procurement: {
+        cpp: { name: "CPP Milk Entry", description: "Manage milk entries from Collection Points" },
+        rcc: { name: "RCC Milk Entry", description: "Manage milk entries from Regional Collection Centers" },
+        mp: { name: "MP Milk Entry", description: "Manage milk entries at Main Plant" },
+        dashboard: { name: "Procurement Dashboard", description: "View procurement analytics and reports" },
+        billing: { name: "Procurement Billing", description: "Manage farmer and CPP billing" }
+      },
+      production: {
+        products: { name: "Products", description: "Manage product catalog" },
+        categories: { name: "Categories", description: "Manage product categories" },
+        pools: { name: "Milk Pools", description: "Manage milk pools" }
+      },
+      po: {
+        dashboard: { name: "PO Dashboard", description: "Purchase orders overview and analytics" },
+        vendors: { name: "Vendors", description: "Manage vendor information" },
+        products: { name: "PO Products", description: "Manage PO product catalog" },
+        orders: { name: "Purchase Orders", description: "Create and manage purchase orders" },
+        delivery: { name: "Delivery Tracking", description: "Track and manage deliveries" },
+        invoices: { name: "Invoices", description: "Manage vendor invoices" }
+      },
+      sales: {
+        dashboard: { name: "Sales Dashboard", description: "Sales overview and analytics" },
+        data_entry: { name: "Sales Data Entry", description: "Record daily sales from partners" },
+        partners: { name: "Sales Partners", description: "Manage sales partners" },
+        reports: { name: "Sales Reports", description: "Generate sales reports" },
+        product_mappings: { name: "Product Mappings", description: "Map external product names" }
+      },
+      accounting: {
+        dashboard: { name: "Accounting Dashboard", description: "Financial overview and analytics" },
+        beneficiaries: { name: "Beneficiaries", description: "Manage payment beneficiaries" },
+        transactions: { name: "Transactions", description: "View and manage bank transactions" },
+        reports: { name: "Reports", description: "Generate financial reports" },
+        categories: { name: "Categories", description: "Manage expense categories" }
+      },
+      machinery: {
+        machines: { name: "Machines", description: "Manage machinery" },
+        schedules: { name: "Service Schedules", description: "Manage service schedules" },
+        issues: { name: "Issues", description: "Manage machine issues" }
+      },
+      material: {
+        dashboard: { name: "Material Dashboard", description: "Material management overview" },
+        materials: { name: "Materials", description: "Manage materials and items" },
+        categories: { name: "Categories", description: "Manage material categories" },
+        locations: { name: "Locations", description: "Manage material storage locations" },
+        transactions: { name: "Transactions", description: "Material receipts, issues and transfers" },
+        reports: { name: "Reports", description: "Material reports and analytics" }
+      },
+      admin: {
+        users: { name: "User Management", description: "Manage users and roles" },
+        settings: { name: "Settings", description: "System settings and configuration" }
+      }
+    };
+
+    // Navigation
+    function goBack() {
+      window.location.href = '/admin/users';
+    }
+
+    // Load user permissions
+    async function loadUserPermissions() {
+      const userSelect = document.getElementById('userSelect');
+      const userId = userSelect.value;
+      
+      if (!userId) {
+        showToast('Please select a user first', 'error');
+        return;
+      }
+
+      // Check if selected user is admin (shouldn't happen, but safety check)
+      const selectedOption = userSelect.options[userSelect.selectedIndex];
+      if (selectedOption.dataset.role === 'admin') {
+        showToast('Admin users cannot be managed through this interface', 'error');
+        return;
+      }
+
+      selectedUserId = userId;
+      
+      // Show user info
+      document.getElementById('selectedUserName').textContent = selectedOption.dataset.name;
+      document.getElementById('selectedUserEmail').textContent = selectedOption.dataset.email;
+      document.getElementById('selectedUserRole').textContent = selectedOption.dataset.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userInfo').classList.remove('hidden');
+
+      // Show loading state
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('permissionsSection').classList.add('hidden');
+
+      try {
+        const response = await fetch(`/admin/users/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // Populate role and RCC fields
+            document.getElementById('userRole').value = data.user.role || '';
+            document.getElementById('userRcc').value = data.user.rcc_id || '';
+            
+            currentUserPermissions = data.permissions || {};
+            populatePermissions();
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('permissionsSection').classList.remove('hidden');
+          } else {
+            throw new Error(data.error || 'Failed to load user data');
+          }
+        } else {
+          throw new Error('Failed to load user data');
+        }
+      } catch (error) {
+        console.error('Error loading user permissions:', error);
+        showToast('Failed to load user permissions: ' + error.message, 'error');
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    }
+
+    // Populate permissions checkboxes
+    function populatePermissions() {
+      const container = document.getElementById('permissionsContainer');
+      container.innerHTML = '';
+
+      for (const [module, subModules] of Object.entries(availableModules)) {
+        const moduleDiv = document.createElement('div');
+        moduleDiv.className = 'border dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-700/50';
+        
+        const moduleHeader = document.createElement('div');
+        moduleHeader.className = 'flex items-center justify-between mb-4';
+        moduleHeader.innerHTML = `
+          <h4 class="text-xl font-semibold text-gray-900 dark:text-white capitalize">${module}</h4>
+          <div class="flex space-x-2">
+            <button type="button" onclick="selectAllModulePermissions('${module}')" 
+                    class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+              All
+            </button>
+            <button type="button" onclick="clearAllModulePermissions('${module}')" 
+                    class="px-3 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+              None
+            </button>
+          </div>
+        `;
+        moduleDiv.appendChild(moduleHeader);
+
+        // Create grid for sub-modules
+        const subModulesGrid = document.createElement('div');
+        subModulesGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+
+        for (const [subModule, info] of Object.entries(subModules)) {
+          const subModuleDiv = document.createElement('div');
+          subModuleDiv.className = 'bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-600';
+          
+          subModuleDiv.innerHTML = `
+            <div class="mb-4">
+              <h5 class="font-medium text-gray-900 dark:text-white">${info.name}</h5>
+              <p class="text-sm text-gray-600 dark:text-gray-300">${info.description}</p>
+            </div>
+            <div class="space-y-3">
+              <label class="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                <input type="checkbox" 
+                       data-module="${module}" 
+                       data-submodule="${subModule}" 
+                       data-permission="read"
+                       class="permission-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">Read</span>
+              </label>
+              <label class="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                <input type="checkbox" 
+                       data-module="${module}" 
+                       data-submodule="${subModule}" 
+                       data-permission="write"
+                       class="permission-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">Write</span>
+              </label>
+              <label class="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                <input type="checkbox" 
+                       data-module="${module}" 
+                       data-submodule="${subModule}" 
+                       data-permission="admin"
+                       class="permission-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">Admin</span>
+              </label>
+            </div>
+          `;
+          
+          subModulesGrid.appendChild(subModuleDiv);
+        }
+        
+        moduleDiv.appendChild(subModulesGrid);
+        container.appendChild(moduleDiv);
+      }
+
+      // Set current permissions
+      setCurrentPermissions();
+    }
+
+    // Set current permissions from the loaded data
+    function setCurrentPermissions() {
+      const checkboxes = document.querySelectorAll('.permission-checkbox');
+      checkboxes.forEach(checkbox => {
+        const module = checkbox.dataset.module;
+        const subModule = checkbox.dataset.submodule;
+        const permission = checkbox.dataset.permission;
+        
+        const hasPermission = currentUserPermissions[module] && 
+                            currentUserPermissions[module][subModule] && 
+                            currentUserPermissions[module][subModule][permission];
+        
+        checkbox.checked = hasPermission || false;
+      });
+    }
+
+    // Select all permissions for a module
+    function selectAllModulePermissions(module) {
+      const checkboxes = document.querySelectorAll(`[data-module="${module}"].permission-checkbox`);
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+    }
+
+    // Clear all permissions for a module
+    function clearAllModulePermissions(module) {
+      const checkboxes = document.querySelectorAll(`[data-module="${module}"].permission-checkbox`);
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+    }
+
+    // Select all permissions across all modules
+    function selectAllPermissions() {
+      const checkboxes = document.querySelectorAll('.permission-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+    }
+
+    // Clear all permissions across all modules
+    function clearAllPermissions() {
+      const checkboxes = document.querySelectorAll('.permission-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+    }
+
+    // Save permissions
+    async function savePermissions() {
+      if (!selectedUserId) {
+        showToast('No user selected', 'error');
+        return;
+      }
+
+      // Safety check: ensure we're not trying to update an admin user
+      const userSelect = document.getElementById('userSelect');
+      const selectedOption = userSelect.options[userSelect.selectedIndex];
+      if (selectedOption && selectedOption.dataset.role === 'admin') {
+        showToast('Admin users cannot be managed through this interface', 'error');
+        return;
+      }
+
+      const permissions = {};
+      const checkboxes = document.querySelectorAll('.permission-checkbox');
+      
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+          const module = checkbox.dataset.module;
+          const subModule = checkbox.dataset.submodule;
+          const permission = checkbox.dataset.permission;
+          
+          if (!permissions[module]) {
+            permissions[module] = {};
+          }
+          if (!permissions[module][subModule]) {
+            permissions[module][subModule] = {};
+          }
+          permissions[module][subModule][permission] = true;
+        }
+      });
+
+      // Get role and RCC values
+      const role = document.getElementById('userRole').value;
+      const rccId = document.getElementById('userRcc').value;
+
+      try {
+        // First update user role and RCC
+        const userResponse = await fetch(`/admin/users/${selectedUserId}/role-rcc`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            role: role,
+            rcc_id: rccId || null
+          })
+        });
+
+        if (!userResponse.ok) {
+          throw new Error('Failed to update user role and RCC');
+        }
+
+        // Then update permissions
+        const response = await fetch(`/admin/users/${selectedUserId}/permissions`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ permissions })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast('User role, RCC assignment, and permissions updated successfully', 'success');
+          currentUserPermissions = permissions;
+          
+          // Update the displayed role in the user info
+          document.getElementById('selectedUserRole').textContent = role.replace('_', ' ').toUpperCase();
+        } else {
+          showToast(data.error || 'Failed to update permissions', 'error');
+        }
+      } catch (error) {
+        console.error('Error updating user data:', error);
+        showToast('Failed to update user data: ' + error.message, 'error');
+      }
+    }
+
+    // Toast notification functions
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+      
+      toastMessage.textContent = message;
+      
+      // Set icon and colors based on type
+      if (type === 'success') {
+        toast.className = 'fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 border-l-4 border-green-400 p-4 shadow-lg rounded-lg';
+        toastIcon.innerHTML = '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+      } else if (type === 'error') {
+        toast.className = 'fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 border-l-4 border-red-400 p-4 shadow-lg rounded-lg';
+        toastIcon.innerHTML = '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+      } else {
+        toast.className = 'fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 border-l-4 border-blue-400 p-4 shadow-lg rounded-lg';
+        toastIcon.innerHTML = '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      }
+      
+      toast.classList.remove('hidden');
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        hideToast();
+      }, 5000);
+    }
+    
+    function hideToast() {
+      document.getElementById('toast').classList.add('hidden');
+    }
+
+    // Role change handler
+    document.getElementById('userRole').addEventListener('change', function() {
+      const rccField = document.getElementById('userRcc');
+      if (this.value === 'rcc_manager') {
+        rccField.required = true;
+      } else {
+        rccField.required = false;
+        rccField.value = '';
+      }
+    });
+
+    // Check for user parameter in URL on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user');
+      if (userId) {
+        const userSelect = document.getElementById('userSelect');
+        userSelect.value = userId;
+        loadUserPermissions();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <%- include('../../../partials/_head', { seo }) %>
+  <body class="bg-slate-900 text-slate-100 antialiased">
+    <div class="min-h-dvh flex flex-col">
+      <%- include('../../../partials/_subnav', { section: 'Procurement', subsection: 'Billing', page: 'Billing', user }) %>
+
+      <main class="flex-1">
+        <section class="max-w-7xl mx-auto px-4 py-10">
+          <h1 class="text-3xl font-bold mb-2">Billing — Procurement</h1>
+          <p class="text-slate-400 mb-6">Review last 5 cycles by level and drill into details</p>
+
+          <!-- Quick Actions -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+            <a href="/procurement/billing/management" class="bg-slate-800 border border-slate-700 rounded-lg p-5 flex items-center justify-between hover:bg-slate-750 transition-colors">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-indigo-500/20 text-indigo-300 rounded-lg flex items-center justify-center mr-4">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="font-semibold text-slate-100">Generate/Manage Bills</div>
+                  <div class="text-sm text-slate-400">Create and manage billing records</div>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/procurement/billing/analytics" class="bg-slate-800 border border-slate-700 rounded-lg p-5 flex items-center justify-between hover:bg-slate-750 transition-colors">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-emerald-500/20 text-emerald-300 rounded-lg flex items-center justify-center mr-4">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6m6 13V6M3 19h18"/></svg>
+                </div>
+                <div>
+                  <div class="font-semibold text-slate-100">Payment Reports</div>
+                  <div class="text-sm text-slate-400">Analyze payments and trends</div>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Farmers -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg shadow p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold flex items-center">
+                  <span class="mr-2 inline-flex w-7 h-7 rounded bg-blue-500/20 text-blue-300 items-center justify-center">
+                    <!-- Users icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                  </span>
+                  Farmers
+                </h2>
+                <a href="/procurement/billing/farmers" class="text-indigo-400 hover:text-indigo-300 text-sm">Go to page</a>
+              </div>
+              <div>
+                <table class="w-full text-sm table-fixed">
+                  <thead class="text-slate-300">
+                    <tr>
+                      <th class="text-left py-2 pr-4">Cycle</th>
+                      <th class="text-right py-2 pr-4">Volume (L)</th>
+                      <th class="text-right py-2 pr-4">Amount (₹)</th>
+                      <th class="text-left py-2 pr-4">Billing Status</th>
+                      <th class="text-right py-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-700">
+                    <% (farmersCycles || []).forEach(function(cycle){ %>
+                    <tr>
+                      <td class="py-2 pr-4"><%= cycle.label %></td>
+                      <td class="py-2 pr-4 text-right"><%= Number(cycle.volume || 0).toFixed(1) %></td>
+                      <td class="py-2 pr-4 text-right">₹<%= Number(cycle.amount || 0).toFixed(2) %></td>
+                      <td class="py-2 pr-4">
+                        <% if (cycle.status === 'Paid') { %>
+                        <span class="px-2 py-1 rounded bg-green-500/15 text-green-300 text-xs">Paid</span>
+                        <% } else if (cycle.status === 'Pending') { %>
+                        <span class="px-2 py-1 rounded bg-yellow-500/15 text-yellow-300 text-xs">Pending</span>
+                        <% } else { %>
+                        <span class="px-2 py-1 rounded bg-slate-600 text-slate-200 text-xs">No Bills</span>
+                        <% } %>
+                      </td>
+                      <td class="py-2 text-right">
+                        <a href="/procurement/billing/farmers?month=<%= cycle.month %>&year=<%= cycle.year %>&period=<%= cycle.period %>" class="text-indigo-400 hover:text-indigo-300">View</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Collection Points -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg shadow p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold flex items-center">
+                  <span class="mr-2 inline-flex w-7 h-7 rounded bg-green-500/20 text-green-300 items-center justify-center">
+                    <!-- Milk drop icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2C12 2 6 9 6 13a6 6 0 1 0 12 0c0-4-6-11-6-11z"/>
+                    </svg>
+                  </span>
+                  Collection Points
+                </h2>
+                <a href="/procurement/billing/cpp" class="text-indigo-400 hover:text-indigo-300 text-sm">Go to page</a>
+              </div>
+              <div>
+                <table class="w-full text-sm table-fixed">
+                  <thead class="text-slate-300">
+                    <tr>
+                      <th class="text-left py-2 pr-4">Cycle</th>
+                      <th class="text-right py-2 pr-4">Volume (L)</th>
+                      <th class="text-right py-2 pr-4">Amount (₹)</th>
+                      <th class="text-left py-2 pr-4">Billing Status</th>
+                      <th class="text-right py-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-700">
+                    <% (cppCycles || []).forEach(function(cycle){ %>
+                    <tr>
+                      <td class="py-2 pr-4"><%= cycle.label %></td>
+                      <td class="py-2 pr-4 text-right"><%= Number(cycle.volume || 0).toFixed(1) %></td>
+                      <td class="py-2 pr-4 text-right">₹<%= Number(cycle.amount || 0).toFixed(2) %></td>
+                      <td class="py-2 pr-4">
+                        <% if (cycle.status === 'Paid') { %>
+                        <span class="px-2 py-1 rounded bg-green-500/15 text-green-300 text-xs">Paid</span>
+                        <% } else if (cycle.status === 'Pending') { %>
+                        <span class="px-2 py-1 rounded bg-yellow-500/15 text-yellow-300 text-xs">Pending</span>
+                        <% } else { %>
+                        <span class="px-2 py-1 rounded bg-slate-600 text-slate-200 text-xs">No Bills</span>
+                        <% } %>
+                      </td>
+                      <td class="py-2 text-right">
+                        <a href="/procurement/billing/cpp?month=<%= cycle.month %>&year=<%= cycle.year %>&period=<%= cycle.period %>" class="text-indigo-400 hover:text-indigo-300">View</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- RCC -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg shadow p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold flex items-center">
+                  <span class="mr-2 inline-flex w-7 h-7 rounded bg-yellow-500/20 text-yellow-300 items-center justify-center">
+                    <!-- Building icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="7" width="18" height="14" rx="2"/>
+                      <path d="M7 7V3h10v4"/>
+                      <path d="M7 12h2M11 12h2M15 12h2M7 16h2M11 16h2M15 16h2"/>
+                    </svg>
+                  </span>
+                  RCC
+                </h2>
+                <a href="/procurement/billing/rcc" class="text-indigo-400 hover:text-indigo-300 text-sm">Go to page</a>
+              </div>
+              <div>
+                <table class="w-full text-sm table-fixed">
+                  <thead class="text-slate-300">
+                    <tr>
+                      <th class="text-left py-2 pr-4">Cycle</th>
+                      <th class="text-right py-2 pr-4">Volume (L)</th>
+                      <th class="text-right py-2 pr-4">Amount (₹)</th>
+                      <th class="text-left py-2 pr-4">Billing Status</th>
+                      <th class="text-right py-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-700">
+                    <% (rccCycles || []).forEach(function(cycle){ %>
+                    <tr>
+                      <td class="py-2 pr-4"><%= cycle.label %></td>
+                      <td class="py-2 pr-4 text-right"><%= Number(cycle.volume || 0).toFixed(1) %></td>
+                      <td class="py-2 pr-4 text-right">₹<%= Number(cycle.amount || 0).toFixed(2) %></td>
+                      <td class="py-2 pr-4">
+                        <% if (cycle.status === 'Paid') { %>
+                        <span class="px-2 py-1 rounded bg-green-500/15 text-green-300 text-xs">Paid</span>
+                        <% } else if (cycle.status === 'Pending') { %>
+                        <span class="px-2 py-1 rounded bg-yellow-500/15 text-yellow-300 text-xs">Pending</span>
+                        <% } else { %>
+                        <span class="px-2 py-1 rounded bg-slate-600 text-slate-200 text-xs">No Bills</span>
+                        <% } %>
+                      </td>
+                      <td class="py-2 text-right">
+                        <a href="/procurement/billing/rcc?month=<%= cycle.month %>&year=<%= cycle.year %>&period=<%= cycle.period %>" class="text-indigo-400 hover:text-indigo-300">View</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- MP -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg shadow p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold flex items-center">
+                  <span class="mr-2 inline-flex w-7 h-7 rounded bg-purple-500/20 text-purple-300 items-center justify-center">
+                    <!-- Factory icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 21V9l6 4V9l6 4V9l6 4v8H3z"/>
+                      <path d="M7 21v-3M11 21v-3M15 21v-3M19 21v-3"/>
+                      <path d="M14 3h4v4h-4z"/>
+                    </svg>
+                  </span>
+                  MP
+                </h2>
+                <a href="/procurement/billing/mp" class="text-indigo-400 hover:text-indigo-300 text-sm">Go to page</a>
+              </div>
+              <div>
+                <table class="w-full text-sm table-fixed">
+                  <thead class="text-slate-300">
+                    <tr>
+                      <th class="text-left py-2 pr-4">Cycle</th>
+                      <th class="text-right py-2 pr-4">Volume (L)</th>
+                      <th class="text-right py-2 pr-4">Amount (₹)</th>
+                      <th class="text-left py-2 pr-4">Billing Status</th>
+                      <th class="text-right py-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-700">
+                    <% (mpCycles || []).forEach(function(cycle){ %>
+                    <tr>
+                      <td class="py-2 pr-4"><%= cycle.label %></td>
+                      <td class="py-2 pr-4 text-right"><%= Number(cycle.volume || 0).toFixed(1) %></td>
+                      <td class="py-2 pr-4 text-right">₹<%= Number(cycle.amount || 0).toFixed(2) %></td>
+                      <td class="py-2 pr-4">
+                        <% if (cycle.status === 'Paid') { %>
+                        <span class="px-2 py-1 rounded bg-green-500/15 text-green-300 text-xs">Paid</span>
+                        <% } else if (cycle.status === 'Pending') { %>
+                        <span class="px-2 py-1 rounded bg-yellow-500/15 text-yellow-300 text-xs">Pending</span>
+                        <% } else { %>
+                        <span class="px-2 py-1 rounded bg-slate-600 text-slate-200 text-xs">No Bills</span>
+                        <% } %>
+                      </td>
+                      <td class="py-2 text-right">
+                        <a href="/procurement/billing/mp?month=<%= cycle.month %>&year=<%= cycle.year %>&period=<%= cycle.period %>" class="text-indigo-400 hover:text-indigo-300">View</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      // Force dark mode for this page
+      document.documentElement.classList.add('dark');
+    </script>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,337 @@
+/* PO Module Dark Mode Styles */
+
+/* Form Elements Dark Mode */
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="number"],
+.dark input[type="date"],
+.dark input[type="datetime-local"],
+.dark input[type="time"],
+.dark input[type="url"],
+.dark input[type="search"],
+.dark input[type="tel"],
+.dark textarea,
+.dark select {
+  @apply bg-gray-700 border-gray-600 text-white placeholder-gray-400;
+}
+
+.dark input[type="text"]:focus,
+.dark input[type="email"]:focus,
+.dark input[type="password"]:focus,
+.dark input[type="number"]:focus,
+.dark input[type="date"]:focus,
+.dark input[type="datetime-local"]:focus,
+.dark input[type="time"]:focus,
+.dark input[type="url"]:focus,
+.dark input[type="search"]:focus,
+.dark input[type="tel"]:focus,
+.dark textarea:focus,
+.dark select:focus {
+  @apply border-blue-500 ring-blue-500;
+}
+
+.dark input[type="text"]:disabled,
+.dark input[type="email"]:disabled,
+.dark input[type="password"]:disabled,
+.dark input[type="number"]:disabled,
+.dark input[type="date"]:disabled,
+.dark input[type="datetime-local"]:disabled,
+.dark input[type="time"]:disabled,
+.dark input[type="url"]:disabled,
+.dark input[type="search"]:disabled,
+.dark input[type="tel"]:disabled,
+.dark textarea:disabled,
+.dark select:disabled {
+  @apply bg-gray-800 text-gray-500 cursor-not-allowed;
+}
+
+/* Form Labels */
+.dark label {
+  @apply text-gray-300;
+}
+
+.dark .form-label {
+  @apply text-gray-300;
+}
+
+/* Form Help Text */
+.dark .form-help {
+  @apply text-gray-400;
+}
+
+.dark .text-sm.text-gray-500 {
+  @apply text-gray-400;
+}
+
+/* Form Groups */
+.dark .form-group {
+  @apply text-gray-300;
+}
+
+/* Checkboxes and Radio Buttons */
+.dark input[type="checkbox"],
+.dark input[type="radio"] {
+  @apply bg-gray-700 border-gray-600 text-blue-600;
+}
+
+.dark input[type="checkbox"]:checked,
+.dark input[type="radio"]:checked {
+  @apply bg-blue-600 border-blue-600;
+}
+
+/* File Input */
+.dark input[type="file"] {
+  @apply text-gray-300;
+}
+
+.dark input[type="file"]::file-selector-button {
+  @apply bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600;
+}
+
+/* Range Input */
+.dark input[type="range"] {
+  @apply bg-gray-700;
+}
+
+.dark input[type="range"]::-webkit-slider-thumb {
+  @apply bg-blue-600;
+}
+
+.dark input[type="range"]::-moz-range-thumb {
+  @apply bg-blue-600;
+}
+
+/* Dark mode overrides for PO dashboard and related pages */
+.dark .po-card {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .po-card-header {
+  @apply text-white;
+}
+
+.dark .po-card-content {
+  @apply text-gray-300;
+}
+
+.dark .po-status-draft {
+  @apply bg-gray-700 text-gray-300;
+}
+
+.dark .po-status-pending {
+  @apply bg-yellow-900/30 text-yellow-300;
+}
+
+.dark .po-status-approved {
+  @apply bg-green-900/30 text-green-300;
+}
+
+.dark .po-status-rejected {
+  @apply bg-red-900/30 text-red-300;
+}
+
+.dark .po-status-received {
+  @apply bg-blue-900/30 text-blue-300;
+}
+
+/* Table styles for dark mode */
+.dark .po-table {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .po-table th {
+  @apply bg-gray-700 text-gray-200 border-gray-600;
+}
+
+.dark .po-table td {
+  @apply text-gray-300 border-gray-600;
+}
+
+.dark .po-table tr:hover {
+  @apply bg-gray-700;
+}
+
+/* Form styles for dark mode */
+.dark .po-form {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .po-form input,
+.dark .po-form select,
+.dark .po-form textarea {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.dark .po-form input:focus,
+.dark .po-form select:focus,
+.dark .po-form textarea:focus {
+  @apply border-blue-500 ring-blue-500;
+}
+
+.dark .po-form label {
+  @apply text-gray-300;
+}
+
+/* Button styles for dark mode */
+.dark .po-btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white;
+}
+
+.dark .po-btn-secondary {
+  @apply bg-gray-600 hover:bg-gray-700 text-white;
+}
+
+.dark .po-btn-success {
+  @apply bg-green-600 hover:bg-green-700 text-white;
+}
+
+.dark .po-btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white;
+}
+
+.dark .po-btn-warning {
+  @apply bg-yellow-600 hover:bg-yellow-700 text-white;
+}
+
+/* Modal styles for dark mode */
+.dark .po-modal {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .po-modal-header {
+  @apply border-gray-700;
+}
+
+.dark .po-modal-title {
+  @apply text-white;
+}
+
+.dark .po-modal-body {
+  @apply text-gray-300;
+}
+
+.dark .po-modal-footer {
+  @apply border-gray-700;
+}
+
+/* Badge styles for dark mode */
+.dark .po-badge {
+  @apply text-xs font-medium px-2 py-1 rounded-full;
+}
+
+.dark .po-badge-draft {
+  @apply bg-gray-700 text-gray-300;
+}
+
+.dark .po-badge-pending {
+  @apply bg-yellow-900/30 text-yellow-300;
+}
+
+.dark .po-badge-approved {
+  @apply bg-green-900/30 text-green-300;
+}
+
+.dark .po-badge-rejected {
+  @apply bg-red-900/30 text-red-300;
+}
+
+.dark .po-badge-received {
+  @apply bg-blue-900/30 text-blue-300;
+}
+
+/* Alert styles for dark mode */
+.dark .po-alert {
+  @apply border-gray-600;
+}
+
+.dark .po-alert-info {
+  @apply bg-blue-900/20 text-blue-300 border-blue-700;
+}
+
+.dark .po-alert-success {
+  @apply bg-green-900/20 text-green-300 border-green-700;
+}
+
+.dark .po-alert-warning {
+  @apply bg-yellow-900/20 text-yellow-300 border-yellow-700;
+}
+
+.dark .po-alert-error {
+  @apply bg-red-900/20 text-red-300 border-red-700;
+}
+
+/* Pagination styles for dark mode */
+.dark .po-pagination {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .po-pagination button {
+  @apply text-gray-300 hover:bg-gray-700;
+}
+
+.dark .po-pagination button.active {
+  @apply bg-blue-600 text-white;
+}
+
+.dark .po-pagination button:disabled {
+  @apply text-gray-500 cursor-not-allowed;
+}
+
+/* Search and filter styles for dark mode */
+.dark .po-search {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.dark .po-search:focus {
+  @apply border-blue-500 ring-blue-500;
+}
+
+.dark .po-filter {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.dark .po-filter:focus {
+  @apply border-blue-500 ring-blue-500;
+}
+
+/* Loading states for dark mode */
+.dark .po-loading {
+  @apply text-gray-400;
+}
+
+.dark .po-spinner {
+  @apply text-gray-500;
+}
+
+/* Empty state styles for dark mode */
+.dark .po-empty-state {
+  @apply text-gray-400;
+}
+
+.dark .po-empty-state-icon {
+  @apply text-gray-500;
+}
+
+/* Responsive adjustments for dark mode */
+@media (max-width: 768px) {
+  .dark .po-card {
+    @apply mx-2;
+  }
+
+  .dark .po-table {
+    @apply text-sm;
+  }
+}
+
+/* Print styles for dark mode */
+@media print {
+  .dark .po-card {
+    @apply bg-white border-gray-300;
+  }
+
+  .dark .po-card-header,
+  .dark .po-card-content {
+    @apply text-black;
+  }
+}

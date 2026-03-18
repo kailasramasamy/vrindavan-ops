@@ -1,0 +1,269 @@
+<%- include('../../../partials/_head', { seo, pageKey }) %>
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <% if (!filters || !filters.overdue_only) { %>
+    <!-- Sub Navigation -->
+    <%- include('../../../partials/_subnav', { user, section: 'Machinery', subsection: 'Service Schedules' }) %>
+  <% } %>
+  
+  <!-- Toast Notification -->
+  <%- include('../../../partials/_toast') %>
+
+  <div class="min-h-screen <%= (filters && filters.overdue_only) ? 'pt-8' : 'pt-16' %>">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <% if (filters && filters.overdue_only) { %>
+                <span class="flex items-center">
+                  <svg class="w-6 h-6 text-red-600 dark:text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Overdue Service Schedules
+                </span>
+              <% } else { %>
+                <%= title %>
+              <% } %>
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <% if (filters && filters.overdue_only) { %>
+                <span class="text-red-600 dark:text-red-400 font-medium">⚠️ Urgent: Services past their due date requiring immediate attention</span>
+              <% } else if (machineName) { %>
+                Manage service schedules for <%= machineName %>
+              <% } else { %>
+                Manage service schedules for machinery
+              <% } %>
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <a href="/machinery/machines" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Machines
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Service Schedules Table -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="<%= (filters && filters.overdue_only) ? 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900 dark:to-red-800' : 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800' %> px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center">
+            <svg class="w-6 h-6 <%= (filters && filters.overdue_only) ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400' %> mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <% if (filters && filters.overdue_only) { %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <% } else { %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              <% } %>
+            </svg>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <% if (filters && filters.overdue_only) { %>
+                Overdue Service Schedules
+              <% } else { %>
+                Service Schedules
+              <% } %>
+            </h2>
+          </div>
+        </div>
+
+        <% if (serviceSchedules && serviceSchedules.length > 0) { %>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Service Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Frequency</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Due Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <% 
+                // Sort service schedules to show overdue services first
+                const sortedSchedules = serviceSchedules.sort((a, b) => {
+                  const aOverdue = (a.days_until_due || 0) < 0;
+                  const bOverdue = (b.days_until_due || 0) < 0;
+                  
+                  if (aOverdue && !bOverdue) return -1;
+                  if (!aOverdue && bOverdue) return 1;
+                  
+                  // If both are overdue or both are not overdue, sort by due date
+                  return new Date(a.next_service_date) - new Date(b.next_service_date);
+                });
+                %>
+                <% sortedSchedules.forEach(schedule => { %>
+                <% const isOverdue = (schedule.days_until_due || 0) < 0; %>
+                <tr class="<%= isOverdue ? 'bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700' %>">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <% if (isOverdue) { %>
+                        <svg class="w-4 h-4 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                      <% } %>
+                      <div>
+                        <div class="text-sm font-medium <%= isOverdue ? 'text-red-900 dark:text-red-100' : 'text-gray-900 dark:text-gray-100' %>">
+                          <%= schedule.service_type_name || 'N/A' %>
+                        </div>
+                        <% if (schedule.notes) { %>
+                        <div class="text-sm <%= isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' %> truncate max-w-xs" title="<%= schedule.notes %>">
+                          <%= schedule.notes %>
+                        </div>
+                        <% } %>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm <%= isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' %>">
+                    <%= schedule.frequency_unit || 'N/A' %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm <%= isOverdue ? 'text-red-900 dark:text-red-100 font-medium' : 'text-gray-900 dark:text-gray-100' %>">
+                      <%= schedule.next_service_date ? new Date(schedule.next_service_date).toLocaleDateString() : 'N/A' %>
+                    </div>
+                    <% if (isOverdue && schedule.days_until_due) { %>
+                      <div class="text-xs text-red-600 dark:text-red-400 font-medium">
+                        <%= Math.abs(schedule.days_until_due) %> day<%= Math.abs(schedule.days_until_due) === 1 ? '' : 's' %> overdue
+                      </div>
+                    <% } else if (schedule.days_until_due === 0) { %>
+                      <div class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+                        Due today
+                      </div>
+                    <% } else if (schedule.days_until_due && schedule.days_until_due > 0) { %>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        In <%= schedule.days_until_due %> day<%= schedule.days_until_due === 1 ? '' : 's' %>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <% if (isOverdue) { %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Overdue
+                      </span>
+                    <% } else if (schedule.days_until_due === 0) { %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Due Today
+                      </span>
+                    <% } else { %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Scheduled
+                      </span>
+                    <% } %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                      <a href="/machinery/service-schedules/<%= schedule.id %>" class="<%= isOverdue ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300' : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300' %> hover:underline">
+                        View
+                      </a>
+                      <button onclick="deleteServiceSchedule(<%= schedule.id %>)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer">
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="text-center py-12">
+            <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Service Schedules</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">No service schedules found for this machine.</p>
+            <a href="/machinery/machines" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Service Schedule
+            </a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Spacing -->
+      <div class="mb-8"></div>
+    </div>
+  </div>
+
+  <%- include('../../../partials/_footer') %>
+
+  <script>
+    // Delete Service Schedule Function
+    async function deleteServiceSchedule(scheduleId) {
+      if (confirm('Are you sure you want to delete this service schedule? This action cannot be undone.')) {
+        try {
+          const response = await fetch(`/machinery/service-schedules/${scheduleId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          // Check if response is a redirect (authentication issue)
+          if (response.redirected || response.url.includes('/login')) {
+            alert('You need to be logged in to perform this action. Please log in and try again.');
+            window.location.href = '/login';
+            return;
+          }
+
+          // Check if response is HTML (error page)
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('text/html')) {
+            alert('Authentication required. Please log in and try again.');
+            window.location.href = '/login';
+            return;
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Show success message
+            if (typeof showToast === 'function') {
+              showToast('Service schedule deleted successfully', 'success');
+            } else {
+              alert('Service schedule deleted successfully');
+            }
+            
+            // Reload the page to reflect changes
+            location.reload();
+          } else {
+            // Show error message
+            if (typeof showToast === 'function') {
+              showToast(data.message || 'Failed to delete service schedule', 'error');
+            } else {
+              alert(data.message || 'Failed to delete service schedule');
+            }
+          }
+        } catch (error) {
+          console.error('Error deleting service schedule:', error);
+          if (error.message.includes('Unexpected token')) {
+            alert('Authentication required. Please log in and try again.');
+            window.location.href = '/login';
+          } else {
+            if (typeof showToast === 'function') {
+              showToast('Failed to delete service schedule', 'error');
+            } else {
+              alert('Failed to delete service schedule');
+            }
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

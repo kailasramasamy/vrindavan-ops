@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Trend - Detailed Analysis | Vrindavan Farm</title>
+    <link href="/assets/styles.css?v=<%= Date.now() %>" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script>
+      (function () {
+        const theme = localStorage.getItem("theme") || "dark";
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      })();
+    </script>
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center space-x-4">
+            <a href="/analytics/orders" class="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              Back to Orders Analytics
+            </a>
+            <span class="text-gray-400 dark:text-gray-500">|</span>
+            <a href="/analytics" class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Analytics</a>
+            <span class="text-gray-400 dark:text-gray-500">/</span>
+            <a href="/analytics/orders" class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Orders</a>
+            <span class="text-gray-400 dark:text-gray-500">/</span>
+            <span class="text-sm text-gray-900 dark:text-white font-medium">Order Trend Detailed</span>
+          </div>
+          <div class="flex items-center space-x-4"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Order Trend - Detailed Analysis</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">Comprehensive analysis of all product sales with advanced filtering and grouping options</p>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div class="space-y-4">
+          <!-- Main Filters Row -->
+          <div class="flex flex-wrap items-end gap-4">
+            <!-- Date Range Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="dateRangeSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+              <select id="dateRangeSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last_7_days">Last 7 days</option>
+                <option value="last_14_days">Last 14 days</option>
+                <option value="last_30_days" selected>Last 30 days</option>
+                <option value="this_month">This month</option>
+                <option value="last_month">Last month</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+
+            <!-- Group By Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="groupBySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Group By</label>
+              <select id="groupBySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="day">Daily</option>
+                <option value="week">Weekly</option>
+                <option value="month">Monthly</option>
+              </select>
+            </div>
+
+            <!-- Apply Filter Button -->
+            <div class="flex gap-2">
+              <button id="applyFilterBtn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                <span id="applyFilterText">Apply Filter</span>
+              </button>
+              <button id="exportCsvBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span id="exportCsvText">Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Filters Row -->
+          <div class="flex flex-wrap items-end gap-4">
+            <!-- Category Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="categorySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+              <select id="categorySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+
+            <!-- Subcategory Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="subCategorySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory</label>
+              <select id="subCategorySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" disabled>
+                <option value="">All Subcategories</option>
+              </select>
+            </div>
+
+            <!-- Product Filter -->
+            <div class="flex-1 min-w-0">
+              <label for="productSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product</label>
+              <select id="productSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" disabled>
+                <option value="">All Products</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quarterly Selection -->
+          <div id="quarterlySelection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Quarter</label>
+            <div class="flex flex-wrap gap-2">
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q1-2025">Q1 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q2-2025">Q2 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q3-2025">Q3 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q4-2025">Q4 2025</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q1-2024">Q1 2024</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q2-2024">Q2 2024</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q3-2024">Q3 2024</button>
+              <button class="quarter-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-quarter="Q4-2024">Q4 2024</button>
+            </div>
+          </div>
+
+          <!-- Yearly Selection -->
+          <div id="yearlySelection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Year</label>
+            <div class="flex flex-wrap gap-2">
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2025">2025</button>
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2024">2024</button>
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2023">2023</button>
+              <button class="year-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" data-year="2022">2022</button>
+            </div>
+          </div>
+
+          <!-- Monthly Selection -->
+          <div id="monthlySelection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Month</label>
+            <div id="monthlyButtons" class="flex flex-wrap gap-2">
+            </div>
+          </div>
+
+          <!-- Custom Date Range -->
+          <div id="customRangeSelection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Date Range</label>
+            <div class="flex items-center gap-3">
+              <input type="date" id="customStartDate" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm" />
+              <span class="text-sm text-gray-500 dark:text-gray-400">to</span>
+              <input type="date" id="customEndDate" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm" />
+              <button id="applyCustomRangeBtn" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">Apply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning Message -->
+        <div id="warningMessage" class="hidden mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p id="warningText" class="text-sm text-yellow-800 dark:text-yellow-200"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Summary (above chart, no title) -->
+      <div id="dataSummary" class="hidden mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div id="summaryContent" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">All Products Sales Trend</h2>
+          <div class="flex items-center space-x-4">
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="hidden flex items-center space-x-2 ml-4">
+              <button id="pagePrevBtn" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Previous Page</button>
+              <span id="pageInfo" class="text-sm text-gray-600 dark:text-gray-400">Page 1 of 1</span>
+
+              <!-- Month Selector for Yearly Data -->
+              <select id="monthSelector" class="hidden px-3 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+
+              <button id="pageNextBtn" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next Page</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="h-96 relative">
+          <canvas id="orderTrendChart"></canvas>
+          <!-- Loading Spinner Overlay -->
+          <div id="chartSpinnerOverlay" class="hidden absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 flex items-center justify-center">
+            <div class="flex flex-col items-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Loading chart data...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Legend Info -->
+        <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+          <p>
+            <strong>Legend:</strong>
+            Lines show order counts (left axis). Revenue shown on right axis.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Theme Management
+      function initializeTheme() {
+        const theme = localStorage.getItem("theme") || "dark";
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      }
+
+      // Chart Management
+      let orderTrendChart = null;
+      let currentTrendData = [];
+      let currentPageNumber = 1;
+      let selectedQuarter = null;
+      let selectedYear = null;
+      let selectedMonth = null;
+
+      // ==========================================
+      // Cascading Filter Logic
+      // ==========================================
+      async function loadCategories() {
+        try {
+          const response = await fetch("/analytics/api/orders/categories", { credentials: "same-origin" });
+          const data = await response.json();
+          if (data.success) {
+            const select = document.getElementById("categorySelect");
+            select.innerHTML = '<option value="">All Categories</option>';
+            data.data.forEach((cat) => {
+              select.innerHTML += '<option value="' + cat.id + '">' + cat.name + "</option>";
+            });
+          }
+        } catch (error) {
+          console.error("Error loading categories:", error);
+        }
+      }
+
+      async function loadSubCategories(categoryId) {
+        const subCatSelect = document.getElementById("subCategorySelect");
+        const productSelect = document.getElementById("productSelect");
+
+        subCatSelect.innerHTML = '<option value="">All Subcategories</option>';
+        productSelect.innerHTML = '<option value="">All Products</option>';
+        productSelect.disabled = true;
+
+        if (!categoryId) {
+          subCatSelect.disabled = true;
+          return;
+        }
+
+        try {
+          const response = await fetch("/analytics/api/orders/sub-categories?categoryId=" + categoryId, { credentials: "same-origin" });
+          const data = await response.json();
+          if (data.success) {
+            data.data.forEach((sc) => {
+              subCatSelect.innerHTML += '<option value="' + sc.id + '">' + sc.name + "</option>";
+            });
+            subCatSelect.disabled = false;
+          }
+        } catch (error) {
+          console.error("Error loading subcategories:", error);
+        }
+      }
+
+      async function loadProducts(categoryId, subCategoryId) {
+        const productSelect = document.getElementById("productSelect");
+        productSelect.innerHTML = '<option value="">All Products</option>';
+
+        if (!categoryId && !subCategoryId) {
+          productSelect.disabled = true;
+          return;
+        }
+
+        try {
+          let url = "/analytics/api/orders/products-filter?";
+          if (categoryId) url += "categoryId=" + categoryId + "&";
+          if (subCategoryId) url += "subCategoryId=" + subCategoryId + "&";
+
+          const response = await fetch(url, { credentials: "same-origin" });
+          const data = await response.json();
+          if (data.success) {
+            data.data.forEach((p) => {
+              productSelect.innerHTML += '<option value="' + p.id + '">' + p.product_name + " (" + p.unit + ")</option>";
+            });
+            productSelect.disabled = false;
+          }
+        } catch (error) {
+          console.error("Error loading products:", error);
+        }
+      }
+
+      function getFilterParams() {
+        const categoryId = document.getElementById("categorySelect").value;
+        const subCategoryId = document.getElementById("subCategorySelect").value;
+        const productId = document.getElementById("productSelect").value;
+
+        let params = "";
+        if (categoryId) params += "&categoryId=" + categoryId;
+        if (subCategoryId) params += "&subCategoryId=" + subCategoryId;
+        if (productId) params += "&productId=" + productId;
+        return params;
+      }
+
+      // ==========================================
+      // Data Loading
+      // ==========================================
+      async function loadOrderTrendData(page = 1) {
+        const selectedRange = document.getElementById("dateRangeSelect").value;
+        const groupBy = document.getElementById("groupBySelect").value;
+        const filterParams = getFilterParams();
+
+        let apiRange = selectedRange;
+        let extraParams = "";
+
+        if (selectedRange === "quarterly" && selectedQuarter) {
+          apiRange = selectedQuarter;
+          page = currentPageNumber;
+        } else if (selectedRange === "yearly" && selectedYear) {
+          apiRange = selectedYear;
+          page = currentPageNumber;
+        } else if ((selectedRange === "monthly" || selectedRange === "custom") && selectedMonth) {
+          apiRange = "custom";
+          extraParams = "&start=" + selectedMonth.start + "&end=" + selectedMonth.end;
+        }
+
+        const btn = document.getElementById("applyFilterBtn");
+        const btnText = document.getElementById("applyFilterText");
+        const chartSpinner = document.getElementById("chartSpinnerOverlay");
+
+        btn.disabled = true;
+        btnText.textContent = "Loading...";
+        chartSpinner.classList.remove("hidden");
+
+        try {
+          const apiUrl = "/analytics/api/orders/order-trend-data?range=" + apiRange + "&groupBy=" + groupBy + "&page=" + page + extraParams + filterParams;
+
+          const response = await fetch(apiUrl, { credentials: "same-origin" });
+          const data = await response.json();
+
+          if (data.success) {
+            currentTrendData = data.data || [];
+            currentPageNumber = page;
+
+            renderOrderTrendChart();
+            updateDataSummary();
+
+            // Handle warning
+            const warningDiv = document.getElementById("warningMessage");
+            const warningText = document.getElementById("warningText");
+
+            if (data.warning) {
+              warningText.textContent = data.warning;
+              warningDiv.classList.remove("hidden");
+            } else {
+              warningDiv.classList.add("hidden");
+            }
+
+            // Handle pagination
+            if (data.pagination && data.pagination.totalPages > 1) {
+              updatePaginationControls(data.pagination);
+            } else {
+              document.getElementById("paginationControls").classList.add("hidden");
+            }
+          } else {
+            console.error("Error loading order trend data:", data.error);
+            if (data.error && data.error.includes("timeout")) {
+              const warningDiv = document.getElementById("warningMessage");
+              const warningText = document.getElementById("warningText");
+              warningText.textContent = "Data temporarily unavailable due to high server load. Try a shorter date range.";
+              warningDiv.classList.remove("hidden");
+              currentTrendData = [];
+              renderOrderTrendChart();
+              updateDataSummary();
+            } else {
+              alert("Error loading data: " + data.error);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching order trend data:", error);
+          const warningDiv = document.getElementById("warningMessage");
+          const warningText = document.getElementById("warningText");
+          warningText.textContent = "Error fetching data. Please try again.";
+          warningDiv.classList.remove("hidden");
+          currentTrendData = [];
+          renderOrderTrendChart();
+          updateDataSummary();
+        } finally {
+          btn.disabled = false;
+          btnText.textContent = "Apply Filter";
+          chartSpinner.classList.add("hidden");
+        }
+      }
+
+      // ==========================================
+      // Chart Rendering
+      // ==========================================
+      function renderOrderTrendChart() {
+        const ctx = document.getElementById("orderTrendChart").getContext("2d");
+
+        if (orderTrendChart) {
+          orderTrendChart.destroy();
+        }
+
+        if (!currentTrendData || currentTrendData.length === 0) {
+          orderTrendChart = new Chart(ctx, {
+            type: "line",
+            data: { labels: [], datasets: [] },
+            options: { responsive: true, maintainAspectRatio: false },
+          });
+          return;
+        }
+
+        const labels = currentTrendData.map((item) => {
+          const period = item.period;
+          if (period.includes("T") || period.includes(" ")) {
+            const datePart = period.split("T")[0].split(" ")[0];
+            const [year, month, day] = datePart.split("-");
+            return day + "/" + month;
+          } else if (period.includes("-") && period.split("-").length === 3) {
+            const [year, month, day] = period.split("-");
+            return day + "/" + month;
+          }
+          return period;
+        });
+
+        const totalOrders = currentTrendData.map((item) => Number(item.total_orders) || 0);
+        const subscriptionOrders = currentTrendData.map((item) => Number(item.subscription_orders) || 0);
+        const regularOrders = currentTrendData.map((item) => Number(item.regular_orders) || 0);
+        const revenueData = currentTrendData.map((item) => Number(item.total_revenue) || 0);
+
+        const isDark = document.documentElement.classList.contains("dark");
+
+        const datasets = [
+          {
+            label: "Total Orders",
+            data: totalOrders,
+            borderColor: "rgb(59, 130, 246)",
+            backgroundColor: "rgba(59, 130, 246, 0.12)",
+            pointBackgroundColor: "rgb(59, 130, 246)",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            yAxisID: "y",
+          },
+          {
+            label: "Subscription Orders",
+            data: subscriptionOrders,
+            borderColor: "rgb(34, 197, 94)",
+            backgroundColor: "rgba(34, 197, 94, 0.12)",
+            pointBackgroundColor: "rgb(34, 197, 94)",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            yAxisID: "y",
+          },
+          {
+            label: "Regular Orders",
+            data: regularOrders,
+            borderColor: "rgb(168, 85, 247)",
+            backgroundColor: "rgba(168, 85, 247, 0.12)",
+            pointBackgroundColor: "rgb(168, 85, 247)",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            yAxisID: "y",
+          },
+          {
+            label: "Revenue",
+            data: revenueData,
+            borderColor: "rgb(245, 158, 11)",
+            backgroundColor: "rgba(245, 158, 11, 0.12)",
+            pointBackgroundColor: "rgb(245, 158, 11)",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            yAxisID: "y1",
+          },
+        ];
+
+        orderTrendChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Order Trend Analysis",
+                font: { size: 16, weight: "bold" },
+                color: isDark ? "#F9FAFB" : "#111827",
+              },
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 20,
+                  font: { size: 11 },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+              },
+              datalabels: {
+                display: function (context) {
+                  // Only show labels for Total Orders and Revenue
+                  return context.datasetIndex === 0 || context.datasetIndex === 3;
+                },
+                color: isDark ? "#F9FAFB" : "#111827",
+                font: { size: 10, weight: "bold" },
+                anchor: "end",
+                align: "top",
+                offset: 4,
+                formatter: function (value, context) {
+                  if (value <= 0) return "";
+                  if (context.datasetIndex === 3) {
+                    // Revenue - show with rupee sign
+                    return value >= 1000 ? "\u20B9" + (value / 1000).toFixed(1) + "k" : "\u20B9" + value.toLocaleString();
+                  }
+                  return value.toLocaleString();
+                },
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Date",
+                  font: { size: 12, weight: "bold" },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+                ticks: {
+                  font: { size: 10 },
+                  color: isDark ? "#9CA3AF" : "#6B7280",
+                },
+                grid: {
+                  color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                },
+              },
+              y: {
+                type: "linear",
+                display: true,
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Order Count",
+                  font: { size: 12, weight: "bold" },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+                ticks: {
+                  font: { size: 10 },
+                  color: isDark ? "#9CA3AF" : "#6B7280",
+                },
+                grid: {
+                  color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                },
+              },
+              y1: {
+                type: "linear",
+                display: true,
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Revenue (\u20B9)",
+                  font: { size: 12, weight: "bold" },
+                  color: isDark ? "#D1D5DB" : "#374151",
+                },
+                ticks: {
+                  font: { size: 10 },
+                  color: isDark ? "#9CA3AF" : "#6B7280",
+                  callback: function (value) {
+                    return value >= 1000 ? "\u20B9" + (value / 1000).toFixed(1) + "k" : "\u20B9" + value;
+                  },
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+              },
+            },
+            interaction: {
+              intersect: false,
+              mode: "index",
+            },
+          },
+          plugins: [ChartDataLabels],
+        });
+      }
+
+      // ==========================================
+      // Data Summary
+      // ==========================================
+      function updateDataSummary() {
+        if (!currentTrendData || currentTrendData.length === 0) {
+          document.getElementById("dataSummary").classList.add("hidden");
+          return;
+        }
+
+        const totalOrders = currentTrendData.reduce((sum, item) => sum + (Number(item.total_orders) || 0), 0);
+        const totalQuantity = currentTrendData.reduce((sum, item) => sum + (Number(item.total_quantity) || 0), 0);
+        const totalRevenue = currentTrendData.reduce((sum, item) => sum + (Number(item.total_revenue) || 0), 0);
+        const subscriptionOrders = currentTrendData.reduce((sum, item) => sum + (Number(item.subscription_orders) || 0), 0);
+
+        const summaryContent = document.getElementById("summaryContent");
+        summaryContent.innerHTML =
+          '<div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">' +
+          '  <h4 class="font-semibold text-blue-900 dark:text-blue-100 text-sm">Total Orders</h4>' +
+          '  <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">' +
+          totalOrders.toLocaleString() +
+          "</p>" +
+          '  <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">Sub: ' +
+          subscriptionOrders.toLocaleString() +
+          " | Reg: " +
+          (totalOrders - subscriptionOrders).toLocaleString() +
+          "</p>" +
+          "</div>" +
+          '<div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">' +
+          '  <h4 class="font-semibold text-green-900 dark:text-green-100 text-sm">Total Quantity</h4>' +
+          '  <p class="text-2xl font-bold text-green-600 dark:text-green-400">' +
+          Math.round(totalQuantity).toLocaleString() +
+          "</p>" +
+          "</div>" +
+          '<div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">' +
+          '  <h4 class="font-semibold text-amber-900 dark:text-amber-100 text-sm">Total Revenue</h4>' +
+          '  <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">\u20B9' +
+          totalRevenue.toLocaleString() +
+          "</p>" +
+          "</div>" +
+          '<div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">' +
+          '  <h4 class="font-semibold text-purple-900 dark:text-purple-100 text-sm">Avg Revenue/Day</h4>' +
+          '  <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">\u20B9' +
+          (currentTrendData.length > 0 ? Math.round(totalRevenue / currentTrendData.length).toLocaleString() : "0") +
+          "</p>" +
+          "</div>";
+
+        document.getElementById("dataSummary").classList.remove("hidden");
+      }
+
+      // ==========================================
+      // Pagination
+      // ==========================================
+      function updatePaginationControls(pagination) {
+        const paginationControls = document.getElementById("paginationControls");
+        const pageInfo = document.getElementById("pageInfo");
+        const pagePrevBtn = document.getElementById("pagePrevBtn");
+        const pageNextBtn = document.getElementById("pageNextBtn");
+        const monthSelector = document.getElementById("monthSelector");
+
+        if (pagination && pagination.totalPages > 1) {
+          paginationControls.classList.remove("hidden");
+
+          if (selectedQuarter) {
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const [q, year] = selectedQuarter.split("-");
+            const quarterMonths = { Q1: [0, 1, 2], Q2: [3, 4, 5], Q3: [6, 7, 8], Q4: [9, 10, 11] };
+            const currentMonthIndex = quarterMonths[q][pagination.currentPage - 1] || quarterMonths[q][0];
+            pageInfo.textContent = monthNames[currentMonthIndex] + " " + year + " (Month " + pagination.currentPage + " of " + pagination.totalPages + ")";
+            monthSelector.classList.add("hidden");
+          } else if (selectedYear) {
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            pageInfo.textContent = monthNames[pagination.currentPage - 1] + " " + selectedYear + " (Month " + pagination.currentPage + " of " + pagination.totalPages + ")";
+            monthSelector.classList.remove("hidden");
+            monthSelector.value = pagination.currentPage;
+          } else {
+            pageInfo.textContent = "Page " + pagination.currentPage + " of " + pagination.totalPages;
+            monthSelector.classList.add("hidden");
+          }
+
+          pagePrevBtn.disabled = !pagination.hasPrev;
+          pageNextBtn.disabled = !pagination.hasNext;
+        } else {
+          paginationControls.classList.add("hidden");
+        }
+      }
+
+      // ==========================================
+      // Show/Hide Selection Panels
+      // ==========================================
+      function hideAllSelections() {
+        document.getElementById("quarterlySelection").classList.add("hidden");
+        document.getElementById("yearlySelection").classList.add("hidden");
+        document.getElementById("monthlySelection").classList.add("hidden");
+        document.getElementById("customRangeSelection").classList.add("hidden");
+        document.getElementById("applyFilterBtn").classList.remove("hidden");
+      }
+
+      function showQuarterlySelection() {
+        hideAllSelections();
+        document.getElementById("quarterlySelection").classList.remove("hidden");
+        document.getElementById("applyFilterBtn").classList.add("hidden");
+      }
+
+      function showYearlySelection() {
+        hideAllSelections();
+        document.getElementById("yearlySelection").classList.remove("hidden");
+        document.getElementById("applyFilterBtn").classList.add("hidden");
+      }
+
+      function showMonthlySelection() {
+        hideAllSelections();
+        document.getElementById("monthlySelection").classList.remove("hidden");
+        document.getElementById("applyFilterBtn").classList.add("hidden");
+        generateMonthButtons();
+      }
+
+      function showCustomRangeSelection() {
+        hideAllSelections();
+        document.getElementById("customRangeSelection").classList.remove("hidden");
+        document.getElementById("applyFilterBtn").classList.add("hidden");
+      }
+
+      function generateMonthButtons() {
+        const container = document.getElementById("monthlyButtons");
+        if (container.children.length > 0) return;
+        const now = new Date();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        for (let i = 0; i < 18; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const label = monthNames[d.getMonth()] + " " + d.getFullYear();
+          const startStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-01";
+          const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+          const endStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(lastDay).padStart(2, "0");
+          const btn = document.createElement("button");
+          btn.className = "month-btn px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 transition-colors";
+          btn.textContent = label;
+          btn.dataset.start = startStr;
+          btn.dataset.end = endStr;
+          btn.addEventListener("click", function () {
+            document.querySelectorAll(".month-btn").forEach(function (b) {
+              b.classList.remove("bg-blue-500", "text-white");
+              b.classList.add("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            });
+            this.classList.remove("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            this.classList.add("bg-blue-500", "text-white");
+            selectedMonth = { start: this.dataset.start, end: this.dataset.end };
+            currentPageNumber = 1;
+            loadOrderTrendData(1);
+          });
+          container.appendChild(btn);
+        }
+      }
+
+      function loadNextPage() {
+        currentPageNumber++;
+        loadOrderTrendData(currentPageNumber);
+      }
+
+      function loadPreviousPage() {
+        currentPageNumber = Math.max(1, currentPageNumber - 1);
+        loadOrderTrendData(currentPageNumber);
+      }
+
+      // ==========================================
+      // CSV Export
+      // ==========================================
+      function exportCsv() {
+        const selectedRange = document.getElementById("dateRangeSelect").value;
+        const filterParams = getFilterParams();
+
+        let apiRange = selectedRange;
+        let extraParams = "";
+
+        if (selectedRange === "quarterly" && selectedQuarter) {
+          apiRange = selectedQuarter;
+        } else if (selectedRange === "yearly" && selectedYear) {
+          apiRange = selectedYear;
+        } else if ((selectedRange === "monthly" || selectedRange === "custom") && selectedMonth) {
+          apiRange = "custom";
+          extraParams = "&start=" + selectedMonth.start + "&end=" + selectedMonth.end;
+        }
+
+        const btn = document.getElementById("exportCsvBtn");
+        const btnText = document.getElementById("exportCsvText");
+        btn.disabled = true;
+        btnText.textContent = "Exporting...";
+
+        const exportUrl = "/analytics/export/order-trend-detailed?range=" + apiRange + extraParams + filterParams;
+
+        const link = document.createElement("a");
+        link.href = exportUrl;
+        link.click();
+
+        setTimeout(function () {
+          btn.disabled = false;
+          btnText.textContent = "Export CSV";
+        }, 2000);
+      }
+
+      // ==========================================
+      // Initialize
+      // ==========================================
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeTheme();
+        loadCategories();
+
+        // Apply filter button
+        document.getElementById("applyFilterBtn").addEventListener("click", () => loadOrderTrendData(1));
+        document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
+        document.getElementById("pagePrevBtn").addEventListener("click", loadPreviousPage);
+        document.getElementById("pageNextBtn").addEventListener("click", loadNextPage);
+
+        // Month selector for yearly pagination
+        document.getElementById("monthSelector").addEventListener("change", function () {
+          if (selectedYear && this.value) {
+            currentPageNumber = parseInt(this.value);
+            loadOrderTrendData(currentPageNumber);
+          }
+        });
+
+        // Date range change handler
+        document.getElementById("dateRangeSelect").addEventListener("change", function () {
+          const val = this.value;
+          selectedQuarter = null;
+          selectedYear = null;
+          selectedMonth = null;
+          if (val === "quarterly") {
+            showQuarterlySelection();
+          } else if (val === "yearly") {
+            showYearlySelection();
+          } else if (val === "monthly") {
+            showMonthlySelection();
+          } else if (val === "custom") {
+            showCustomRangeSelection();
+          } else {
+            hideAllSelections();
+          }
+        });
+
+        // Custom date range apply
+        document.getElementById("applyCustomRangeBtn").addEventListener("click", function () {
+          const startDate = document.getElementById("customStartDate").value;
+          const endDate = document.getElementById("customEndDate").value;
+          if (!startDate || !endDate) {
+            alert("Please select both start and end dates.");
+            return;
+          }
+          if (startDate > endDate) {
+            alert("Start date must be before end date.");
+            return;
+          }
+          selectedMonth = { start: startDate, end: endDate };
+          currentPageNumber = 1;
+          loadOrderTrendData(1);
+        });
+
+        // Category change -> load subcategories and products
+        document.getElementById("categorySelect").addEventListener("change", function () {
+          const categoryId = this.value;
+          loadSubCategories(categoryId);
+          if (categoryId) {
+            loadProducts(categoryId, null);
+          } else {
+            document.getElementById("productSelect").innerHTML = '<option value="">All Products</option>';
+            document.getElementById("productSelect").disabled = true;
+          }
+        });
+
+        // Subcategory change -> load products
+        document.getElementById("subCategorySelect").addEventListener("change", function () {
+          const categoryId = document.getElementById("categorySelect").value;
+          const subCategoryId = this.value;
+          loadProducts(categoryId, subCategoryId);
+        });
+
+        // Quarter selection buttons
+        document.querySelectorAll(".quarter-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            document.querySelectorAll(".quarter-btn").forEach((b) => {
+              b.classList.remove("bg-blue-500", "text-white");
+              b.classList.add("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            });
+            this.classList.remove("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            this.classList.add("bg-blue-500", "text-white");
+
+            selectedQuarter = this.dataset.quarter;
+            document.getElementById("dateRangeSelect").value = "quarterly";
+            currentPageNumber = 1;
+            loadOrderTrendData(1);
+          });
+        });
+
+        // Year selection buttons
+        document.querySelectorAll(".year-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            document.querySelectorAll(".year-btn").forEach((b) => {
+              b.classList.remove("bg-blue-500", "text-white");
+              b.classList.add("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            });
+            this.classList.remove("bg-gray-100", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+            this.classList.add("bg-blue-500", "text-white");
+
+            selectedYear = this.dataset.year;
+            document.getElementById("dateRangeSelect").value = "yearly";
+            currentPageNumber = 1;
+            loadOrderTrendData(1);
+          });
+        });
+
+        // Load initial data
+        loadOrderTrendData();
+      });
+    </script>
+  </body>
+</html>
