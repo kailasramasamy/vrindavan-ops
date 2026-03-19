@@ -174,6 +174,30 @@
             </a>
             <% } %>
 
+            <!-- Inward POs - Active (Admin only) -->
+            <% if (typeof user !== 'undefined' && user && user.role === 'admin') { %>
+            <a href="/inward-po" class="group relative bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-slate-700 overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="relative">
+                <div class="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-3 group-hover:text-cyan-600 transition-colors">Inward POs</h3>
+                <div class="flex items-center text-cyan-600 font-medium group-hover:text-cyan-700">
+                  <span>Explore System</span>
+                  <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
+                <div class="absolute top-4 right-4">
+                  <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300 text-xs font-medium rounded-full">Active</span>
+                </div>
+              </div>
+            </a>
+            <% } %>
+
             <!-- Sales Management - Active (Permission-based) -->
             <% if (typeof user !== 'undefined' && user && (user.role === 'admin' || (user.permissions && user.permissions.sales))) { %>
             <a href="/sales/dashboard" class="group relative bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-slate-700 overflow-hidden">

@@ -29,6 +29,10 @@ const ops = Router();
 
 // Auth routes are now handled by auth.js
 
+// Webhook endpoint (API key auth only, before requireAuth middleware)
+import { WebhookController } from "../modules/inward-po/controllers/WebhookController.js";
+ops.post("/api/webhook/po", WebhookController.receivePoWebhook);
+
 // Mount shareable product label order route BEFORE authentication
 // This allows vendors to access orders without ops login
 // Handle both GET (view) and POST (passcode submission) requests
@@ -937,6 +941,10 @@ ops.use("/po", poRoutes);
 
 // PO API routes
 ops.use("/po/api/v1", poRoutes);
+
+// Inward PO Management routes
+import inwardPoRoutes from "../modules/inward-po/routes.js";
+ops.use("/inward-po", inwardPoRoutes);
 
 // Material Management routes
 ops.use("/", materialAdmin);
