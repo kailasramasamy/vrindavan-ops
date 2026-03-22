@@ -182,79 +182,26 @@ export class InwardPoModel {
       }
       const subtotal = totalAmount - gstAmount;
 
-      // 5. Update PO status to processing
+      // 5. Update PO status to grn_received (supplier creates invoice manually)
       await connection.execute(
-        `UPDATE inward_purchase_orders SET status = 'processing' WHERE id = ?`,
-        [inwardPoId],
+        `UPDATE inward_purchase_orders
+         SET status = 'grn_received', subtotal = ?, gst_amount = ?, total_amount = ?
+         WHERE id = ?`,
+        [subtotal, gstAmount, totalAmount, inwardPoId],
       );
       await connection.execute(
         `INSERT INTO inward_po_status_history
          (inward_po_id, from_status, to_status, notes)
-         VALUES (?, ?, 'processing', 'GRN received from WMS')`,
+         VALUES (?, ?, 'grn_received', 'GRN received from WMS — ready for supplier invoice')`,
         [inwardPoId, oldStatus],
       );
 
-      // 6. Auto-generate invoice
-      const today = new Date().toISOString().slice(0, 10);
-      const dateStr = today.replace(/-/g, "");
-      const [seqRows] = await connection.execute(
-        `SELECT COUNT(*) AS cnt FROM inward_po_invoices
-         WHERE invoice_number LIKE ?`,
-        [`INV-${dateStr}-%`],
-      );
-      const seq = (seqRows[0]?.cnt || 0) + 1;
-      const invoiceNumber = `INV-${dateStr}-${String(seq).padStart(4, "0")}`;
-
-      const [invoiceResult] = await connection.execute(
-        `INSERT INTO inward_po_invoices
-         (inward_po_id, invoice_number, invoice_date, subtotal,
-          gst_amount, total_amount, notes, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'draft')`,
-        [
-          inwardPoId,
-          invoiceNumber,
-          today,
-          subtotal,
-          gstAmount,
-          totalAmount,
-          `Auto-generated from GRN ${grnData.grnNumber || grnData.grnId}`,
-        ],
-      );
-      const invoiceId = invoiceResult.insertId;
-
-      // 7. Update PO status to invoiced
-      await connection.execute(
-        `UPDATE inward_purchase_orders SET status = 'invoiced' WHERE id = ?`,
-        [inwardPoId],
-      );
-      await connection.execute(
-        `INSERT INTO inward_po_status_history
-         (inward_po_id, from_status, to_status, notes)
-         VALUES (?, 'processing', 'invoiced', 'Auto-invoice generated from GRN')`,
-        [inwardPoId],
-      );
-
       await connection.commit();
-
-      // 8. Fire-and-forget: send invoice to WMS
-      InwardPoModel.sendAutoInvoiceToWms(wmsPoId, {
-        invoiceId,
-        invoiceNumber,
-        invoiceDate: today,
-        subtotal,
-        gstAmount,
-        totalAmount,
-        grnNumber: grnData.grnNumber,
-      }).catch((err) => {
-        console.error("Auto-send invoice to WMS failed:", err);
-      });
 
       return {
         success: true,
         data: {
           inwardPoId,
-          invoiceId,
-          invoiceNumber,
           subtotal,
           gstAmount,
           totalAmount,
@@ -596,7 +543,7 @@ export class InwardPoModel {
   static async getInvoiceById(invoiceId) {
     try {
       const [rows] = await pool.execute(
-        `SELECT inv.*, ipo.wms_po_number, ipo.warehouse_name
+        `SELECT inv.*, ipo.wms_po_id, ipo.wms_po_number, ipo.warehouse_name
          FROM inward_po_invoices inv
          JOIN inward_purchase_orders ipo ON inv.inward_po_id = ipo.id
          WHERE inv.id = ?`,

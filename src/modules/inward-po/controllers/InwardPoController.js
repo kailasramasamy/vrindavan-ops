@@ -94,10 +94,54 @@ export class InwardPoController {
         return res.status(400).json({ success: false, error: result.error });
       }
 
+      // Auto-send invoice to WMS (fire-and-forget)
+      const invoiceId = result.data.id;
+      InwardPoController.autoSendToWms(id, invoiceId).catch((err) => {
+        console.error("Auto-send invoice to WMS failed:", err);
+      });
+
       res.json({ success: true, data: result.data });
     } catch (error) {
       console.error("Error creating invoice:", error);
       res.status(500).json({ success: false, error: "Failed to create invoice" });
+    }
+  }
+
+  static async autoSendToWms(inwardPoId, invoiceId) {
+    const invoiceResult = await InwardPoModel.getInvoiceById(invoiceId);
+    if (!invoiceResult.success) return;
+
+    const inv = invoiceResult.data;
+    const wmsPoId = inv.wms_po_id;
+    if (!wmsPoId) return;
+
+    const wmsApiUrl = process.env.WMS_API_URL || "http://localhost:4001/api/v1";
+    const wmsApiKey = process.env.WMS_API_KEY || "dev-wms-key";
+
+    const response = await fetch(`${wmsApiUrl}/purchase-orders/${wmsPoId}/supplier-invoice`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": wmsApiKey,
+      },
+      body: JSON.stringify({
+        invoice_number: inv.invoice_number,
+        invoice_date: inv.invoice_date,
+        invoice_amount: Number(inv.subtotal) || 0,
+        gst_amount: Number(inv.gst_amount) || 0,
+        notes: "Sent from OPS by supplier",
+      }),
+    });
+
+    if (response.ok) {
+      await InwardPoModel.updateInvoiceStatus(invoiceId, "sent");
+      const pool = (await import("../../../db/pool.js")).default;
+      await pool.execute(
+        `UPDATE inward_po_invoices SET sent_to_wms_at = NOW() WHERE id = ?`,
+        [invoiceId],
+      );
+    } else {
+      console.error("WMS rejected invoice:", await response.text());
     }
   }
 
@@ -173,17 +217,21 @@ export class InwardPoController {
       const wmsApiUrl = process.env.WMS_API_URL || "http://localhost:4001/api/v1";
       const wmsApiKey = process.env.WMS_API_KEY || "dev-wms-key";
 
-      const response = await fetch(`${wmsApiUrl}/po/invoice-received`, {
+      const inv = invoiceResult.data;
+      const wmsPoId = inv.wms_po_id;
+
+      const response = await fetch(`${wmsApiUrl}/purchase-orders/${wmsPoId}/supplier-invoice`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-API-Key": wmsApiKey,
         },
         body: JSON.stringify({
-          wms_po_number: invoiceResult.data.wms_po_number,
-          invoice_number: invoiceResult.data.invoice_number,
-          invoice_date: invoiceResult.data.invoice_date,
-          total_amount: invoiceResult.data.total_amount,
+          invoice_number: inv.invoice_number,
+          invoice_date: inv.invoice_date,
+          invoice_amount: Number(inv.subtotal) || 0,
+          gst_amount: Number(inv.gst_amount) || 0,
+          notes: `Sent from OPS by supplier`,
         }),
       });
 
