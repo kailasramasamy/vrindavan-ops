@@ -1867,6 +1867,7 @@
           const y = document.getElementById('yearFilter')?.value || document.getElementById('yearFilterMobile')?.value;
           const m = document.getElementById('monthFilter')?.value || document.getElementById('monthFilterMobile')?.value;
           const p = document.getElementById('periodFilter')?.value || document.getElementById('periodFilterMobile')?.value || 'H1';
+          const mt = document.getElementById('milkTypeFilter')?.value || document.getElementById('milkTypeFilterMobile')?.value || 'all';
           
           // Validate inputs
           if (!y || !m || y === '' || m === ''){ 
@@ -1894,10 +1895,11 @@
           if (btn){ btn.disabled = true; btn.innerHTML = `<i class=\"fas fa-spinner fa-spin mr-2\"></i>${action==='regenerate'?'Regenerating…':'Generating…'}`; }
           
           const endpoint = action==='regenerate' ? '/api/bills/regenerate/all' : '/api/bills/generate/all';
-          const requestBody = { 
-            startDate: start, 
-            endDate: end, 
-            periodType: p 
+          const requestBody = {
+            startDate: start,
+            endDate: end,
+            periodType: p,
+            milkType: mt
           };
           
           const res = await fetch(endpoint, { 

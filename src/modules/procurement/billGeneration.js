@@ -4,7 +4,7 @@ import pool from "../../db/pool.js";
 const router = express.Router();
 
 // Generate bills for farmers
-async function generateFarmerBills(startDate, endDate, periodType) {
+async function generateFarmerBills(startDate, endDate, periodType, milkType = "all") {
   try {
     // Get the correct status IDs
     const [pendingBillingStatus] = await pool.query("SELECT id FROM billing_status WHERE status = 'pending' LIMIT 1");
@@ -15,7 +15,7 @@ async function generateFarmerBills(startDate, endDate, periodType) {
 
     // Get all farmers with their milk data for the period
     const query = `
-      SELECT 
+      SELECT
         f.id, f.name, f.village, f.milk_type,
         f.rate_type, f.flat_rate, f.rate_chart_id,
         c.name as cpp_name,
@@ -28,12 +28,13 @@ async function generateFarmerBills(startDate, endDate, periodType) {
       LEFT JOIN cpp c ON c.id = f.cpp_id
       LEFT JOIN milk_entries_cpp me ON me.farmer_id = f.id AND me.date BETWEEN ? AND ?
       WHERE f.status = 'active'
+        AND (LOWER(COALESCE(f.milk_type, '')) = LOWER(?) OR LOWER(?) = 'all')
       GROUP BY f.id, f.name, f.village, f.milk_type, f.rate_type, f.flat_rate, f.rate_chart_id, c.name
       HAVING total_quantity > 0
       ORDER BY f.name
     `;
 
-    const [farmers] = await pool.query(query, [startDate, endDate]);
+    const [farmers] = await pool.query(query, [startDate, endDate, milkType, milkType]);
 
     const bills = [];
     const billingDate = new Date().toISOString().slice(0, 10);
@@ -92,7 +93,7 @@ async function generateFarmerBills(startDate, endDate, periodType) {
 }
 
 // Generate bills for CPP
-async function generateCppBills(startDate, endDate, periodType) {
+async function generateCppBills(startDate, endDate, periodType, milkType = "all") {
   try {
     // Get the correct status IDs
     const [pendingBillingStatus] = await pool.query("SELECT id FROM billing_status WHERE status = 'pending' LIMIT 1");
@@ -103,7 +104,7 @@ async function generateCppBills(startDate, endDate, periodType) {
 
     // Get all CPPs with their aggregated milk data and salary information
     const query = `
-      SELECT 
+      SELECT
         c.id, c.name, c.village, c.milk_type,
         c.rate_type, c.flat_rate, c.rate_chart_id,
         c.salary_type, c.salary_amount,
@@ -117,12 +118,13 @@ async function generateCppBills(startDate, endDate, periodType) {
       LEFT JOIN rcc r ON r.id = c.rcc_id
       LEFT JOIN milk_entries_cpp me ON me.cpp_id = c.id AND me.date BETWEEN ? AND ?
       WHERE c.status = 'active'
+        AND (LOWER(COALESCE(c.milk_type, '')) = LOWER(?) OR LOWER(?) = 'all')
       GROUP BY c.id, c.name, c.village, c.milk_type, c.rate_type, c.flat_rate, c.rate_chart_id, c.salary_type, c.salary_amount, r.name
       HAVING total_quantity > 0
       ORDER BY c.name
     `;
 
-    const [cpps] = await pool.query(query, [startDate, endDate]);
+    const [cpps] = await pool.query(query, [startDate, endDate, milkType, milkType]);
 
     const bills = [];
     const billingDate = new Date().toISOString().slice(0, 10);
@@ -363,24 +365,44 @@ async function checkBillsExist(startDate, endDate, periodType) {
 }
 
 // Regenerate bills (delete existing and create new ones)
-async function regenerateFarmerBills(startDate, endDate, periodType) {
+async function regenerateFarmerBills(startDate, endDate, periodType, milkType = "all") {
   try {
-    // Delete existing bills
-    await pool.query("DELETE FROM farmer_billing WHERE billing_period_start = ? AND billing_period_end = ? AND period_type = ?", [startDate, endDate, periodType]);
+    // Delete existing bills — scoped to milk type if specified so other milk types' bills remain untouched
+    if (milkType && milkType.toLowerCase() !== "all") {
+      await pool.query(
+        `DELETE fb FROM farmer_billing fb
+         INNER JOIN farmers f ON f.id = fb.farmer_id
+         WHERE fb.billing_period_start = ? AND fb.billing_period_end = ? AND fb.period_type = ?
+           AND LOWER(COALESCE(f.milk_type, '')) = LOWER(?)`,
+        [startDate, endDate, periodType, milkType],
+      );
+    } else {
+      await pool.query("DELETE FROM farmer_billing WHERE billing_period_start = ? AND billing_period_end = ? AND period_type = ?", [startDate, endDate, periodType]);
+    }
 
     // Generate new bills
-    return await generateFarmerBills(startDate, endDate, periodType);
+    return await generateFarmerBills(startDate, endDate, periodType, milkType);
   } catch (error) {
     console.error("Error regenerating farmer bills:", error);
     throw error;
   }
 }
 
-async function regenerateCppBills(startDate, endDate, periodType) {
+async function regenerateCppBills(startDate, endDate, periodType, milkType = "all") {
   try {
-    await pool.query("DELETE FROM cpp_billing WHERE billing_period_start = ? AND billing_period_end = ? AND period_type = ?", [startDate, endDate, periodType]);
+    if (milkType && milkType.toLowerCase() !== "all") {
+      await pool.query(
+        `DELETE cb FROM cpp_billing cb
+         INNER JOIN cpp c ON c.id = cb.cpp_id
+         WHERE cb.billing_period_start = ? AND cb.billing_period_end = ? AND cb.period_type = ?
+           AND LOWER(COALESCE(c.milk_type, '')) = LOWER(?)`,
+        [startDate, endDate, periodType, milkType],
+      );
+    } else {
+      await pool.query("DELETE FROM cpp_billing WHERE billing_period_start = ? AND billing_period_end = ? AND period_type = ?", [startDate, endDate, periodType]);
+    }
 
-    return await generateCppBills(startDate, endDate, periodType);
+    return await generateCppBills(startDate, endDate, periodType, milkType);
   } catch (error) {
     console.error("Error regenerating CPP bills:", error);
     throw error;
@@ -441,7 +463,7 @@ router.get("/check-bills", async (req, res) => {
 // Regenerate all bills (must come before /regenerate/:entityType to avoid route conflict)
 router.post("/regenerate/all", async (req, res) => {
   try {
-    const { startDate, endDate, periodType } = req.body;
+    const { startDate, endDate, periodType, milkType = "all" } = req.body;
 
     if (!startDate || !endDate || !periodType) {
       return res.status(400).json({
@@ -450,7 +472,16 @@ router.post("/regenerate/all", async (req, res) => {
       });
     }
 
-    const [farmersResult, cppResult, rccResult, mpResult] = await Promise.all([regenerateFarmerBills(startDate, endDate, periodType), regenerateCppBills(startDate, endDate, periodType), regenerateRccBills(startDate, endDate, periodType), regenerateMpBills(startDate, endDate, periodType)]);
+    // RCC and MP aggregate across all milk types, so they're only touched when milk type is 'all'
+    const isAllMilkTypes = !milkType || milkType.toLowerCase() === "all";
+    const emptyResult = { success: true, bills: [], count: 0, skipped: true };
+
+    const [farmersResult, cppResult, rccResult, mpResult] = await Promise.all([
+      regenerateFarmerBills(startDate, endDate, periodType, milkType),
+      regenerateCppBills(startDate, endDate, periodType, milkType),
+      isAllMilkTypes ? regenerateRccBills(startDate, endDate, periodType) : Promise.resolve(emptyResult),
+      isAllMilkTypes ? regenerateMpBills(startDate, endDate, periodType) : Promise.resolve(emptyResult),
+    ]);
 
     res.json({
       success: true,
@@ -475,7 +506,7 @@ router.post("/regenerate/all", async (req, res) => {
 router.post("/regenerate/:entityType", async (req, res) => {
   try {
     const { entityType } = req.params;
-    const { startDate, endDate, periodType } = req.body;
+    const { startDate, endDate, periodType, milkType = "all" } = req.body;
 
     if (!startDate || !endDate || !periodType) {
       return res.status(400).json({
@@ -487,10 +518,10 @@ router.post("/regenerate/:entityType", async (req, res) => {
     let result;
     switch (entityType) {
       case "farmers":
-        result = await regenerateFarmerBills(startDate, endDate, periodType);
+        result = await regenerateFarmerBills(startDate, endDate, periodType, milkType);
         break;
       case "cpp":
-        result = await regenerateCppBills(startDate, endDate, periodType);
+        result = await regenerateCppBills(startDate, endDate, periodType, milkType);
         break;
       case "rcc":
         result = await regenerateRccBills(startDate, endDate, periodType);
@@ -518,7 +549,7 @@ router.post("/regenerate/:entityType", async (req, res) => {
 // Generate bills for all entity types
 router.post("/generate/all", async (req, res) => {
   try {
-    const { startDate, endDate, periodType } = req.body;
+    const { startDate, endDate, periodType, milkType = "all" } = req.body;
 
     if (!startDate || !endDate || !periodType) {
       return res.status(400).json({
@@ -527,7 +558,16 @@ router.post("/generate/all", async (req, res) => {
       });
     }
 
-    const [farmersResult, cppResult, rccResult, mpResult] = await Promise.all([generateFarmerBills(startDate, endDate, periodType), generateCppBills(startDate, endDate, periodType), generateRccBills(startDate, endDate, periodType), generateMpBills(startDate, endDate, periodType)]);
+    // RCC and MP aggregate across all milk types, so they're only touched when milk type is 'all'
+    const isAllMilkTypes = !milkType || milkType.toLowerCase() === "all";
+    const emptyResult = { success: true, bills: [], count: 0, skipped: true };
+
+    const [farmersResult, cppResult, rccResult, mpResult] = await Promise.all([
+      generateFarmerBills(startDate, endDate, periodType, milkType),
+      generateCppBills(startDate, endDate, periodType, milkType),
+      isAllMilkTypes ? generateRccBills(startDate, endDate, periodType) : Promise.resolve(emptyResult),
+      isAllMilkTypes ? generateMpBills(startDate, endDate, periodType) : Promise.resolve(emptyResult),
+    ]);
 
     res.json({
       success: true,
@@ -552,7 +592,7 @@ router.post("/generate/all", async (req, res) => {
 router.post("/generate/:entityType", async (req, res) => {
   try {
     const { entityType } = req.params;
-    const { startDate, endDate, periodType } = req.body;
+    const { startDate, endDate, periodType, milkType = "all" } = req.body;
 
     if (!startDate || !endDate || !periodType) {
       return res.status(400).json({
@@ -564,10 +604,10 @@ router.post("/generate/:entityType", async (req, res) => {
     let result;
     switch (entityType) {
       case "farmers":
-        result = await generateFarmerBills(startDate, endDate, periodType);
+        result = await generateFarmerBills(startDate, endDate, periodType, milkType);
         break;
       case "cpp":
-        result = await generateCppBills(startDate, endDate, periodType);
+        result = await generateCppBills(startDate, endDate, periodType, milkType);
         break;
       case "rcc":
         result = await generateRccBills(startDate, endDate, periodType);
