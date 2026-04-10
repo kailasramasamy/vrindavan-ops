@@ -89,12 +89,10 @@ app.set("view engine", "ejs");
 app.use(attachUser);
 
 // Authentication routes (after RBAC middleware)
-// Mounted at /ops so URLs match the legacy monorepo contract
-// (Apache forwards vrindavan.farm/ops/* → localhost:PORT/ops/*)
-app.use("/ops", auth);
+app.use("/", auth);
 
 // Ops routes
-app.use("/ops", ops);
+app.use("/", ops);
 
 // Marketing routes
 app.use("/marketing", marketing);
