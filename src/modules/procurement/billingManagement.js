@@ -1002,7 +1002,8 @@ router.get("/bills", async (req, res) => {
           cb.billing_period_start, cb.billing_period_end, cb.period_type,
           cb.total_quantity, cb.total_amount, cb.billing_date, cb.due_date,
           bs.status as billing_status, ps.status as payment_status,
-          cb.payment_date, cb.payment_reference, cb.notes
+          cb.payment_date, cb.payment_reference, cb.notes,
+          cb.runq_bill_id, cb.runq_sync_status, cb.runq_sync_version, cb.runq_synced_at
         FROM cpp_billing cb
         LEFT JOIN cpp c ON cb.cpp_id = c.id
         LEFT JOIN billing_status bs ON cb.billing_status_id = bs.id

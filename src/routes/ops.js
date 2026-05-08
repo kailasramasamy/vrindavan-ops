@@ -12,6 +12,7 @@ import adminApi from "../modules/procurement/adminApi.js";
 import billGeneration from "../modules/procurement/billGeneration.js";
 import billing from "../modules/procurement/billing.js";
 import billingManagement from "../modules/procurement/billingManagement.js";
+import runqSync from "../modules/procurement/runqSync.js";
 import { CppMilkController } from "../modules/procurement/controllers/CppMilkController.js";
 import { MpMilkController } from "../modules/procurement/controllers/MpMilkController.js";
 import { RccMilkController } from "../modules/procurement/controllers/RccMilkController.js";
@@ -670,6 +671,9 @@ ops.use("/api/billing", billingManagement);
 
 // Bill generation API routes
 ops.use("/api/bills", billGeneration);
+
+// Runq bill sync — push CPP bills into runq
+ops.use("/api/runq-sync", runqSync);
 
 // Production Management Routes
 // Production overview - redirect to dashboard

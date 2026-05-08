@@ -127,31 +127,48 @@
 
         <!-- Bills Management -->
         <div class="card p-6">
-          <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6">
-            <h2 class="text-xl font-semibold mb-4 lg:mb-0">Bills Management</h2>
+          <div class="flex flex-col gap-4 mb-6">
+            <!-- Title + Action buttons (top row) -->
+            <div class="flex flex-wrap justify-between items-center gap-3">
+              <h2 class="text-xl font-semibold">Bills Management</h2>
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="refreshBills" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+                  <i class="fas fa-sync-alt mr-2"></i>
+                  Refresh
+                </button>
+                <button id="regenAllBills" class="inline-flex items-center px-3 py-2 bg-orange-600 text-white rounded-md text-sm hover:bg-orange-700">
+                  <i class="fas fa-redo mr-2"></i>
+                  Regenerate Bills
+                </button>
+                <button id="bulkRunqSync" class="inline-flex items-center px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 hidden whitespace-nowrap">
+                  <i class="fas fa-cloud-upload-alt mr-2"></i>
+                  <span>Sync all to runQ</span>
+                </button>
+              </div>
+            </div>
 
-            <!-- Desktop Filters -->
-            <div class="space-x-4" id="desktopFilters">
-              <select id="yearFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
-              <select id="monthFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
-              <select id="periodFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <!-- Desktop filters row (hidden on mobile — mobile has its own filters block below) -->
+            <div class="hidden lg:grid grid-cols-6 gap-3" id="desktopFilters">
+              <select id="yearFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
+              <select id="monthFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"></select>
+              <select id="periodFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 <option value="H1">H1 (1st Half)</option>
                 <option value="H2">H2 (2nd Half)</option>
               </select>
-              <select id="entityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+              <select id="entityFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 <option value="">All Entities</option>
                 <option value="farmers">Farmers</option>
                 <option value="cpp">CPP</option>
                 <option value="rcc">RCC</option>
                 <option value="mp">MP</option>
               </select>
-              <select id="milkTypeFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+              <select id="milkTypeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 <option value="all" selected>All Milk Types</option>
                 <option value="A1">A1</option>
                 <option value="A2">A2</option>
                 <option value="Buffalo">Buffalo</option>
               </select>
-              <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+              <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 <option value="">All Statuses</option>
                 <option value="1">Pending</option>
                 <option value="2">Approved</option>
@@ -159,11 +176,6 @@
                 <option value="3">Rejected</option>
                 <option value="4">Cancelled</option>
               </select>
-              <button id="refreshBills" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
-                <i class="fas fa-sync-alt mr-2"></i>
-                Refresh
-              </button>
-              <button id="regenAllBills" class="px-4 py-2 bg-orange-600 text-white rounded-md text-sm hover:bg-orange-700">Regenerate Bills</button>
             </div>
           </div>
 
@@ -754,8 +766,252 @@
           });
       }
 
+      // Runq sync action — only for CPP bills (v1 scope).
+      function renderRunqSync(bill, mobile) {
+        if (bill.entity_type !== 'cpp') return '';
+        const cls = mobile
+          ? 'p-2 hover:bg-gray-50 rounded-full'
+          : 'text-indigo-600 hover:text-indigo-900';
+        if (!bill.runq_bill_id) {
+          return `<button class="${cls}" data-runq-sync-bill="${bill.id}" data-action="sync" title="Sync to runq">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </button>`;
+        }
+        const isRejected = bill.runq_sync_status && String(bill.runq_sync_status).startsWith('rejected');
+        const color = isRejected ? 'text-red-600' : 'text-green-600';
+        const title = isRejected
+          ? `Synced v${bill.runq_sync_version} · ${bill.runq_sync_status}`
+          : `Synced v${bill.runq_sync_version} — click to resync`;
+        return `<button class="${mobile ? 'p-2 hover:bg-gray-50 rounded-full ' + color : color}" data-runq-sync-bill="${bill.id}" data-action="resync" title="${title}">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </button>`;
+      }
+
+      // Translate a runq sync outcome into a friendly toast message.
+      // Returns { tone, title, body, duration }.
+      function describeRunqResult(data, httpStatus) {
+        const status = String(data.status || '').toLowerCase();
+        const reason = data.reason || '';
+
+        if (status === 'created') {
+          return { tone: 'success', title: 'Bill synced to runq', body: `Created v${data.externalVersion || 1} · runq id ${data.billId || '—'}`, duration: 4000 };
+        }
+        if (status === 'updated') {
+          return { tone: 'success', title: 'Bill resynced to runq', body: `Now at v${data.externalVersion || ''} · runq id ${data.billId || '—'}`, duration: 4000 };
+        }
+        if (status === 'unchanged') {
+          return { tone: 'info', title: 'Already in sync', body: 'No changes since last successful sync.', duration: 4000 };
+        }
+
+        // Rejections from runq's resync guard or vendor resolver
+        const rejectMap = {
+          vendor_not_found: { title: 'No matching runq vendor', body: 'Map this CPP to a runq vendor in runq → Settings → Bill Sync, then retry.' },
+          bill_paid: { title: 'Cannot resync — bill paid in runq', body: 'The runq bill is fully paid; resync is blocked to protect the books.' },
+          bill_partially_paid: { title: 'Cannot resync — partial payment recorded', body: 'A payment is already linked to this bill in runq.' },
+          bill_cancelled: { title: 'Cannot resync — bill cancelled', body: 'The runq bill was cancelled. Un-cancel it in runq before resyncing.' },
+          has_payments: { title: 'Cannot resync — payment recorded', body: 'A payment exists against this bill in runq.' },
+          has_allocations: { title: 'Cannot resync — bank reconciled', body: 'This bill is linked to a bank transaction in runq.' },
+        };
+        if (status.startsWith('rejected') || rejectMap[reason]) {
+          const r = rejectMap[reason] || { title: 'Sync rejected by runq', body: reason || 'Unknown reason.' };
+          return { tone: 'warning', title: r.title, body: r.body, duration: 8000 };
+        }
+
+        // HTTP-level errors
+        if (status.startsWith('error:401') || httpStatus === 401) {
+          return { tone: 'error', title: 'Runq rejected the API key', body: 'Check RUNQ_BILL_SYNC_KEY and RUNQ_BILL_SYNC_SLUG in ops .env.', duration: 8000 };
+        }
+        if (status.startsWith('error:400') || httpStatus === 400) {
+          return { tone: 'error', title: 'Invalid payload', body: 'Runq rejected the bill payload (likely a date/amount field). Check ops logs.', duration: 8000 };
+        }
+        if (status === 'not_found') {
+          return { tone: 'error', title: 'Bill not found', body: `cpp_billing row missing in ops db.`, duration: 6000 };
+        }
+        if (status === 'already_synced') {
+          return { tone: 'info', title: 'Already synced', body: 'Use Resync to push updates.', duration: 4000 };
+        }
+        return { tone: 'error', title: 'Sync failed', body: status || 'Unknown error.', duration: 6000 };
+      }
+
+      // Click handler for runq sync buttons (delegated, survives re-render).
+      document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-runq-sync-bill]');
+        if (!btn) return;
+        const billId = btn.dataset.runqSyncBill;
+        const action = btn.dataset.action === 'resync' ? 'resync' : 'sync';
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+          const res = await fetch(`/api/runq-sync/cpp/${billId}/${action}`, { method: 'POST' });
+          const body = await res.json().catch(() => ({}));
+          const data = body.data || {};
+          const msg = describeRunqResult(data, res.status);
+          showToast(`<strong>${msg.title}</strong><br/><span class="text-xs opacity-90">${msg.body}</span>`, msg.tone, msg.duration);
+
+          if (data.ok) {
+            if (typeof loadBills === 'function') loadBills();
+            else location.reload();
+            return;
+          }
+          btn.disabled = false;
+          btn.innerHTML = original;
+        } catch (err) {
+          console.error('Runq sync failed', err);
+          showToast('<strong>Network error</strong><br/><span class="text-xs opacity-90">Could not reach runq. Check that runq API is running and RUNQ_BASE_URL is correct.</span>', 'error', 8000);
+          btn.disabled = false;
+          btn.innerHTML = original;
+        }
+      });
+
+      // Cache of currently displayed bills — used by bulk Runq sync.
+      window.__currentBills = [];
+
+      // Bulk-sync all visible CPP bills sequentially. Per-row outcome is
+      // shown in a results modal; the cpp_billing rows themselves are
+      // updated by the same persistence path as single sync, so the page
+      // refresh at the end picks up the new statuses.
+      document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('#bulkRunqSync');
+        if (!btn) return;
+        const cppBills = (window.__currentBills || []).filter((b) => b.entity_type === 'cpp');
+        if (!cppBills.length) return;
+        if (!confirm(`Sync ${cppBills.length} CPP bill${cppBills.length === 1 ? '' : 's'} to runQ? Already-synced bills will be resynced (version bumps).`)) return;
+
+        showBulkSyncDialog(cppBills);
+        const results = [];
+        for (let i = 0; i < cppBills.length; i++) {
+          const bill = cppBills[i];
+          updateBulkRow(bill.id, 'pending');
+          try {
+            const action = bill.runq_bill_id ? 'resync' : 'sync';
+            const res = await fetch(`/api/runq-sync/cpp/${bill.id}/${action}`, { method: 'POST' });
+            const body = await res.json().catch(() => ({}));
+            const data = body.data || {};
+            const outcome = describeRunqResult(data, res.status);
+            results.push({ bill, outcome, ok: !!data.ok });
+            updateBulkRow(bill.id, data.ok ? 'success' : 'fail', outcome);
+          } catch (err) {
+            console.error('Bulk sync row failed', err);
+            const outcome = { tone: 'error', title: 'Network error', body: String(err.message || err) };
+            results.push({ bill, outcome, ok: false });
+            updateBulkRow(bill.id, 'fail', outcome);
+          }
+          // Polite gap between requests
+          await new Promise((r) => setTimeout(r, 200));
+        }
+
+        const ok = results.filter((r) => r.ok).length;
+        const fail = results.length - ok;
+        finishBulkSync(ok, fail);
+        if (typeof loadBills === 'function') loadBills();
+      });
+
+      function showBulkSyncDialog(bills) {
+        const existing = document.getElementById('bulkSyncDialog');
+        if (existing) existing.remove();
+        const dialog = document.createElement('div');
+        dialog.id = 'bulkSyncDialog';
+        dialog.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4';
+        dialog.innerHTML = `
+          <div class="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-lg bg-white dark:bg-gray-900 shadow-xl">
+            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-5 py-3">
+              <div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Bulk sync to runQ</h3>
+                <p id="bulkSyncProgress" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Syncing 0 of ${bills.length}…</p>
+              </div>
+              <button id="bulkSyncClose" class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800" disabled>
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto px-5 py-3">
+              <table class="w-full text-sm">
+                <thead class="text-xs uppercase text-gray-500 dark:text-gray-400">
+                  <tr><th class="text-left py-2">CPP</th><th class="text-right py-2">Amount</th><th class="text-center py-2">Status</th><th class="text-left py-2">Detail</th></tr>
+                </thead>
+                <tbody id="bulkSyncRows" class="divide-y divide-gray-100 dark:divide-gray-800"></tbody>
+              </table>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700 px-5 py-3 flex justify-end gap-2">
+              <button id="bulkSyncDone" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 hidden">Done</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(dialog);
+        const rows = document.getElementById('bulkSyncRows');
+        bills.forEach((b) => {
+          const tr = document.createElement('tr');
+          tr.id = `bulk-row-${b.id}`;
+          tr.innerHTML = `
+            <td class="py-2 text-gray-900 dark:text-gray-100">${b.entity_name}</td>
+            <td class="py-2 text-right tabular-nums text-gray-700 dark:text-gray-300">₹${Number(b.total_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td class="py-2 text-center"><span class="status-pill text-xs text-gray-400">queued</span></td>
+            <td class="py-2 text-xs text-gray-500"></td>
+          `;
+          rows.appendChild(tr);
+        });
+        document.getElementById('bulkSyncDone').addEventListener('click', () => dialog.remove());
+        document.getElementById('bulkSyncClose').addEventListener('click', () => dialog.remove());
+      }
+
+      function updateBulkRow(billId, state, outcome) {
+        const tr = document.getElementById(`bulk-row-${billId}`);
+        if (!tr) return;
+        const pill = tr.querySelector('.status-pill');
+        const detail = tr.querySelector('td:last-child');
+        const total = (window.__currentBills || []).filter((b) => b.entity_type === 'cpp').length;
+        const done = document.querySelectorAll('#bulkSyncRows tr .status-pill:not(.text-gray-400):not(.bg-blue-100)').length;
+        const progress = document.getElementById('bulkSyncProgress');
+
+        if (state === 'pending') {
+          pill.className = 'status-pill inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+          pill.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i> syncing';
+          if (progress) progress.textContent = `Syncing ${done + 1} of ${total}…`;
+        } else if (state === 'success') {
+          pill.className = 'status-pill inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+          pill.innerHTML = '<i class="fas fa-check"></i> synced';
+          if (detail) detail.textContent = outcome ? outcome.title : '';
+        } else {
+          pill.className = 'status-pill inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+          pill.innerHTML = '<i class="fas fa-times"></i> failed';
+          if (detail) detail.innerHTML = outcome
+            ? `<strong class="text-red-700 dark:text-red-400">${outcome.title}</strong> — ${outcome.body}`
+            : 'Unknown error';
+        }
+      }
+
+      function finishBulkSync(ok, fail) {
+        const progress = document.getElementById('bulkSyncProgress');
+        if (progress) progress.innerHTML = `Done — <strong class="text-green-700 dark:text-green-400">${ok} synced</strong>${fail > 0 ? `, <strong class="text-red-700 dark:text-red-400">${fail} failed</strong>` : ''}`;
+        const close = document.getElementById('bulkSyncClose');
+        if (close) close.disabled = false;
+        const done = document.getElementById('bulkSyncDone');
+        if (done) done.classList.remove('hidden');
+      }
+
+
+      // Toggle "Sync all to runQ" button visibility based on entity filter.
+      function updateBulkSyncVisibility(bills) {
+        const btn = document.getElementById("bulkRunqSync");
+        if (!btn) return;
+        const cppBills = bills.filter((b) => b.entity_type === 'cpp');
+        if (cppBills.length > 0) {
+          btn.classList.remove("hidden");
+          btn.dataset.count = cppBills.length;
+          const unsynced = cppBills.filter((b) => !b.runq_bill_id).length;
+          const label = unsynced > 0
+            ? `Sync ${unsynced} unsynced` + (cppBills.length - unsynced > 0 ? ` · resync ${cppBills.length - unsynced}` : '')
+            : `Resync all ${cppBills.length}`;
+          btn.innerHTML = `<i class="fas fa-cloud-upload-alt mr-2"></i>${label}`;
+        } else {
+          btn.classList.add("hidden");
+        }
+      }
+
       // Display bills in table and cards
       function displayBills(bills) {
+        window.__currentBills = bills;
+        updateBulkSyncVisibility(bills);
         const tbody = document.getElementById("billsTableBody");
         const cardContainer = document.getElementById("billsCardContainer");
         const loading = document.getElementById("billsLoading");
@@ -782,7 +1038,7 @@
           // Desktop view - show table and desktop filters, hide cards and mobile filters
           if (desktopTable) desktopTable.style.display = "block";
           if (mobileCards) mobileCards.style.display = "none";
-          if (desktopFilters) desktopFilters.style.display = "flex";
+          if (desktopFilters) desktopFilters.style.display = "grid";
           if (mobileFilters) mobileFilters.style.display = "none";
         } else {
           // Mobile view - hide table and desktop filters, show cards and mobile filters
@@ -836,7 +1092,7 @@
                 ${new Date(bill.due_date).toLocaleDateString()}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex space-x-2">
+                <div class="flex items-center space-x-2">
                   <button class="text-blue-600 hover:text-blue-900" onclick="viewBill('${bill.entity_type}', ${bill.id})">
                     <i class="fas fa-eye"></i>
                   </button>
@@ -846,6 +1102,7 @@
                   <button class="text-purple-600 hover:text-purple-900" onclick="recordPayment('${bill.entity_type}', ${bill.id})">
                     <i class="fas fa-credit-card"></i>
                   </button>
+                  ${renderRunqSync(bill)}
                 </div>
               </td>
             </tr>
@@ -877,9 +1134,10 @@
                   <button onclick="recordPayment('${bill.entity_type}', ${bill.id})" class="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full" title="Record Payment">
                     <i class="fas fa-credit-card text-sm"></i>
                   </button>
+                  ${renderRunqSync(bill, true)}
                 </div>
               </div>
-              
+
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
                   <span class="text-gray-500">Period:</span>
@@ -1672,7 +1930,7 @@
           // Desktop view - show table and desktop filters, hide cards and mobile filters
           if (desktopTable) desktopTable.style.display = "block";
           if (mobileCards) mobileCards.style.display = "none";
-          if (desktopFilters) desktopFilters.style.display = "flex";
+          if (desktopFilters) desktopFilters.style.display = "grid";
           if (mobileFilters) mobileFilters.style.display = "none";
         } else {
           // Mobile view - hide table and desktop filters, show cards and mobile filters
@@ -1811,7 +2069,7 @@
             // Desktop view - show table and desktop filters, hide cards and mobile filters
             if (desktopTable) desktopTable.style.display = "block";
             if (mobileCards) mobileCards.style.display = "none";
-            if (desktopFilters) desktopFilters.style.display = "flex";
+            if (desktopFilters) desktopFilters.style.display = "grid";
             if (mobileFilters) mobileFilters.style.display = "none";
           } else {
             // Mobile view - hide table and desktop filters, show cards and mobile filters

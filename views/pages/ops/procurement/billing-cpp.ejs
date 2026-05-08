@@ -167,6 +167,7 @@
                       <th class="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">Billing Status</th>
                       <th class="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">Payment Status</th>
                       <th class="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">Payment Date</th>
+                      <th class="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">Runq Sync</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-gray-900">
@@ -209,6 +210,25 @@
                         </td>
                         <td class="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400">
                           <%= cpp.payment_date ? new Date(cpp.payment_date).toISOString().split('T')[0] : '-' %>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <% if (!cpp.billing_id) { %>
+                            <span class="text-xs text-gray-400">—</span>
+                          <% } else if (!cpp.runq_bill_id) { %>
+                            <button type="button" data-runq-sync-bill="<%= cpp.billing_id %>" data-action="sync"
+                              class="px-2 py-1 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Sync to runq</button>
+                          <% } else { %>
+                            <div class="flex flex-col items-center gap-1">
+                              <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                                Synced v<%= cpp.runq_sync_version || 1 %>
+                              </span>
+                              <button type="button" data-runq-sync-bill="<%= cpp.billing_id %>" data-action="resync"
+                                class="text-xs text-indigo-600 hover:underline dark:text-indigo-400">Resync</button>
+                              <% if (cpp.runq_sync_status && cpp.runq_sync_status.startsWith('rejected')) { %>
+                                <span class="text-xs text-red-600 dark:text-red-400" title="<%= cpp.runq_sync_status %>">Rejected</span>
+                              <% } %>
+                            </div>
+                          <% } %>
                         </td>
                       </tr>
                     <% }); %>
@@ -548,7 +568,38 @@
         }
       }
     </script>
-    
+
+    <script>
+      // Runq bill sync — per-row sync / resync buttons
+      document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-runq-sync-bill]');
+        if (!btn) return;
+        const billId = btn.dataset.runqSyncBill;
+        const action = btn.dataset.action === 'resync' ? 'resync' : 'sync';
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = action === 'resync' ? 'Resyncing…' : 'Syncing…';
+        try {
+          const res = await fetch(`/api/runq-sync/cpp/${billId}/${action}`, { method: 'POST' });
+          const result = await res.json().catch(() => ({}));
+          const data = result.data || {};
+          if (res.ok && data.ok) {
+            location.reload();
+          } else {
+            const reason = data.reason ? ` (${data.reason})` : '';
+            alert(`Sync ${data.status || 'failed'}${reason}`);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+          }
+        } catch (err) {
+          console.error('Runq sync failed', err);
+          alert('Runq sync failed — check console');
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+      });
+    </script>
+
     <style>
       /* Normalize date input and select styling */
       input[type="date"], select {

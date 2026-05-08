@@ -97,7 +97,12 @@ async function getBillingData(level, startDate, endDate, period = "H1", milkType
           cb.total_amount,
           cb.milk_cost,
           cb.salary_amount,
-          cb.salary_type
+          cb.salary_type,
+          cb.id as billing_id,
+          cb.runq_bill_id,
+          cb.runq_sync_status,
+          cb.runq_sync_version,
+          cb.runq_synced_at
         FROM cpp c
         LEFT JOIN rcc r ON r.id = c.rcc_id
         LEFT JOIN milk_entries_rcc me ON me.cpp_id = c.id AND me.date BETWEEN ? AND ?
@@ -105,7 +110,7 @@ async function getBillingData(level, startDate, endDate, period = "H1", milkType
         LEFT JOIN billing_status bs ON cb.billing_status_id = bs.id
         LEFT JOIN payment_status ps ON cb.payment_status_id = ps.id
         WHERE c.status = 'active' AND (LOWER(COALESCE(c.milk_type, '')) = LOWER(?) OR LOWER(?) = 'all')
-        GROUP BY c.id, c.name, c.village, c.milk_type, c.rate_type, c.flat_rate, c.rate_chart_id, r.name, bs.status, ps.status, cb.payment_date, cb.total_amount, cb.milk_cost, cb.salary_amount, cb.salary_type
+        GROUP BY c.id, c.name, c.village, c.milk_type, c.rate_type, c.flat_rate, c.rate_chart_id, r.name, bs.status, ps.status, cb.payment_date, cb.total_amount, cb.milk_cost, cb.salary_amount, cb.salary_type, cb.id, cb.runq_bill_id, cb.runq_sync_status, cb.runq_sync_version, cb.runq_synced_at
         ORDER BY c.name
       `;
       params = [startDate, endDate, startDate, endDate, period, milkType, milkType];
