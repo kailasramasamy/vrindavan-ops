@@ -15,8 +15,21 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 RESTART_CMD="${RESTART_CMD:-pm2 restart vrindavan-ops}"
-PKG_MGR="${PKG_MGR:-pnpm}"
 BRANCH="${BRANCH:-master}"
+
+# Auto-detect package manager — prefer pnpm if available, fall back to npm,
+# then yarn. Override with PKG_MGR=<...> if needed.
+if [[ -z "${PKG_MGR:-}" ]]; then
+  if command -v pnpm >/dev/null 2>&1; then
+    PKG_MGR="pnpm"
+  elif command -v npm >/dev/null 2>&1; then
+    PKG_MGR="npm"
+  elif command -v yarn >/dev/null 2>&1; then
+    PKG_MGR="yarn"
+  else
+    PKG_MGR=""
+  fi
+fi
 
 log() { printf '\033[1;36m▶ %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m⚠ %s\033[0m\n' "$*"; }
@@ -50,16 +63,29 @@ fi
 # ─── 3. Install deps if package.json or lockfile changed ──────────────────────
 if [[ $PULLED -eq 1 ]]; then
   if git diff "$LOCAL" "$REMOTE" --name-only | grep -qE '(package\.json|pnpm-lock\.yaml|package-lock\.json|yarn\.lock)$'; then
-    log "package.json / lockfile changed — running $PKG_MGR install…"
-    "$PKG_MGR" install
+    if [[ -n "$PKG_MGR" ]]; then
+      log "package.json / lockfile changed — running $PKG_MGR install…"
+      "$PKG_MGR" install
+    else
+      warn "Dependency changes detected but no package manager found. Install manually."
+    fi
   else
     log "No dependency changes — skipping install."
   fi
 fi
 
 # ─── 4. CSS build ─────────────────────────────────────────────────────────────
-log "Rebuilding CSS…"
-"$PKG_MGR" css:build
+log "Rebuilding CSS… (using ${PKG_MGR:-npx})"
+if [[ -n "$PKG_MGR" ]]; then
+  if [[ "$PKG_MGR" == "npm" ]]; then
+    npm run css:build
+  else
+    "$PKG_MGR" css:build
+  fi
+else
+  # Last-resort fallback — invoke tailwindcss directly via npx
+  npx tailwindcss -i ./src/styles/tailwind.css -o ./public/assets/styles.css --minify
+fi
 
 # ─── 5. Pending migrations ────────────────────────────────────────────────────
 log "Checking for pending migrations…"
