@@ -211,15 +211,18 @@ ops.get("/procurement/cpp", async (req, res) => {
         cppParams.push(req.user.rcc_id);
       }
 
-      // Filter CPPs by milk type if specified (only show CPPs that have farmers with that milk type)
+      // Filter CPPs by milk type: match the CPP's own milk_type OR CPPs that have active farmers of that type
       if (selectedMilkType && selectedMilkType !== 'all') {
-        cppQuery += ` AND EXISTS (
-          SELECT 1 FROM farmers f 
-          WHERE f.cpp_id = c.id 
-          AND f.status = 'active' 
-          AND COALESCE(f.milk_type, 'A2') = ?
+        cppQuery += ` AND (
+          COALESCE(c.milk_type, 'A2') = ?
+          OR EXISTS (
+            SELECT 1 FROM farmers f
+            WHERE f.cpp_id = c.id
+            AND f.status = 'active'
+            AND COALESCE(f.milk_type, 'A2') = ?
+          )
         )`;
-        cppParams.push(selectedMilkType);
+        cppParams.push(selectedMilkType, selectedMilkType);
       }
 
       cppQuery += " ORDER BY c.id ASC";
@@ -620,15 +623,18 @@ ops.get("/api/procurement/cpp/monthly-data", CppMilkController.getMonthlyData);
         cppParams.push(req.user.rcc_id);
       }
 
-      // Filter CPPs by milk type if specified (only show CPPs that have farmers with that milk type)
+      // Filter CPPs by milk type: match the CPP's own milk_type OR CPPs that have active farmers of that type
       if (milkType && milkType !== 'all') {
-        cppQuery += ` AND EXISTS (
-          SELECT 1 FROM farmers f 
-          WHERE f.cpp_id = c.id 
-          AND f.status = 'active' 
-          AND COALESCE(f.milk_type, 'A2') = ?
+        cppQuery += ` AND (
+          COALESCE(c.milk_type, 'A2') = ?
+          OR EXISTS (
+            SELECT 1 FROM farmers f
+            WHERE f.cpp_id = c.id
+            AND f.status = 'active'
+            AND COALESCE(f.milk_type, 'A2') = ?
+          )
         )`;
-        cppParams.push(milkType);
+        cppParams.push(milkType, milkType);
       }
 
       cppQuery += " ORDER BY c.id ASC";
